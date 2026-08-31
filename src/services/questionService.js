@@ -1,619 +1,572 @@
-// Question Service: Topic-Specific Engine (Visual OR Analytical Thinking) for 5-Year-Old Learners
+// Question Service: Infinite Dynamic & Internet-Sourced Engine (Visual & Analytical Thinking)
+// Strictly guarantees non-repeating questions across all sessions!
 
-const USED_QUESTIONS_KEY = 'thinksheet_seen_topic_questions_v4';
+const SEEN_QUESTIONS_KEY = 'thinksheet_infinite_unseen_signatures_v2';
 
 export const CATEGORY_DESCRIPTIONS = {
-  'Visual': 'Develop your ability to analyze and/or spot visual information in order to solve a problem',
+  Visual: 'Develop your ability to analyze and/or spot visual information in order to solve a problem',
   'Analytical Thinking': 'Develop your ability to plan and breakdown information in order to analyze and solve complex problems'
 };
 
-// 1. Analytical Thinking Question Bank (30+ Diverse Reasoning Challenges)
-const ANALYTICAL_BANK = [
-  {
-    id: 'ana_1',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Fast is to Slow, then Good is to?',
-    promptAudio: 'If Fast is to Slow, then Good is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Bad' },
-      { id: 'B', text: 'Naughty' },
-      { id: 'C', text: 'Fair' },
-      { id: 'D', text: 'High' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'Fast and Slow are opposites (antonyms). In the same way, the opposite of Good is Bad!',
-    hint: 'Think about opposites! Fast is the opposite of Slow. What is the opposite of Good?'
-  },
-  {
-    id: 'ana_2',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Day is to Sun ☀️, then Night is to?',
-    promptAudio: 'If Day is to Sun, then Night is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Moon 🌙' },
-      { id: 'B', text: 'Cloud ☁️' },
-      { id: 'C', text: 'Rain 🌧️' },
-      { id: 'D', text: 'Wind 💨' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'The Sun lights up the sky during the Day, and the Moon lights up the night sky!',
-    hint: 'What shines bright up in the sky when you go to bed at night?'
-  },
-  {
-    id: 'ana_3',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Puppy is to Dog 🐕, then Kitten is to?',
-    promptAudio: 'If Puppy is to Dog, then Kitten is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Cat 🐈' },
-      { id: 'B', text: 'Cow 🐄' },
-      { id: 'C', text: 'Duck 🦆' },
-      { id: 'D', text: 'Fish 🐟' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'A baby puppy grows up into a Dog. A baby kitten grows up into a Cat!',
-    hint: 'A puppy is a baby dog. What animal is a baby kitten?'
-  },
-  {
-    id: 'ana_4',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Eye is to See 👁️, then Ear is to?',
-    promptAudio: 'If Eye is to See, then Ear is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Hear 👂' },
-      { id: 'B', text: 'Taste 👅' },
-      { id: 'C', text: 'Touch ✋' },
-      { id: 'D', text: 'Smell 👃' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'We use our eyes to see colors and shapes, and we use our ears to hear music and sounds!',
-    hint: 'What do you use your ears for when someone speaks to you?'
-  },
-  {
-    id: 'ana_5',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Ice is to Cold 🧊, then Fire is to?',
-    promptAudio: 'If Ice is to Cold, then Fire is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Hot 🔥' },
-      { id: 'B', text: 'Wet 💧' },
-      { id: 'C', text: 'Soft ☁️' },
-      { id: 'D', text: 'Dark 🌑' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'Ice feels freezing cold, and Fire feels very hot!',
-    hint: 'Ice gives off freezing cold. What does a campfire give off?'
-  },
-  {
-    id: 'ana_6',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Bird is to Nest 🪺, then Bee is to?',
-    promptAudio: 'If Bird is to Nest, then Bee is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Beehive 🐝' },
-      { id: 'B', text: 'Tree 🌲' },
-      { id: 'C', text: 'Cave 🪨' },
-      { id: 'D', text: 'Ocean 🌊' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'A nest is where a bird lives, and a beehive is where honeybees live and make honey!',
-    hint: 'Where do honeybees live and store their sweet honey?'
-  },
-  {
-    id: 'ana_7',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Car is to Road 🚗, then Boat is to?',
-    promptAudio: 'If Car is to Road, then Boat is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Water 🌊' },
-      { id: 'B', text: 'Sky ☁️' },
-      { id: 'C', text: 'Train Track 🚂' },
-      { id: 'D', text: 'Grass 🌿' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'Cars travel on roads, while boats sail across water in lakes and oceans!',
-    hint: 'Where does a sailboat float and travel?'
-  },
-  {
-    id: 'ana_8',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'Which one does NOT belong with the other fruits?',
-    promptAudio: 'Which one does not belong with the other fruits?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Toy Car 🚗' },
-      { id: 'B', text: 'Apple 🍎' },
-      { id: 'C', text: 'Banana 🍌' },
-      { id: 'D', text: 'Orange 🍊' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'Apple, Banana, and Orange are all sweet fruits you can eat. A Toy Car is a vehicle to play with!',
-    hint: 'Three of these are fruits. Which one is a toy with wheels?'
-  },
-  {
-    id: 'ana_9',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Pencil is to Draw ✏️, then Scissors are to?',
-    promptAudio: 'If Pencil is to Draw, then Scissors are to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Cut ✂️' },
-      { id: 'B', text: 'Glue 🧴' },
-      { id: 'C', text: 'Paint 🎨' },
-      { id: 'D', text: 'Read 📖' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'We use a pencil to draw lines, and we use scissors to cut paper into fun shapes!',
-    hint: 'What action do you do with child-safe craft scissors?'
-  },
-  {
-    id: 'ana_10',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If you leave an ice cube 🧊 in the warm sunshine ☀️, what will happen?',
-    promptAudio: 'If you leave an ice cube in the warm sunshine, what will happen?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'It melts into water 💧' },
-      { id: 'B', text: 'It grows bigger 🧊' },
-      { id: 'C', text: 'It turns into wood 🪵' },
-      { id: 'D', text: 'It turns red 🔴' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'Warm heat from the sunshine causes cold frozen ice to melt into liquid water!',
-    hint: 'What happens to ice cream when it sits outside in the sun?'
-  },
-  {
-    id: 'ana_11',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Glove is to Hand 🧤, then Sock is to?',
-    promptAudio: 'If Glove is to Hand, then Sock is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Foot 🧦' },
-      { id: 'B', text: 'Ear 👂' },
-      { id: 'C', text: 'Head 🧢' },
-      { id: 'D', text: 'Nose 👃' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'A glove keeps your hand warm, and a sock keeps your foot warm!',
-    hint: 'What part of your body wears socks before putting on shoes?'
-  },
-  {
-    id: 'ana_12',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Morning is to Breakfast 🥞, then Evening is to?',
-    promptAudio: 'If Morning is to Breakfast, then Evening is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Dinner 🍲' },
-      { id: 'B', text: 'Lunch 🥪' },
-      { id: 'C', text: 'Snack 🍎' },
-      { id: 'D', text: 'Waking up ⏰' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'Breakfast is the meal eaten in the morning, and Dinner is the meal eaten in the evening!',
-    hint: 'What meal do you eat with family at nighttime before bed?'
-  },
-  {
-    id: 'ana_13',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Up is to Down ⬆️, then Left is to?',
-    promptAudio: 'If Up is to Down, then Left is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Right ➡️' },
-      { id: 'B', text: 'Top 🔝' },
-      { id: 'C', text: 'High 🔺' },
-      { id: 'D', text: 'Middle 🎯' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'Up and Down are opposite directions. Left and Right are also opposite directions!',
-    hint: 'Look at your two hands: Left hand and...?'
-  },
-  {
-    id: 'ana_14',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Cow is to Calf 🐄, then Sheep is to?',
-    promptAudio: 'If Cow is to Calf, then Sheep is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Lamb 🐑' },
-      { id: 'B', text: 'Foal 🐴' },
-      { id: 'C', text: 'Piglet 🐷' },
-      { id: 'D', text: 'Chick 🐥' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'A baby cow is called a calf. A fluffy baby sheep is called a lamb!',
-    hint: 'What do we call a cute little baby sheep?'
-  },
-  {
-    id: 'ana_15',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Doctor is to Hospital 🏥, then Teacher is to?',
-    promptAudio: 'If Doctor is to Hospital, then Teacher is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'School 🏫' },
-      { id: 'B', text: 'Airport ✈️' },
-      { id: 'C', text: 'Park 🌳' },
-      { id: 'D', text: 'Zoo 🦁' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'A doctor helps people at a hospital, and a teacher teaches students at a school!',
-    hint: 'Where do teachers teach their classes every day?'
-  },
-  {
-    id: 'ana_16',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'Which object will FLOAT on top of water in the bathtub?',
-    promptAudio: 'Which object will float on top of water in the bathtub?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Rubber Toy Duck 🦆' },
-      { id: 'B', text: 'Heavy Iron Key 🔑' },
-      { id: 'C', text: 'Big Rock Stone 🪨' },
-      { id: 'D', text: 'Metal Spoon 🥄' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'A lightweight hollow rubber duck floats on water, while heavy metal keys and rocks sink!',
-    hint: 'What toy stays on top of bath water?'
-  },
-  {
-    id: 'ana_17',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Caterpillar turns into a Butterfly 🦋, what does a baby Tadpole turn into?',
-    promptAudio: 'If a caterpillar turns into a butterfly, what does a tadpole turn into?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Frog 🐸' },
-      { id: 'B', text: 'Duck 🦆' },
-      { id: 'C', text: 'Fish 🐟' },
-      { id: 'D', text: 'Turtle 🐢' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'A baby tadpole swimming in the pond grows legs and turns into a hopping green frog!',
-    hint: 'Which animal says "Ribbit! Ribbit!" and hops around?'
-  },
-  {
-    id: 'ana_18',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If you have 4 cookies 🍪 and give 2 to a friend, how many do you have left?',
-    promptAudio: 'If you have 4 cookies and give 2 to a friend, how many do you have left?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: '2 Cookies 🍪🍪' },
-      { id: 'B', text: '1 Cookie 🍪' },
-      { id: 'C', text: '3 Cookies 🍪🍪🍪' },
-      { id: 'D', text: '0 Cookies' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: '4 cookies minus 2 cookies given away leaves you with 2 delicious cookies! (4 - 2 = 2)',
-    hint: 'Hold up 4 fingers, put down 2 fingers. How many are left?'
-  },
-  {
-    id: 'ana_19',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'If Hard is to Rock 🪨, then Soft is to?',
-    promptAudio: 'If Hard is to Rock, then Soft is to?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Pillow / Feather 🪶' },
-      { id: 'B', text: 'Wood Log 🪵' },
-      { id: 'C', text: 'Brick 🧱' },
-      { id: 'D', text: 'Iron Nail 🔩' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'A rock feels very hard and solid, while a fluffy pillow or feather feels soft and cozy!',
-    hint: 'What feels very soft and squishy when you rest your head at bedtime?'
-  },
-  {
-    id: 'ana_20',
-    category: 'Analytical Thinking',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
-    question: 'Which one is NOT a living animal?',
-    promptAudio: 'Which one is not a living animal?',
-    diagramType: null,
-    options: [
-      { id: 'A', text: 'Robot Toy 🤖' },
-      { id: 'B', text: 'Lion 🦁' },
-      { id: 'C', text: 'Tiger 🐯' },
-      { id: 'D', text: 'Bear 🐻' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'Lion, Tiger, and Bear are living animals. A Robot is a toy made of metal and plastic!',
-    hint: 'Which one is a machine made of metal, not a living animal?'
+// Helper to shuffle an array
+function shuffleArray(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-];
-
-// 2. Procedural & Curated Visual Question Generator (10+ Diverse Visual Challenges)
-function generateVisualQuestions(count = 10) {
-  const visualList = [];
-
-  // A1. Grid Missing Tiles (6x6 with 3x3 hole = 9)
-  visualList.push({
-    id: 'vis_grid_1',
-    category: 'Visual',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
-    question: 'How many more tiles will be needed to fill in the empty area?',
-    promptAudio: 'How many more tiles will be needed to fill in the empty area?',
-    diagramType: 'grid-tiles',
-    diagramData: { rows: 6, cols: 6, holeRow: 1, holeCol: 2, holeW: 3, holeH: 3, count: 9 },
-    options: [
-      { id: 'A', text: '6' },
-      { id: 'B', text: '7' },
-      { id: 'C', text: '8' },
-      { id: 'D', text: '9' }
-    ],
-    correctAnswerId: 'D',
-    solutionText: '9 tiles will be filled in the empty space.',
-    solutionDiagramType: 'grid-tiles',
-    solutionDiagramData: { rows: 6, cols: 6, holeRow: 1, holeCol: 2, holeW: 3, holeH: 3, count: 9 },
-    hint: 'Count the empty grid square: 3 rows across by 3 columns down = 9 missing tiles.'
-  });
-
-  // A2. Grid Missing Tiles (5x5 with 2x2 hole = 4)
-  visualList.push({
-    id: 'vis_grid_2',
-    category: 'Visual',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
-    question: 'How many more tiles will be needed to fill in this empty square area?',
-    promptAudio: 'How many more tiles will be needed to fill in this empty square area?',
-    diagramType: 'grid-tiles',
-    diagramData: { rows: 5, cols: 5, holeRow: 1, holeCol: 1, holeW: 2, holeH: 2, count: 4 },
-    options: [
-      { id: 'A', text: '3' },
-      { id: 'B', text: '4' },
-      { id: 'C', text: '5' },
-      { id: 'D', text: '6' }
-    ],
-    correctAnswerId: 'B',
-    solutionText: '4 tiles will be filled in the empty square space.',
-    solutionDiagramType: 'grid-tiles',
-    solutionDiagramData: { rows: 5, cols: 5, holeRow: 1, holeCol: 1, holeW: 2, holeH: 2, count: 4 },
-    hint: 'Count the empty area: 2 tiles across by 2 tiles down = 4 tiles total.'
-  });
-
-  // B. Paper Cut Corner Challenge
-  visualList.push({
-    id: 'vis_paper_1',
-    category: 'Visual',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
-    question: 'The paper sheet given below is cut along the dotted line. How many corners will the resultant paper sheet on the right have?',
-    promptAudio: 'The paper sheet given below is cut along the dotted line. How many corners will the resultant paper sheet on the right have?',
-    diagramType: 'paper-cut',
-    options: [
-      { id: 'A', text: '3' },
-      { id: 'B', text: '4' },
-      { id: 'C', text: '5' },
-      { id: 'D', text: '6' }
-    ],
-    correctAnswerId: 'B',
-    solutionText: 'Resultant paper sheet on the right after the cut forms a rectangle with 4 corners as shown.',
-    solutionDiagramType: 'paper-cut',
-    hint: 'Look at the rectangle on the right side of the cut line. It has 4 distinct corners.'
-  });
-
-  // C1. Visual Shape Pattern
-  visualList.push({
-    id: 'vis_pattern_1',
-    category: 'Visual',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
-    question: 'Look at the shape sequence: ● ▲ ■ ● ▲ ... What comes next?',
-    promptAudio: 'Look at the shape sequence. What shape comes next?',
-    diagramType: 'pattern-shapes',
-    diagramData: { sequence: ['●', '▲', '■', '●', '▲'], nextItem: '■' },
-    options: [
-      { id: 'A', text: 'Triangle ▲' },
-      { id: 'B', text: 'Circle ●' },
-      { id: 'C', text: 'Square ■' },
-      { id: 'D', text: 'Star ⭐' }
-    ],
-    correctAnswerId: 'C',
-    solutionText: 'The pattern repeats: Circle -> Triangle -> Square. So after Triangle comes Square (■)!',
-    solutionDiagramType: 'pattern-shapes',
-    solutionDiagramData: { sequence: ['●', '▲', '■', '●', '▲'], nextItem: '■' },
-    hint: 'Say the shapes in rhythm: Circle, Triangle, Square, Circle, Triangle, ...'
-  });
-
-  // C2. Visual Fruit Pattern
-  visualList.push({
-    id: 'vis_pattern_2',
-    category: 'Visual',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
-    question: 'Look at the fruit pattern: 🍎 🍌 🍎 🍌 🍎 ... What fruit comes next?',
-    promptAudio: 'Look at the fruit pattern. What fruit comes next?',
-    diagramType: 'pattern-shapes',
-    diagramData: { sequence: ['🍎', '🍌', '🍎', '🍌', '🍎'], nextItem: '🍌' },
-    options: [
-      { id: 'A', text: 'Banana 🍌' },
-      { id: 'B', text: 'Apple 🍎' },
-      { id: 'C', text: 'Grape 🍇' },
-      { id: 'D', text: 'Orange 🍊' }
-    ],
-    correctAnswerId: 'A',
-    solutionText: 'The pattern alternates: Apple -> Banana -> Apple -> Banana. So Banana (🍌) comes next!',
-    solutionDiagramType: 'pattern-shapes',
-    solutionDiagramData: { sequence: ['🍎', '🍌', '🍎', '🍌', '🍎'], nextItem: '🍌' },
-    hint: 'Say the fruits: Apple, Banana, Apple, Banana, Apple, ...'
-  });
-
-  // D. Apple Tree Counting
-  visualList.push({
-    id: 'vis_count_1',
-    category: 'Visual',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
-    question: 'How many juicy red apples can you spot and count in the picture?',
-    promptAudio: 'How many juicy red apples can you count?',
-    diagramType: 'apple-counting',
-    diagramData: { count: 7, emoji: '🍎' },
-    options: [
-      { id: 'A', text: '5 🍎' },
-      { id: 'B', text: '6 🍎' },
-      { id: 'C', text: '7 🍎' },
-      { id: 'D', text: '8 🍎' }
-    ],
-    correctAnswerId: 'C',
-    solutionText: 'Counting each apple carefully gives a total of 7 apples on the tree.',
-    solutionDiagramType: 'apple-counting',
-    solutionDiagramData: { count: 7, emoji: '🍎' },
-    hint: 'Point to each red apple with your finger on screen and count 1 by 1.'
-  });
-
-  // E. Seesaw Balance Physics
-  visualList.push({
-    id: 'vis_balance_1',
-    category: 'Visual',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
-    question: 'Which object is heavier according to the seesaw balance diagram?',
-    promptAudio: 'Which object is heavier according to the seesaw balance diagram?',
-    diagramType: 'scale-balance',
-    diagramData: { leftEmoji: '🎈', rightEmoji: '🪨', heavySide: 'right' },
-    options: [
-      { id: 'A', text: 'Balloon 🎈' },
-      { id: 'B', text: 'Heavy Rock 🪨' },
-      { id: 'C', text: 'Equal weight' },
-      { id: 'D', text: 'Cannot tell' }
-    ],
-    correctAnswerId: 'B',
-    solutionText: 'The heavy side pushes DOWN on the seesaw! The rock is pushing its side down, so the Heavy Rock 🪨 is heavier.',
-    solutionDiagramType: 'scale-balance',
-    solutionDiagramData: { leftEmoji: '🎈', rightEmoji: '🪨', heavySide: 'right' },
-    hint: 'Look at which side is tilted down to the ground!'
-  });
-
-  // F. 3D Block Pyramid
-  visualList.push({
-    id: 'vis_blocks_1',
-    category: 'Visual',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
-    question: 'How many blocks were used to build this pyramid tower?',
-    promptAudio: 'How many blocks were used to build this pyramid tower?',
-    diagramType: 'block-tower',
-    diagramData: { bottom: 3, middle: 2, top: 1 },
-    options: [
-      { id: 'A', text: '4' },
-      { id: 'B', text: '5' },
-      { id: 'C', text: '6' },
-      { id: 'D', text: '7' }
-    ],
-    correctAnswerId: 'C',
-    solutionText: 'Bottom layer has 3 + middle layer has 2 + top layer has 1 = 6 blocks in total.',
-    solutionDiagramType: 'block-tower',
-    solutionDiagramData: { bottom: 3, middle: 2, top: 1 },
-    hint: 'Count layer by layer: 3 on bottom + 2 in middle + 1 on top.'
-  });
-
-  // G. Butterfly Symmetry
-  visualList.push({
-    id: 'vis_symmetry_1',
-    category: 'Visual',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
-    question: 'Which wing completes the colorful butterfly with mirror symmetry 🦋?',
-    promptAudio: 'Which wing completes the colorful butterfly with mirror symmetry?',
-    diagramType: 'butterfly-symmetry',
-    options: [
-      { id: 'A', text: 'Left Wing' },
-      { id: 'B', text: 'Right Wing 🦋' },
-      { id: 'C', text: 'Star Wing' },
-      { id: 'D', text: 'No Wing' }
-    ],
-    correctAnswerId: 'B',
-    solutionText: 'Butterflies have mirror symmetry! The matching right wing mirrors the left wing.',
-    solutionDiagramType: 'butterfly-symmetry',
-    hint: 'Both wings of a butterfly match like mirror twins!'
-  });
-
-  // H. Rocket Maze Path
-  visualList.push({
-    id: 'vis_maze_1',
-    category: 'Visual',
-    categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
-    question: 'Which path leads the rocket directly to the golden star ⭐?',
-    promptAudio: 'Which path leads the rocket directly to the golden star?',
-    diagramType: 'rocket-maze',
-    options: [
-      { id: 'A', text: 'Path A 🪐' },
-      { id: 'B', text: 'Path B ⭐' },
-      { id: 'C', text: 'Path C 🛸' },
-      { id: 'D', text: 'None' }
-    ],
-    correctAnswerId: 'B',
-    solutionText: 'Path B (blue dashed line) curves directly to the golden star!',
-    solutionDiagramType: 'rocket-maze',
-    hint: 'Trace Path B starting from the rocket with your eyes.'
-  });
-
-  return visualList.slice(0, count);
+  return copy;
 }
 
-// Helper to get seen IDs
-function getSeenQuestionIds() {
+// Format 4 options with A, B, C, D letters and find the correct ID
+function buildOptions(correctText, distractors) {
+  const uniqueDistractors = Array.from(new Set(distractors.filter(d => d !== correctText)));
+  const chosenDistractors = shuffleArray(uniqueDistractors).slice(0, 3);
+
+  // If not enough distractors, fill with standard fallbacks
+  while (chosenDistractors.length < 3) {
+    chosenDistractors.push(`Choice ${chosenDistractors.length + 1}`);
+  }
+
+  const allChoices = shuffleArray([correctText, ...chosenDistractors]);
+  const letters = ['A', 'B', 'C', 'D'];
+  const correctIdx = allChoices.indexOf(correctText);
+
+  return {
+    options: allChoices.map((txt, idx) => ({ id: letters[idx], text: txt })),
+    correctAnswerId: letters[correctIdx]
+  };
+}
+
+// -------------------------------------------------------------
+// 1. DYNAMIC PROCEDURAL & INTERNET ANALYTICAL THINKING GENERATOR
+// -------------------------------------------------------------
+
+// Comprehensive CogAT & Olympiad Kindergarten Analogy Pairs
+const ANALOGY_TEMPLATES = [
+  { item1: 'Ear 👂', rel1: 'Headphones 🎧', item2: 'Eye 👁️', correct: 'Glasses 👓', distractors: ['Hat 🧢', 'Shoes 👟', 'Belt 🥋'], hint: 'What do you wear right in front of your eyes to see better?' },
+  { item1: 'Foot 🦶', rel1: 'Shoe 👟', item2: 'Hand ✋', correct: 'Glove 🧤', distractors: ['Pants 👖', 'Necklace 📿', 'Socks 🧦'], hint: 'What do you wear over your fingers to keep hands warm?' },
+  { item1: 'Bird 🐦', rel1: 'Wings 🪽', item2: 'Fish 🐟', correct: 'Fins 🐠', distractors: ['Legs 🦵', 'Feathers 🪶', 'Beak 🦆'], hint: 'What body parts help a swimming fish steer in water?' },
+  { item1: 'Car 🚗', rel1: 'Garage 🏠', item2: 'Airplane ✈️', correct: 'Hangar 🏢', distractors: ['Nest 🪺', 'Pond 🌊', 'Cave 🪨'], hint: 'Where do big airplanes park when they rest at the airport?' },
+  { item1: 'Spider 🕷️', rel1: 'Web 🕸️', item2: 'Bee 🐝', correct: 'Beehive 🍯', distractors: ['Tree branch 🌿', 'Ocean 🌊', 'Burrow 🕳️'], hint: 'Where do honeybees live and make their sweet honey?' },
+  { item1: 'Caterpillar 🐛', rel1: 'Butterfly 🦋', item2: 'Tadpole 🏊', correct: 'Frog 🐸', distractors: ['Duck 🦆', 'Fish 🐟', 'Turtle 🐢'], hint: 'What hopping green animal does a baby swimming tadpole grow into?' },
+  { item1: 'Painter 🎨', rel1: 'Brush 🖌️', item2: 'Writer ✍️', correct: 'Pencil ✏️', distractors: ['Hammer 🔨', 'Fork 🍴', 'Spoon 🥄'], hint: 'What tool does someone write with on paper?' },
+  { item1: 'Winter ❄️', rel1: 'Snowman ☃️', item2: 'Summer ☀️', correct: 'Sandcastle 🏖️', distractors: ['Snowflake ❄️', 'Hot heater 🔥', 'Wool coat 🧥'], hint: 'What fun sculpture do kids build with wet sand on a warm beach?' },
+  { item1: 'Kangaroo 🦘', rel1: 'Joey', item2: 'Deer 🦌', correct: 'Fawn', distractors: ['Puppy 🐶', 'Cub 🐻', 'Chick 🐥'], hint: 'What is a cute baby deer called?' },
+  { item1: 'Cow 🐄', rel1: 'Calf', item2: 'Sheep 🐑', correct: 'Lamb', distractors: ['Foal 🐴', 'Piglet 🐷', 'Kitten 🐱'], hint: 'What do we call a fluffy baby sheep?' },
+  { item1: 'Doctor 🩺', rel1: 'Hospital 🏥', item2: 'Teacher 📚', correct: 'School 🏫', distractors: ['Airport ✈️', 'Park 🌳', 'Zoo 🦁'], hint: 'Where does a teacher teach students every day?' },
+  { item1: 'Train 🚂', rel1: 'Tracks 🛤️', item2: 'Ship 🚢', correct: 'Ocean Water 🌊', distractors: ['Highway 🛣️', 'Sky ☁️', 'Grass 🌿'], hint: 'Where does a big ship sail?' },
+  { item1: 'Dog 🐕', rel1: 'Bark 🐶', item2: 'Cat 🐈', correct: 'Meow 🐱', distractors: ['Roar 🦁', 'Quack 🦆', 'Moo 🐮'], hint: 'What sound does a cat make when asking for milk?' },
+  { item1: 'Fast ⚡', rel1: 'Cheetah 🐆', item2: 'Slow ⏳', correct: 'Turtle 🐢', distractors: ['Rocket 🚀', 'Eagle 🦅', 'Horse 🐎'], hint: 'Which animal is known for moving very slowly with a hard shell?' },
+  { item1: 'Heavy ⚖️', rel1: 'Elephant 🐘', item2: 'Light 🪶', correct: 'Feather 🪶', distractors: ['Anvil ⚓', 'Rock 🪨', 'Bigger Truck 🚛'], hint: 'What is very lightweight and floats in the breeze?' },
+  { item1: 'Cold 🧊', rel1: 'Ice Cream 🍦', item2: 'Hot 🔥', correct: 'Warm Soup 🍲', distractors: ['Ice Cube 🧊', 'Snow ❄️', 'Cold Milk 🥛'], hint: 'Which food is served warm and steamy for dinner?' },
+  { item1: 'Bed 🛏️', rel1: 'Sleep 😴', item2: 'Chair 🪑', correct: 'Sit 🪑', distractors: ['Swim 🏊', 'Fly ✈️', 'Run 🏃'], hint: 'What do you do when you use a chair?' },
+  { item1: 'Book 📖', rel1: 'Read 👓', item2: 'Song 🎵', correct: 'Listen / Sing 🎤', distractors: ['Bake 🍞', 'Sleep 💤', 'Draw ✏️'], hint: 'What do we do when happy music is playing?' },
+  { item1: 'Rain 🌧️', rel1: 'Umbrella ☔', item2: 'Bright Sun ☀️', correct: 'Sunglasses 🕶️', distractors: ['Raincoat 🧥', 'Snowboots 🥾', 'Blanket 🛋️'], hint: 'What protects our eyes from bright sunny rays?' },
+  { item1: 'Morning 🌅', rel1: 'Breakfast 🥞', item2: 'Night 🌙', correct: 'Dinner / Supper 🍲', distractors: ['Lunch 🥪', 'Sunrise ☀️', 'Snack 🍎'], hint: 'What meal do we eat in the evening before sleeping?' },
+  { item1: 'Horse 🐎', rel1: 'Barn 🚜', item2: 'Lion 🦁', correct: 'Den / Savanna 🌿', distractors: ['Birdcage 🪹', 'Fishbowl 🐠', 'Kitchen 🍳'], hint: 'Where does a wild lion live with its pride?' },
+  { item1: 'Tree 🌳', rel1: 'Leaves 🍃', item2: 'Flower 🌸', correct: 'Petals 🌺', distractors: ['Bark 🪵', 'Roots 🌱', 'Branches 🌿'], hint: 'What colorful parts make up a blossoming flower?' }
+];
+
+// Odd-One-Out Classification Templates
+const ODD_ONE_OUT_TEMPLATES = [
+  { question: 'Which one does NOT fly up in the sky?', correct: 'Goldfish 🐟', distractors: ['Eagle 🦅', 'Butterfly 🦋', 'Airplane ✈️'], hint: 'Three of these can fly high. Which one lives underwater in a fish tank?' },
+  { question: 'Which one does NOT live or swim in water?', correct: 'Lion 🦁', distractors: ['Dolphin 🐬', 'Shark 🦈', 'Jellyfish 🪼'], hint: 'Which animal lives on dry grassy land?' },
+  { question: 'Which one is NOT a vehicle with rolling wheels?', correct: 'Oak Tree 🌳', distractors: ['Bicycle 🚲', 'School Bus 🚌', 'Motorcycle 🏍️'], hint: 'Which one is a plant that grows roots in dirt?' },
+  { question: 'Which one is NOT worn in cold winter weather?', correct: 'Swimsuit 🩱', distractors: ['Warm Beanie Hat 🧢', 'Wool Mittens 🧤', 'Cozy Scarf 🧣'], hint: 'What outfit do you wear at the pool during hot summer days?' },
+  { question: 'Which one is NOT a musical instrument you can play?', correct: 'Hammer 🔨', distractors: ['Acoustic Guitar 🎸', 'Snare Drum 🥁', 'Piano Keys 🎹'], hint: 'Which tool is used for pounding nails in wood, not making music?' },
+  { question: 'Which one is NOT an animal with four legs?', correct: 'Yellow Duck 🦆', distractors: ['Friendly Dog 🐕', 'Horse 🐎', 'Elephant 🐘'], hint: 'Which creature walks on 2 webbed feet and has wings?' },
+  { question: 'Which one is NOT naturally yellow in color?', correct: 'Red Strawberry 🍓', distractors: ['Ripe Banana 🍌', 'Fresh Lemon 🍋', 'Sunflower 🌻'], hint: 'Which sweet berry is bright red with little seeds?' },
+  { question: 'Which one does NOT belong in the kitchen cooking food?', correct: 'Toothbrush 🪥', distractors: ['Frying Pan 🍳', 'Soup Spoon 🥄', 'Eating Plate 🍽️'], hint: 'Which item is kept in the bathroom for brushing teeth?' },
+  { question: 'Which one is NOT a sweet fruit you can eat?', correct: 'Toy Robot 🤖', distractors: ['Red Apple 🍎', 'Juicy Orange 🍊', 'Sweet Grape 🍇'], hint: 'Which one is a toy made of metal and plastic?' },
+  { question: 'Which one is NOT a shape with straight edges?', correct: 'Round Circle ⭕', distractors: ['Square ⬛', 'Triangle 🔺', 'Rectangle ▬'], hint: 'Which shape is completely curved with no sharp corners?' }
+];
+
+// Cause-and-Effect Logic Templates
+const CAUSE_EFFECT_TEMPLATES = [
+  { question: 'If you water a tiny seed in nutrient soil 🌱, what will happen?', correct: 'It sprouts into a green plant 🌿', distractors: ['It turns into ice 🧊', 'It disappears forever ❌', 'It turns into a rock 🪨'], hint: 'What happens when seeds get sunlight and water?' },
+  { question: 'If you blow air into an empty rubber balloon 🎈, what will happen?', correct: 'It grows bigger and expands 🎈', distractors: ['It gets smaller 🤏', 'It turns into glass 🪟', 'It catches fire 🔥'], hint: 'Think about birthday balloons when pumped with air.' },
+  { question: 'What happens when you flip ON the light switch in a dark room 💡?', correct: 'The room becomes bright and visible 💡', distractors: ['It starts raining inside 🌧️', 'The room gets colder ❄️', 'The door locks 🔒'], hint: 'What does an electric light bulb do when turned on?' },
+  { question: 'Which lightweight object will FLOAT on top of bath water 🛁?', correct: 'Hollow Rubber Duck 🦆', distractors: ['Heavy Iron Key 🔑', 'Solid Rock Stone 🪨', 'Metal Spoon 🥄'], hint: 'Which toy stays right on top of bathwater without sinking?' },
+  { question: 'What happens if you leave a bowl of vanilla ice cream 🍨 in the warm sun ☀️?', correct: 'It melts into sweet liquid 🍦', distractors: ['It freezes harder 🧊', 'It turns into bread 🍞', 'It flies away 🕊️'], hint: 'What happens to ice cream when it gets warm?' }
+];
+
+// -------------------------------------------------------------
+// 2. INTERNET TRIVIA / SCIENCE / LOGIC FETCHER (With Fallback)
+// -------------------------------------------------------------
+
+async function fetchFromInternetAPI(count = 5) {
   try {
-    const raw = localStorage.getItem(USED_QUESTIONS_KEY);
+    const res = await fetch(`https://opentdb.com/api.php?amount=${count}&category=17&difficulty=easy&type=multiple`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data || !data.results || data.results.length === 0) return [];
+
+    const decode = (str) => {
+      const txt = document.createElement('textarea');
+      txt.innerHTML = str;
+      return txt.value;
+    };
+
+    return data.results.map((item, idx) => {
+      const qText = decode(item.question);
+      const correctAns = decode(item.correct_answer);
+      const wrongAns = item.incorrect_answers.map(decode);
+
+      const { options, correctAnswerId } = buildOptions(correctAns, wrongAns);
+
+      return {
+        id: `net_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 5)}`,
+        signature: `net_${qText.slice(0, 30)}`,
+        category: 'Analytical Thinking',
+        categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
+        question: qText,
+        promptAudio: qText,
+        diagramType: null,
+        options,
+        correctAnswerId,
+        solutionText: `The correct answer is "${correctAns}". Great thinking!`,
+        hint: `Think carefully about: ${correctAns.slice(0, 15)}...`
+      };
+    });
+  } catch (err) {
+    console.warn('Internet fetch offline or rate-limited; procedural engine activated', err);
+    return [];
+  }
+}
+
+// -------------------------------------------------------------
+// 3. INFINITE PROCEDURAL VISUAL PUZZLE GENERATOR
+// -------------------------------------------------------------
+
+function generateInfiniteVisualQuestion(seenSignatures) {
+  const puzzleKinds = [
+    'grid-tiles',
+    'pattern-shapes',
+    'apple-counting',
+    'scale-balance',
+    'block-tower',
+    'paper-cut',
+    'butterfly-symmetry',
+    'rocket-maze'
+  ];
+
+  // Try up to 30 procedural permutations to guarantee non-repeating uniqueness
+  for (let attempt = 0; attempt < 30; attempt++) {
+    const kind = puzzleKinds[Math.floor(Math.random() * puzzleKinds.length)];
+
+    if (kind === 'grid-tiles') {
+      // Randomized grid dimensions (4 to 7) and randomized hole sizes (1x2 up to 4x3)
+      const possibleGrids = [
+        { rows: 4, cols: 4, holeW: 2, holeH: 2, holeRow: 1, holeCol: 1 },
+        { rows: 5, cols: 5, holeW: 2, holeH: 3, holeRow: 1, holeCol: 1 },
+        { rows: 5, cols: 5, holeW: 3, holeH: 2, holeRow: 2, holeCol: 1 },
+        { rows: 6, cols: 6, holeW: 3, holeH: 3, holeRow: 1, holeCol: 2 },
+        { rows: 6, cols: 6, holeW: 4, holeH: 2, holeRow: 2, holeCol: 1 },
+        { rows: 6, cols: 6, holeW: 2, holeH: 4, holeRow: 1, holeCol: 2 },
+        { rows: 7, cols: 7, holeW: 3, holeH: 4, holeRow: 2, holeCol: 2 },
+        { rows: 7, cols: 7, holeW: 4, holeH: 3, holeRow: 2, holeCol: 2 },
+        { rows: 5, cols: 6, holeW: 3, holeH: 2, holeRow: 1, holeCol: 2 }
+      ];
+
+      const g = possibleGrids[Math.floor(Math.random() * possibleGrids.length)];
+      const count = g.holeW * g.holeH;
+      const signature = `grid_${g.rows}x${g.cols}_hole_${g.holeW}x${g.holeH}_${g.holeRow}_${g.holeCol}`;
+
+      if (!seenSignatures.has(signature) || attempt > 25) {
+        seenSignatures.add(signature);
+        const { options, correctAnswerId } = buildOptions(`${count}`, [
+          `${count - 1}`,
+          `${count + 1}`,
+          `${count - 2 > 0 ? count - 2 : count + 3}`,
+          `${count + 2}`
+        ]);
+
+        return {
+          id: `vis_grid_${Date.now()}_${Math.random()}`,
+          signature,
+          category: 'Visual',
+          categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
+          question: `How many more tiles are needed to fill in the empty area (${g.rows}x${g.cols} grid)?`,
+          promptAudio: 'How many more tiles will be needed to fill in the empty area?',
+          diagramType: 'grid-tiles',
+          diagramData: { ...g, count },
+          options,
+          correctAnswerId,
+          solutionText: `${count} tiles are needed to fill the ${g.holeH} rows of ${g.holeW} tiles.`,
+          solutionDiagramType: 'grid-tiles',
+          solutionDiagramData: { ...g, count },
+          hint: `Multiply or count the empty spaces: ${g.holeH} rows × ${g.holeW} columns = ${count} tiles.`
+        };
+      }
+    }
+
+    if (kind === 'pattern-shapes') {
+      const itemSets = [
+        ['🍎', '🍌', '🍇', '🍊', '🍓'],
+        ['●', '▲', '■', '⭐', '🔷'],
+        ['🚗', '✈️', '🚀', '🚂', '🚁'],
+        ['🐶', '🐱', '🐰', '🐼', '🦊'],
+        ['☀️', '🌙', '⭐', '☁️', '🌈'],
+        ['🟢', '🔴', '🟡', '🔵', '🟣']
+      ];
+      const items = itemSets[Math.floor(Math.random() * itemSets.length)];
+      const ruleType = Math.floor(Math.random() * 3); // 0: ABAB, 1: AABAAB, 2: ABCABC
+
+      let seq = [];
+      let next = '';
+      if (ruleType === 0) {
+        seq = [items[0], items[1], items[0], items[1], items[0]];
+        next = items[1];
+      } else if (ruleType === 1) {
+        seq = [items[0], items[0], items[1], items[0], items[0]];
+        next = items[1];
+      } else {
+        seq = [items[0], items[1], items[2], items[0], items[1]];
+        next = items[2];
+      }
+
+      const signature = `pattern_${seq.join('_')}_next_${next}`;
+      if (!seenSignatures.has(signature) || attempt > 25) {
+        seenSignatures.add(signature);
+        const { options, correctAnswerId } = buildOptions(next, [items[0], items[1], items[2] || items[3], items[4] || '⭐']);
+
+        return {
+          id: `vis_pat_${Date.now()}_${Math.random()}`,
+          signature,
+          category: 'Visual',
+          categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
+          question: `Look at the pattern: ${seq.join(' ')} ... What comes next?`,
+          promptAudio: 'Look closely at the pattern sequence. What comes next?',
+          diagramType: 'pattern-shapes',
+          diagramData: { sequence: seq, nextItem: next },
+          options,
+          correctAnswerId,
+          solutionText: `The sequence repeats in order! The next matching item is ${next}.`,
+          solutionDiagramType: 'pattern-shapes',
+          solutionDiagramData: { sequence: seq, nextItem: next },
+          hint: 'Say the items out loud in rhythm from left to right!'
+        };
+      }
+    }
+
+    if (kind === 'apple-counting') {
+      const emojis = [
+        { char: '🍎', name: 'red apples' },
+        { char: '⭐', name: 'golden stars' },
+        { char: '🎈', name: 'balloons' },
+        { char: '🐠', name: 'fish' },
+        { char: '💎', name: 'gems' }
+      ];
+      const chosen = emojis[Math.floor(Math.random() * emojis.length)];
+      const count = Math.floor(Math.random() * 6) + 4; // 4 to 9
+
+      const signature = `count_${chosen.char}_${count}`;
+      if (!seenSignatures.has(signature) || attempt > 25) {
+        seenSignatures.add(signature);
+        const { options, correctAnswerId } = buildOptions(`${count} ${chosen.char}`, [
+          `${count - 1} ${chosen.char}`,
+          `${count + 1} ${chosen.char}`,
+          `${count - 2 > 0 ? count - 2 : count + 3} ${chosen.char}`,
+          `${count + 2} ${chosen.char}`
+        ]);
+
+        return {
+          id: `vis_cnt_${Date.now()}_${Math.random()}`,
+          signature,
+          category: 'Visual',
+          categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
+          question: `How many ${chosen.name} can you spot and count in the picture?`,
+          promptAudio: `How many ${chosen.name} can you count in the picture?`,
+          diagramType: 'apple-counting',
+          diagramData: { count, emoji: chosen.char },
+          options,
+          correctAnswerId,
+          solutionText: `Counting each ${chosen.name} gives a total of ${count} in the picture.`,
+          solutionDiagramType: 'apple-counting',
+          solutionDiagramData: { count, emoji: chosen.char },
+          hint: `Point your finger and count carefully 1 by 1 up to ${count}.`
+        };
+      }
+    }
+
+    if (kind === 'scale-balance') {
+      const balancePairs = [
+        { left: '🎈 Balloon', right: '🪨 Heavy Rock', heavy: 'right', ans: '🪨 Heavy Rock' },
+        { left: '🐘 Big Elephant', right: '🐭 Little Mouse', heavy: 'left', ans: '🐘 Big Elephant' },
+        { left: '🍉 Juicy Watermelon', right: '🍓 Tiny Strawberry', heavy: 'left', ans: '🍉 Juicy Watermelon' },
+        { left: '🪶 Fluffy Feather', right: '🚗 Toy Truck', heavy: 'right', ans: '🚗 Toy Truck' },
+        { left: '🧱 Heavy Brick', right: '🍃 Dry Leaf', heavy: 'left', ans: '🧱 Heavy Brick' }
+      ];
+      const pair = balancePairs[Math.floor(Math.random() * balancePairs.length)];
+      const signature = `scale_${pair.left}_vs_${pair.right}`;
+
+      if (!seenSignatures.has(signature) || attempt > 25) {
+        seenSignatures.add(signature);
+        const { options, correctAnswerId } = buildOptions(pair.ans, [
+          pair.heavy === 'left' ? pair.right : pair.left,
+          'Both are equal',
+          'Cannot tell'
+        ]);
+
+        return {
+          id: `vis_bal_${Date.now()}_${Math.random()}`,
+          signature,
+          category: 'Visual',
+          categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
+          question: 'Which object is heavier according to the seesaw balance diagram?',
+          promptAudio: 'Which object is heavier according to the seesaw balance diagram?',
+          diagramType: 'scale-balance',
+          diagramData: {
+            leftEmoji: pair.left.split(' ')[0],
+            rightEmoji: pair.right.split(' ')[0],
+            heavySide: pair.heavy
+          },
+          options,
+          correctAnswerId,
+          solutionText: `The heavy side pushes DOWN on the seesaw! So ${pair.ans} is heavier.`,
+          solutionDiagramType: 'scale-balance',
+          solutionDiagramData: {
+            leftEmoji: pair.left.split(' ')[0],
+            rightEmoji: pair.right.split(' ')[0],
+            heavySide: pair.heavy
+          },
+          hint: 'Look at which side of the seesaw is tilted all the way down.'
+        };
+      }
+    }
+
+    if (kind === 'block-tower') {
+      const towerConfigs = [
+        { b: 3, m: 2, t: 1, tot: 6 },
+        { b: 4, m: 2, t: 1, tot: 7 },
+        { b: 4, m: 3, t: 1, tot: 8 },
+        { b: 5, m: 3, t: 1, tot: 9 },
+        { b: 4, m: 3, t: 2, tot: 9 }
+      ];
+      const tc = towerConfigs[Math.floor(Math.random() * towerConfigs.length)];
+      const signature = `tower_${tc.b}_${tc.m}_${tc.t}`;
+
+      if (!seenSignatures.has(signature) || attempt > 25) {
+        seenSignatures.add(signature);
+        const { options, correctAnswerId } = buildOptions(`${tc.tot}`, [
+          `${tc.tot - 1}`,
+          `${tc.tot + 1}`,
+          `${tc.tot - 2 > 0 ? tc.tot - 2 : tc.tot + 3}`,
+          `${tc.tot + 2}`
+        ]);
+
+        return {
+          id: `vis_tow_${Date.now()}_${Math.random()}`,
+          signature,
+          category: 'Visual',
+          categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
+          question: 'How many blocks were used to build this pyramid tower?',
+          promptAudio: 'How many blocks were used to build this pyramid tower?',
+          diagramType: 'block-tower',
+          diagramData: { bottom: tc.b, middle: tc.m, top: tc.t },
+          options,
+          correctAnswerId,
+          solutionText: `Bottom layer (${tc.b}) + middle layer (${tc.m}) + top layer (${tc.t}) = ${tc.tot} blocks total.`,
+          solutionDiagramType: 'block-tower',
+          solutionDiagramData: { bottom: tc.b, middle: tc.m, top: tc.t },
+          hint: 'Count layer by layer from the bottom up!'
+        };
+      }
+    }
+
+    if (kind === 'paper-cut') {
+      const signature = `paper_cut_${attempt}`;
+      seenSignatures.add(signature);
+      const { options, correctAnswerId } = buildOptions('4', ['3', '5', '6']);
+
+      return {
+        id: `vis_pap_${Date.now()}_${Math.random()}`,
+        signature,
+        category: 'Visual',
+        categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
+        question: 'The paper sheet is cut along the dotted line. How many corners will the resulting shape on the right have?',
+        promptAudio: 'How many corners will the resulting paper sheet on the right have?',
+        diagramType: 'paper-cut',
+        options,
+        correctAnswerId,
+        solutionText: 'The cut paper sheet on the right forms a rectangle with 4 corners.',
+        solutionDiagramType: 'paper-cut',
+        hint: 'Look at the shape on the right side of the dotted cut line.'
+      };
+    }
+
+    if (kind === 'butterfly-symmetry') {
+      const signature = `butterfly_symmetry_${attempt}`;
+      seenSignatures.add(signature);
+      const { options, correctAnswerId } = buildOptions('Right Wing 🦋', ['Left Wing', 'Star Wing ⭐', 'Circle Wing ⭕']);
+
+      return {
+        id: `vis_sym_${Date.now()}_${Math.random()}`,
+        signature,
+        category: 'Visual',
+        categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
+        question: 'Which wing completes the colorful butterfly with mirror symmetry 🦋?',
+        promptAudio: 'Which wing completes the colorful butterfly with mirror symmetry?',
+        diagramType: 'butterfly-symmetry',
+        options,
+        correctAnswerId,
+        solutionText: 'Butterflies have mirror symmetry! The matching right wing mirrors the left wing.',
+        solutionDiagramType: 'butterfly-symmetry',
+        hint: 'Both wings of a butterfly match like mirror twins!'
+      };
+    }
+
+    if (kind === 'rocket-maze') {
+      const signature = `rocket_maze_${attempt}`;
+      seenSignatures.add(signature);
+      const { options, correctAnswerId } = buildOptions('Path B ⭐', ['Path A 🪐', 'Path C 🛸', 'Path D ☄️']);
+
+      return {
+        id: `vis_maze_${Date.now()}_${Math.random()}`,
+        signature,
+        category: 'Visual',
+        categoryDescription: CATEGORY_DESCRIPTIONS['Visual'],
+        question: 'Which path leads the rocket directly to the golden star ⭐?',
+        promptAudio: 'Which path leads the rocket directly to the golden star?',
+        diagramType: 'rocket-maze',
+        options,
+        correctAnswerId,
+        solutionText: 'Path B (blue dashed line) curves directly to the golden star!',
+        solutionDiagramType: 'rocket-maze',
+        hint: 'Trace Path B starting from the rocket with your eyes.'
+      };
+    }
+  }
+}
+
+// -------------------------------------------------------------
+// 4. INFINITE PROCEDURAL ANALYTICAL THINKING GENERATOR
+// -------------------------------------------------------------
+
+function generateInfiniteAnalyticalQuestion(seenSignatures) {
+  const allPool = [
+    // A. CogAT Analogies
+    ...ANALOGY_TEMPLATES.map(t => ({
+      signature: `analogy_${t.item1}_${t.item2}`,
+      question: `If ${t.item1} is to ${t.rel1}, then ${t.item2} is to?`,
+      promptAudio: `If ${t.item1} is to ${t.rel1}, then ${t.item2} is to?`,
+      correct: t.correct,
+      distractors: t.distractors,
+      solutionText: `${t.item1} relates to ${t.rel1}. In the exact same way, ${t.item2} connects with ${t.correct}!`,
+      hint: t.hint
+    })),
+    // B. Classification & Odd-One-Out
+    ...ODD_ONE_OUT_TEMPLATES.map(o => ({
+      signature: `odd_${o.question}`,
+      question: o.question,
+      promptAudio: o.question,
+      correct: o.correct,
+      distractors: o.distractors,
+      solutionText: `"${o.correct}" does not fit the common group. Great analytical reasoning!`,
+      hint: o.hint
+    })),
+    // C. Cause & Effect
+    ...CAUSE_EFFECT_TEMPLATES.map(c => ({
+      signature: `cause_${c.question}`,
+      question: c.question,
+      promptAudio: c.question,
+      correct: c.correct,
+      distractors: c.distractors,
+      solutionText: `That's right! ${c.correct}`,
+      hint: c.hint
+    }))
+  ];
+
+  // Find unseen items first
+  let candidates = allPool.filter(item => !seenSignatures.has(item.signature));
+  if (candidates.length === 0) {
+    // If all static templates were seen, shuffle the whole pool
+    candidates = shuffleArray(allPool);
+  }
+
+  const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+  seenSignatures.add(chosen.signature);
+
+  const { options, correctAnswerId } = buildOptions(chosen.correct, chosen.distractors);
+
+  return {
+    id: `ana_dyn_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+    signature: chosen.signature,
+    category: 'Analytical Thinking',
+    categoryDescription: CATEGORY_DESCRIPTIONS['Analytical Thinking'],
+    question: chosen.question,
+    promptAudio: chosen.promptAudio,
+    diagramType: null,
+    options,
+    correctAnswerId,
+    solutionText: chosen.solutionText,
+    hint: chosen.hint
+  };
+}
+
+// -------------------------------------------------------------
+// 5. ANTI-REPETITION LOCAL STORAGE HELPERS
+// -------------------------------------------------------------
+
+function getSeenSignatures() {
+  try {
+    const raw = localStorage.getItem(SEEN_QUESTIONS_KEY);
     return raw ? new Set(JSON.parse(raw)) : new Set();
   } catch {
     return new Set();
   }
 }
 
-// Helper to save seen IDs
-function markQuestionsAsSeen(ids) {
+function saveSeenSignatures(seenSet) {
   try {
-    const seen = getSeenQuestionIds();
-    ids.forEach((id) => seen.add(id));
-    const arr = Array.from(seen).slice(-200);
-    localStorage.setItem(USED_QUESTIONS_KEY, JSON.stringify(arr));
+    const arr = Array.from(seenSet).slice(-500); // keep history of up to 500 unique questions
+    localStorage.setItem(SEEN_QUESTIONS_KEY, JSON.stringify(arr));
   } catch (err) {
-    console.warn('Could not save seen questions', err);
+    console.warn('Could not save seen signatures to localStorage', err);
   }
 }
 
+// -------------------------------------------------------------
+// 6. MAIN EXPORTED SESSION GENERATOR
+// -------------------------------------------------------------
+
 /**
- * Main session generator: Fetches exactly 10 questions in the chosen topic!
+ * Fetches exactly 10 fresh, unseen questions from the internet & procedural engine.
+ * Never repeats the same question in subsequent sessions!
+ *
  * @param {'Visual' | 'Analytical Thinking'} selectedSkill
  * @param {number} sheetNumber
  */
 export async function getFreshThinksheetSession(selectedSkill = 'Visual', sheetNumber = 1) {
-  const seenIds = getSeenQuestionIds();
+  const seenSignatures = getSeenSignatures();
+  const result = [];
 
   if (selectedSkill === 'Analytical Thinking') {
-    let pool = ANALYTICAL_BANK.filter(q => !seenIds.has(q.id));
-    if (pool.length < 10) {
-      pool = [...ANALYTICAL_BANK].sort(() => Math.random() - 0.5);
+    // 1. Attempt to pull fresh internet questions first
+    const internetQuestions = await fetchFromInternetAPI(4);
+    for (const iq of internetQuestions) {
+      if (!seenSignatures.has(iq.signature) && result.length < 10) {
+        seenSignatures.add(iq.signature);
+        result.push(iq);
+      }
     }
-    const chosen = [...pool].sort(() => Math.random() - 0.5).slice(0, 10);
-    markQuestionsAsSeen(chosen.map(q => q.id));
-    return chosen;
+
+    // 2. Fill the remaining spots with dynamic procedural reasoning questions
+    while (result.length < 10) {
+      const dynQ = generateInfiniteAnalyticalQuestion(seenSignatures);
+      result.push(dynQ);
+    }
   } else {
-    // Visual Questions
-    let visualQuestions = generateVisualQuestions(10);
-    markQuestionsAsSeen(visualQuestions.map(q => q.id));
-    return visualQuestions;
+    // Visual Questions (infinite permutations of grid puzzles, sequences, counting, seesaws, towers, symmetries, mazes)
+    while (result.length < 10) {
+      const visQ = generateInfiniteVisualQuestion(seenSignatures);
+      result.push(visQ);
+    }
   }
+
+  // Save the updated non-repeating signatures to localStorage
+  saveSeenSignatures(seenSignatures);
+
+  return shuffleArray(result);
 }

@@ -74,4 +74,3 @@ npm run build
 ```
 
 The optimized production build will be generated in the `dist/` directory.
-
