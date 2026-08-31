@@ -1,18 +1,25 @@
-import { GoogleGenAI } from '@google/genai';
+// Browser-Native AI Question Generator for 5-Year-Old Learners
+// Uses direct Gemini REST API calls with multi-model fallback and JSON parsing
 
 const AI_KEY_STORAGE = 'thinksheet_gemini_api_key';
 
 export function getStoredApiKey() {
-  return (
+  let key =
     localStorage.getItem(AI_KEY_STORAGE) ||
     import.meta.env.VITE_GEMINI_API_KEY ||
-    ''
-  );
+    '';
+
+  // Clean key of any accidental quotes or whitespace
+  if (typeof key === 'string') {
+    key = key.replace(/^["']|["']$/g, '').trim();
+  }
+  return key;
 }
 
 export function setStoredApiKey(key) {
   if (key) {
-    localStorage.setItem(AI_KEY_STORAGE, key.trim());
+    const cleaned = key.replace(/^["']|["']$/g, '').trim();
+    localStorage.setItem(AI_KEY_STORAGE, cleaned);
   } else {
     localStorage.removeItem(AI_KEY_STORAGE);
   }
@@ -51,8 +58,38 @@ function shuffleAndFormatOptions(questionObj) {
 }
 
 /**
+ * Clean and parse raw Gemini text output into a valid JSON array
+ */
+function parseGeminiJsonResponse(rawText) {
+  if (!rawText) return null;
+  let cleaned = rawText.trim();
+
+  // Strip ```json ... ``` markdown code fences if present
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+  }
+
+  try {
+    const parsed = JSON.parse(cleaned);
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && Array.isArray(parsed.questions)) return parsed.questions;
+  } catch (err) {
+    console.warn('Could not parse JSON directly, attempting regex extraction...', err);
+    try {
+      const match = cleaned.match(/\[\s*\{.*\}\s*\]/s);
+      if (match) {
+        return JSON.parse(match[0]);
+      }
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+/**
  * Generate 10 AI-Powered questions strictly customized for 5-Year-Old Kids
- * using Google Gemini API (gemini-2.5-flash)
+ * using Google Gemini REST API with robust multi-model fallback
  */
 export async function generateAIQuestions(selectedSkill = 'Visual', sheetNumber = 1) {
   const apiKey = getStoredApiKey();
@@ -61,8 +98,6 @@ export async function generateAIQuestions(selectedSkill = 'Visual', sheetNumber 
     // Fallback to procedural/internet generator if key is not configured
     return null;
   }
-
-  const ai = new GoogleGenAI({ apiKey });
 
   const prompt = `
 Role: You are a friendly preschool teacher and early-childhood specialist designing a fun Thinksheet for 5-YEAR-OLD KINDERGARTEN KIDS.
@@ -145,32 +180,62 @@ Return a JSON Array of exactly 10 question objects:
 IMPORTANT: Output ONLY the valid JSON array. No markdown wrap, no other text.
 `;
 
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        temperature: 0.7
-      }
-    });
+  // Models to try in order of capability
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
-    const parsed = JSON.parse(response.text.trim());
-    if (Array.isArray(parsed) && parsed.length >= 8) {
-      return parsed.slice(0, 10).map((q, idx) => {
-        const formatted = shuffleAndFormatOptions(q);
-        return {
-          ...formatted,
-          id: `ai_5yo_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`,
-          category: selectedSkill,
-          isAIGenerated: true
-        };
+  for (const modelName of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
+        apiKey
+      )}`;
+
+      const bodyPayload = {
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.7
+        }
+      };
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bodyPayload)
       });
+
+      if (!res.ok) {
+        const errData = await res.text();
+        console.warn(`Gemini API returned status ${res.status} for model ${modelName}:`, errData);
+        continue; // Try next model
+      }
+
+      const data = await res.json();
+      const rawText =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+      const parsed = parseGeminiJsonResponse(rawText);
+      if (Array.isArray(parsed) && parsed.length >= 6) {
+        return parsed.slice(0, 10).map((q, idx) => {
+          const formatted = shuffleAndFormatOptions(q);
+          return {
+            ...formatted,
+            id: `ai_5yo_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`,
+            category: selectedSkill,
+            isAIGenerated: true
+          };
+        });
+      }
+    } catch (err) {
+      console.warn(`Network/fetch error for model ${modelName}:`, err);
     }
-  } catch (err) {
-    console.warn('AI 5yo Question Generation error, activating procedural fallback:', err);
-    return null;
   }
 
+  // If all Gemini REST calls fail (e.g. invalid key or network block), return null so procedural generator activates
   return null;
 }
