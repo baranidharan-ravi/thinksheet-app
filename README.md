@@ -75,13 +75,3 @@ npm run build
 
 The optimized production build will be generated in the `dist/` directory.
 
----
-
-## 🎨 Design Reference
-
-Matched to the Skill Thinksheet UI specifications:
-
-- Question 1: 6x6 Grid with 3x3 empty center (9 missing tiles)
-- Question 2: Analytical Thinking analogy ("Fast is to Slow, then Good is to Bad")
-- Question 3: Paper cut corner logic (4 corners)
-- Results & Space Cadet Leaderboard Overview
