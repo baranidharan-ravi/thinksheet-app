@@ -238,6 +238,16 @@ export default function SkillSelectionDashboard({
 				</div>
 			</main>
 
+			{/* Bottom Academic Year Footer */}
+			<footer className='w-full max-w-4xl mx-auto text-center py-4 text-[11px] sm:text-xs text-slate-300 font-medium'>
+				Thinksheets solved are displayed for the current academic year only. Go
+				to{' '}
+				<span className='underline font-bold text-white cursor-pointer hover:text-cyan-200'>
+					Learning Journey
+				</span>{' '}
+				for year wise progress.
+			</footer>
+
 			{/* Skill Info Modal */}
 			{infoModalTopic && (
 				<div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200'>
