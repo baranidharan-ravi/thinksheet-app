@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	body {
+		font-family: 'Nunito', sans-serif;
+	}
+	h1,
+	h2,
+	h3,
+	h4,
+	.font-heading {
+		font-family: 'Fredoka', 'Nunito', sans-serif;
+	}
+}
+
+/* Custom Background Space Stars */
+.space-background {
+	background-color: #070926;
+	background-image:
+		radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0, 0, 0, 0)),
+		radial-gradient(2px 2px at 40px 70px, #ffd166, rgba(0, 0, 0, 0)),
+		radial-gradient(1px 1px at 90px 40px, #ffffff, rgba(0, 0, 0, 0)),
+		radial-gradient(2px 2px at 160px 120px, #60a5fa, rgba(0, 0, 0, 0)),
+		radial-gradient(1.5px 1.5px at 230px 180px, #f472b6, rgba(0, 0, 0, 0)),
+		radial-gradient(2px 2px at 310px 240px, #ffffff, rgba(0, 0, 0, 0)),
+		radial-gradient(1px 1px at 380px 160px, #c084fc, rgba(0, 0, 0, 0)),
+		radial-gradient(2px 2px at 450px 310px, #38bdf8, rgba(0, 0, 0, 0)),
+		radial-gradient(1.5px 1.5px at 520px 80px, #ffffff, rgba(0, 0, 0, 0)),
+		radial-gradient(2px 2px at 600px 380px, #fef08a, rgba(0, 0, 0, 0)),
+		radial-gradient(1px 1px at 700px 190px, #ffffff, rgba(0, 0, 0, 0)),
+		radial-gradient(2px 2px at 810px 290px, #818cf8, rgba(0, 0, 0, 0)),
+		radial-gradient(1.5px 1.5px at 900px 110px, #ffffff, rgba(0, 0, 0, 0)),
+		radial-gradient(2px 2px at 980px 350px, #f472b6, rgba(0, 0, 0, 0));
+	background-repeat: repeat;
+	background-size: 600px 450px;
+}
+
+/* Custom Scrollbar for Child-friendly UI */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+::-webkit-scrollbar-track {
+	background: rgba(15, 18, 61, 0.6);
+	border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+	background: #3b429f;
+	border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: #5b4dff;
+}
+
+/* 3D Ribbon Banner Effect */
+.ribbon-banner {
+	position: relative;
+	background: linear-gradient(135deg, #ff5b84 0%, #b845ed 100%);
+	box-shadow: 0 8px 24px rgba(255, 75, 114, 0.4);
+}
+
+.ribbon-banner::before,
+.ribbon-banner::after {
+	content: '';
+	position: absolute;
+	top: 10px;
+	width: 25px;
+	height: 100%;
+	z-index: -1;
+}
+
+/* Option Card Hover & Active 3D Press */
+.option-card-hover {
+	transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.option-card-hover:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+}
+.option-card-hover:active {
+	transform: translateY(0px) scale(0.98);
+}

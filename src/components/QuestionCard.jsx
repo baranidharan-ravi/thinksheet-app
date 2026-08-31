@@ -1,0 +1,106 @@
+import { Brain, Eye, Volume2, ZoomIn } from 'lucide-react';
+import { playButtonPop, speakText } from '../utils/audioSynthesis';
+import VisualDiagram from './VisualDiagrams';
+
+export default function QuestionCard({
+	question,
+	currentIndex,
+	totalQuestions,
+	onZoomClick,
+	soundEnabled,
+	isSubmitted = false,
+}) {
+	const handleListenQuestion = () => {
+		playButtonPop(soundEnabled);
+		const textToRead = question.promptAudio || question.question;
+		speakText(textToRead);
+	};
+
+	const isVisual = question.category === 'Visual';
+
+	return (
+		<div
+			className={`bg-white text-[#1E293B] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col justify-between border-4 border-white/90 relative overflow-hidden transition-all duration-300 ${
+				isSubmitted ?
+					'min-h-[220px] sm:min-h-[260px]'
+				:	'min-h-[380px] sm:min-h-[440px]'
+			}`}>
+			{/* Top Bar: Question Index, Category Badge, Zoom Button */}
+			<div className='flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5 mb-2'>
+				{/* Step Indicator */}
+				<div className='bg-[#302B63] text-white text-xs sm:text-sm font-black px-3 py-1 rounded-lg shadow-sm'>
+					{currentIndex + 1}/{totalQuestions}
+				</div>
+
+				{/* Category Badge */}
+				<div className='flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-sm border bg-slate-50 text-slate-700 border-slate-200'>
+					{isVisual ?
+						<>
+							<Eye className='w-3.5 h-3.5 text-sky-600' />
+							<span className='text-sky-700 font-extrabold'>Visual</span>
+						</>
+					:	<>
+							<Brain className='w-3.5 h-3.5 text-purple-600' />
+							<span className='text-purple-700 font-extrabold'>
+								Analytical Thinking
+							</span>
+						</>
+					}
+				</div>
+
+				{/* Zoom Button */}
+				{question.diagramType ?
+					<button
+						type='button'
+						onClick={() => {
+							playButtonPop(soundEnabled);
+							onZoomClick();
+						}}
+						className='flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-all'
+						title='Zoom image'>
+						<ZoomIn className='w-3.5 h-3.5' />
+						<span>ZOOM</span>
+					</button>
+				:	<div className='w-12' />}
+			</div>
+
+			{/* Skill Objective Subtitle */}
+			<div className='text-[11px] sm:text-xs font-semibold text-slate-500 bg-slate-50 border border-slate-100 rounded-xl px-3 py-1.5 mb-2 text-center'>
+				{isVisual ?
+					'🎯 Goal: Spot & analyze visual details to solve the puzzle'
+				:	'🎯 Goal: Plan & break down relationships to solve the problem'}
+			</div>
+
+			{/* Question Prompt */}
+			<div className='flex items-start gap-3 my-auto py-1'>
+				<h2 className='text-base sm:text-xl md:text-2xl font-extrabold text-slate-800 leading-snug'>
+					{question.question}
+				</h2>
+
+				{/* Read-Aloud Speaker Button */}
+				<button
+					type='button'
+					onClick={handleListenQuestion}
+					className='p-1.5 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 hover:scale-110 active:scale-95 transition-all shadow-sm flex-shrink-0 mt-0.5'
+					title='Listen to question'>
+					<Volume2 className='w-4 h-4 sm:w-5 sm:h-5' />
+				</button>
+			</div>
+
+			{/* Visual Diagram (If Visual Question) */}
+			{question.diagramType && (
+				<div className='my-auto flex justify-center items-center py-2'>
+					<VisualDiagram
+						type={question.diagramType}
+						data={question.diagramData}
+					/>
+				</div>
+			)}
+
+			{/* Footer cue */}
+			<div className='mt-2 text-center text-xs font-semibold text-slate-400'>
+				✨ Tap an answer choice on the right
+			</div>
+		</div>
+	);
+}
