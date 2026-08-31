@@ -146,30 +146,6 @@ export default function App() {
 	// Current Question Object
 	const currentQuestion = questions[currentIndex] || {};
 
-	// Auto-read question for kids
-	useEffect(() => {
-		if (
-			speechEnabled &&
-			currentQuestion &&
-			!isCompleted &&
-			!isSubmitted &&
-			!isLoadingSheet &&
-			!aiError &&
-			currentScreen === 'thinksheet'
-		) {
-			const textToRead =
-				currentQuestion.promptAudio || currentQuestion.question;
-			speakText(textToRead);
-		}
-	}, [
-		currentIndex,
-		isCompleted,
-		sheetNumber,
-		isLoadingSheet,
-		currentScreen,
-		aiError,
-	]);
-
 	// Handle saving kid's profile (name and age)
 	const handleSaveKidProfile = ({ name, age }) => {
 		saveStoredKidProfile(name, age);
