@@ -1,49 +1,49 @@
-# 🚀 Skill Thinksheet - Cosmic Learning & Reasoning for Early Explorers
+# 🚀 Skill Thinksheet - 100% AI-Powered Cosmic Learning for Early Explorers
 
-An engaging, visual-first React.js educational platform designed for early childhood learners (Ages 3–8), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, voice narration, AI-powered generation with Google Gemini, and strict age-calibrated difficulty.
+An engaging, visual-first React.js educational platform designed for early childhood learners (Ages 3–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, voice narration, **100% real-time AI question generation via Google Gemini API**, and strict age-calibrated difficulty with zero offline/hardcoded questions.
 
 ---
 
 ## ✨ Key Features
 
-### 1. 🎂 Personalized Kid Profile & Age Calibration
-- **Initial Launch Prompt**: Greets the child and asks for their **Name** and **Age** (selectable from 3 to 8+ years old).
-- **Strict Age Calibration**: Both AI generation and the offline procedural engine strictly tailor challenge complexity, grid dimensions, item counting, and vocabulary to the child's exact age.
-- **Zero Overshoot**: Never presents questions or concepts above the child's configured age.
-- **Profile Header Pill**: Displays `👋 [Name] (Age [X])` in the top header with one-tap editing anytime.
+### 1. 🤖 100% Real-Time AI Generation (Zero Offline Questions)
+- **Real-Time Synthesis**: Every single question, analogy, option, and visual spatial puzzle is synthesized on demand via the **Google Gemini REST API** (`gemini-2.5-flash` / `gemini-2.0-flash` / `gemini-1.5-flash`).
+- **No Hardcoded/Static Questions**: The codebase contains zero offline questions or pre-recorded question banks.
+- **Dynamic & Non-Repeating**: Every Thinksheet session delivers 10 brand-new, unseen questions with dynamically shuffled options (A, B, C, D).
 
-### 2. 🧠 Dual Skill Learning Tracks
+### 2. 🎂 Personalized Profile & Custom Age Calibration
+- **Startup Name & Age Prompt**: Prompts the child or parent for their **Name** and **Age** on launch.
+- **Quick-Select & Custom Age Stepper**: Quick buttons for ages **3, 4, 5, 6, 7, 8** plus an **`Edit ✍️` Custom Stepper** allowing any age from **2 to 14 years old**.
+- **Strict Age Calibration**: The AI prompt strictly calibrates vocabulary, question complexity, counting ranges, and reasoning challenges to the child's exact age.
+- **Zero Overshoot**: Never presents questions or concepts above the child's configured age.
+- **Header Profile Badge**: Displays `👋 [Name] (Age [X])` in the top header with one-tap editing anytime.
+
+### 3. 🧠 Dual Skill Learning Tracks
 - **Visual Puzzles**:
-  - Grid missing tile counting (3x3 up to 7x7 grids with numbered step-by-step overlays).
+  - Grid missing tile counting (scaled by age with numbered step-by-step overlays).
   - Fruit & shape pattern completions (AB, AAB, and ABC repeating sequences).
-  - Object counting (apples, stars, fish, balloons, gems) scaled by age.
+  - Object counting (apples, stars, fish, balloons, gems) calibrated to age.
   - Seesaw balance scale physics, 3D block pyramids, paper cuts, mirror symmetry, and rocket mazes.
 - **Analytical Thinking**:
-  - CogAT-style analogies with emojis (*Ear : Headphones :: Eye : Glasses*, *Puppy : Dog :: Kitten : Cat*).
+  - Age-appropriate analogies with emojis (*Ear : Headphones :: Eye : Glasses*, *Puppy : Dog :: Kitten : Cat*).
   - Picture classification and Odd-One-Out categories.
-  - Everyday cause-and-effect reasoning (melting ice, seed sprouting, floating toys).
-
-### 3. 🤖 AI-Powered Question Synthesis (Google Gemini API)
-- **Direct REST Integration**: Uses lightweight, browser-native Gemini REST API with multi-model fallback (`gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-1.5-flash`).
-- **Dynamic & Non-Repeating**: Generates 10 fresh, unique questions every time a skill is selected.
-- **Multi-Tiered Reliability**: Seamlessly falls back to our live internet trivia and procedural anti-repetition engine if offline or if no API key is provided.
-- **Client-Side Option Shuffling**: Guarantees randomized, balanced distribution across options A, B, C, and D.
+  - Everyday cause-and-effect reasoning (melting ice in sunshine, seeds sprouting, floating toys).
 
 ### 4. 🔊 Zero-Asset Web Audio & Voice Narrator
 - **Pure Web Audio API**: Joyful major-chord chimes for correct answers, gentle cartoon "uh-oh" boings for incorrect answers, and pop clicks on taps.
-- **Built-in Voice Narrator (Web Speech API)**: Automatically reads aloud questions and solutions for young learners.
+- **Built-in Voice Narrator (Web Speech API)**: Automatically reads aloud questions and solutions for early learners.
 
 ### 5. 🏆 Space Cadet Leaderboard & Results System
-- **Celebratory Feedback**: 3D `COMPLETED` ribbon banner, glowing star ratings (1 to 3 stars), and confetti bursts.
+- **Celebratory Feedback**: 3D `COMPLETED` ribbon banner, glowing star ratings (1 to 3 stars), and confetti particle bursts.
 - **Space Cadet League**: Dynamic leaderboard featuring the child as `[Name] (You)` with accumulated XP.
-- **Question Summary Breakdown**: Detailed accordion review comparing the child's answers against correct solutions.
+- **Question Summary Breakdown**: Detailed accordion review comparing the child's selected answers against correct solutions.
 - **Skill Progress Tracking**: Tracks solved sheets and dynamic proficiency levels (`LV1 Beginner` to `LV5 Master`).
 
 ---
 
 ## 🔑 How to Get a Google Gemini API Key (Step-by-Step)
 
-The application uses Google Gemini to generate fresh, intelligent questions dynamically. Follow these steps to obtain a free API key:
+The application uses Google Gemini to generate fresh questions dynamically. Follow these steps to obtain a free API key:
 
 ### Step 1: Open Google AI Studio
 1. Navigate to [Google AI Studio](https://aistudio.google.com/app/apikey) in your web browser.
@@ -62,8 +62,8 @@ You can configure your API key using either of the following two methods:
 
 ### Option A: Enter via the Web Interface (Easiest)
 1. Launch the app (`npm run dev`) and open `http://localhost:3000`.
-2. On the **Skill Selection Hub** screen, click the **`AI Setup`** button in the top right corner.
-3. Paste your Gemini API key and click **"Save & Apply"**.
+2. On the **Skill Selection Hub** screen, click the **`AI Setup`** button in the top right corner (or click **Configure Gemini API Key** on the AI setup screen).
+3. Paste your Gemini API key and click **"Save & Connect 🚀"**.
 4. The key is securely saved in your browser's local storage and used for subsequent sessions.
 
 ### Option B: Configure via `.env` File
@@ -72,8 +72,6 @@ You can configure your API key using either of the following two methods:
    VITE_GEMINI_API_KEY=your_actual_gemini_api_key_here
    ```
 2. Restart the Vite development server (`npm run dev`).
-
-> **Note**: If no API key is provided, the application will automatically use its built-in procedural and internet question engine, so it remains 100% playable even without an API key!
 
 ---
 
@@ -102,7 +100,7 @@ npm run deploy
 ## 🛠️ Tech Stack
 
 - **React 18** (Modern functional components & hooks)
-- **Google Gemini API** (`gemini-2.5-flash` via browser-native REST)
+- **Google Gemini API** (`gemini-2.5-flash` via browser-native REST API)
 - **Vite 6** (Blazing fast HMR and build tool)
 - **Tailwind CSS 3** (Custom space theme palette and responsive design)
 - **Lucide Icons** (Clean, child-friendly iconography)
