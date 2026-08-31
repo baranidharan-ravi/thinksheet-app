@@ -1,5 +1,5 @@
 // 100% AI-Powered Dynamic Question Generator (Google Gemini API Only)
-// NO offline/static questions are used. All questions are generated in real-time.
+// Uses active Gemini models: gemini-3.6-flash, gemini-3.7-flash, gemini-3.5-flash-lite
 
 const AI_KEY_STORAGE = 'thinksheet_gemini_api_key';
 
@@ -89,8 +89,7 @@ function parseGeminiJsonResponse(rawText) {
 
 /**
  * Generate 10 AI-Powered questions strictly customized for the child's exact age
- * using Google Gemini REST API with multi-model fallback.
- * Exclusively uses real-time AI generation — ZERO offline questions.
+ * using Google Gemini REST API with active models (gemini-3.6-flash, gemini-3.7-flash, gemini-3.5-flash-lite)
  *
  * @param {'Visual' | 'Analytical Thinking'} selectedSkill
  * @param {number} sheetNumber
@@ -165,8 +164,8 @@ Return a JSON Array of exactly 10 question objects:
 IMPORTANT: Output ONLY the valid JSON array.
 `;
 
-  // Models to try in order of capability
-  const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  // Active models to try in order of capability & speed
+  const models = ['gemini-3.6-flash', 'gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-2.5-flash'];
   let lastErrorText = '';
 
   for (const modelName of models) {
