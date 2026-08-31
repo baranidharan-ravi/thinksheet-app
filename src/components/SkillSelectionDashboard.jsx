@@ -9,6 +9,7 @@ export default function SkillSelectionDashboard({
   onSelectSkill,
   soundEnabled,
   kidName,
+  kidAge = 5,
   onEditKidName
 }) {
   const [infoModalTopic, setInfoModalTopic] = useState(null);
@@ -48,16 +49,16 @@ export default function SkillSelectionDashboard({
     <div className="min-h-screen bg-gradient-to-b from-[#5646B6] via-[#483B9D] to-[#392E83] text-white flex flex-col justify-between p-4 sm:p-6 select-none relative overflow-x-hidden font-sans">
       {/* Top Bar: Left Kid Name Badge + Center Green "Thinksheet" Badge + Right AI Settings Button */}
       <header className="w-full max-w-5xl mx-auto flex items-center justify-between pt-2 pb-4 relative">
-        {/* Kid Name Personalization Badge */}
+        {/* Kid Name & Age Personalization Badge */}
         <button
           onClick={() => {
             playButtonPop(soundEnabled);
             onEditKidName();
           }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-pink-200 transition-all cursor-pointer shadow-md transform hover:scale-105"
-          title="Click to edit name"
+          title="Click to edit profile (Name & Age)"
         >
-          <span>👋 {kidName || 'Explorer'}</span>
+          <span>👋 {kidName || 'Explorer'} (Age {kidAge || 5})</span>
           <Edit2 className="w-3 h-3 text-pink-300 opacity-80" />
         </button>
 

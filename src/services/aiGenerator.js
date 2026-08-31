@@ -1,4 +1,4 @@
-// Browser-Native AI Question Generator for 5-Year-Old Learners
+// Browser-Native AI Question Generator with Strict Age Calibration
 // Uses direct Gemini REST API calls with multi-model fallback and JSON parsing
 
 const AI_KEY_STORAGE = 'thinksheet_gemini_api_key';
@@ -88,10 +88,13 @@ function parseGeminiJsonResponse(rawText) {
 }
 
 /**
- * Generate 10 AI-Powered questions strictly customized for 5-Year-Old Kids
+ * Generate 10 AI-Powered questions strictly customized for the child's exact age
  * using Google Gemini REST API with robust multi-model fallback
+ * @param {'Visual' | 'Analytical Thinking'} selectedSkill
+ * @param {number} sheetNumber
+ * @param {number} kidAge (e.g. 3, 4, 5, 6, 7, 8)
  */
-export async function generateAIQuestions(selectedSkill = 'Visual', sheetNumber = 1) {
+export async function generateAIQuestions(selectedSkill = 'Visual', sheetNumber = 1, kidAge = 5) {
   const apiKey = getStoredApiKey();
 
   if (!apiKey) {
@@ -100,53 +103,34 @@ export async function generateAIQuestions(selectedSkill = 'Visual', sheetNumber 
   }
 
   const prompt = `
-Role: You are a friendly preschool teacher and early-childhood specialist designing a fun Thinksheet for 5-YEAR-OLD KINDERGARTEN KIDS.
+Role: You are an expert child psychologist and early-childhood educator designing a fun Thinksheet for a ${kidAge}-YEAR-OLD CHILD.
 
 Topic: "${selectedSkill}".
 Sheet: #${sheetNumber}.
+Target Age: ${kidAge} YEARS OLD.
 
-CRITICAL AGE RULES FOR 5-YEAR-OLD LEARNERS:
-- DO NOT use complex, abstract, or multi-step logic.
-- DO NOT use difficult adult vocabulary (keep words simple, joyful, and short).
-- Every question MUST be intuitive, relatable, and easily understandable for a 5-year-old child who knows:
-  * Familiar animals (Puppy, Kitten, Cow, Duck, Bird, Bee, Frog, Fish, Lion, Elephant)
-  * Everyday body parts & senses (Eyes see, Ears hear, Nose smells, Hands touch/wear gloves, Feet walk/wear shoes)
-  * Simple basic opposites (Big/Small, Fast/Slow, Hot/Cold, Up/Down, Day/Night, Clean/Dirty)
-  * Daily objects (Beds, Chairs, Pencils, Scissors, Toys, Balloons, Ice Cream, Apples)
-  * Colors & Basic Shapes (Red, Blue, Yellow, Green, Circle, Square, Triangle, Star)
-  * Simple visual counting (numbers 1 to 9)
+STRICT AGE RULES FOR A ${kidAge}-YEAR-OLD LEARNER:
+- The questions MUST be strictly tailored for a ${kidAge}-year-old child.
+- DO NOT generate any questions or vocabulary that are above ${kidAge} years old.
+- No abstract mathematics, no complex word problems, no adult concepts.
+- Everything must be intuitive, joyful, and visually clear with emojis.
 
-QUESTION REQUIREMENTS BASED ON SELECTED SKILL:
+If child is 3-4 years old:
+- Keep questions super simple: animal sounds, basic colors/shapes (Circle, Star), basic opposites (Big/Small, Hot/Cold), counting 1 to 5.
+
+If child is 5 years old:
+- Standard kindergarten reasoning: CogAT picture analogies (Puppy:Dog :: Kitten:Cat, Ear:Headphones :: Eye:Glasses), odd-one-out categories, cause-and-effect (melting ice, seed growing), counting up to 9.
+
+If child is 6-8 years old:
+- Early elementary reasoning: habitat logic, tool functions, simple sequences, 3D block pyramids, mirror symmetry.
+
+QUESTION SPECIFICATIONS FOR TOPIC "${selectedSkill}":
 
 If Topic is "Analytical Thinking":
-Generate 10 simple early-reasoning questions:
-1. Picture Analogies with Emojis:
-   - "If Puppy is to Dog 🐕, then Kitten is to?" -> Cat 🐈
-   - "If Fast is to Slow 🐢, then Good is to?" -> Bad ❌
-   - "If Eye is to See 👁️, then Ear is to?" -> Hear 👂
-   - "If Glove is to Hand 🧤, then Sock is to?" -> Foot 🦶
-   - "If Day is to Sun ☀️, then Night is to?" -> Moon 🌙
-   - "If Bird is to Nest 🪺, then Bee is to?" -> Beehive 🐝
-   - "If Caterpillar turns into a Butterfly 🦋, what does a Tadpole turn into?" -> Frog 🐸
-2. Odd-One-Out (Picture Classification):
-   - "Which one does NOT fly in the sky?" -> Goldfish 🐟
-   - "Which one is NOT a sweet fruit to eat?" -> Toy Car 🚗
-   - "Which one is NOT an animal with four legs?" -> Yellow Duck 🦆
-3. Gentle Cause & Effect:
-   - "If you leave an ice cube 🧊 in the warm sun ☀️, what will happen?" -> It melts into water 💧
-   - "What happens when you water a little plant seed 🌱?" -> It grows into a flower 🌸
-   - "Which lightweight toy will float in the bathtub 🛁?" -> Rubber Duck 🦆
+- 10 simple analogies, odd-one-out classification, and everyday logic suitable for a ${kidAge}-year-old.
 
 If Topic is "Visual":
-Generate 10 visual and spatial challenges:
-1. Grid Area Tile Counting (diagramType: "grid-tiles", diagramData: { rows: 5, cols: 5, holeRow: 1, holeCol: 1, holeW: 2, holeH: 2, count: 4 })
-2. Shape/Fruit Patterns (diagramType: "pattern-shapes", diagramData: { sequence: ["🍎", "🍌", "🍎", "🍌", "🍎"], nextItem: "🍌" })
-3. Object Counting (diagramType: "apple-counting", diagramData: { count: 6, emoji: "⭐" })
-4. Seesaw Balance (diagramType: "scale-balance", diagramData: { leftEmoji: "🐘", rightEmoji: "🐭", heavySide: "left" })
-5. 3D Block Pyramid (diagramType: "block-tower", diagramData: { bottom: 3, middle: 2, top: 1 })
-6. Paper cut corners (diagramType: "paper-cut")
-7. Butterfly Symmetry (diagramType: "butterfly-symmetry")
-8. Rocket Maze (diagramType: "rocket-maze")
+- 10 visual spatial puzzles (grid-tiles, pattern-shapes, apple-counting, scale-balance, block-tower, paper-cut, butterfly-symmetry, rocket-maze) sized appropriately for age ${kidAge}.
 
 JSON RESPONSE SPECIFICATION:
 Return a JSON Array of exactly 10 question objects:
@@ -159,8 +143,8 @@ Return a JSON Array of exactly 10 question objects:
         ? 'Develop your ability to analyze and/or spot visual information in order to solve a problem'
         : 'Develop your ability to plan and breakdown information in order to analyze and solve complex problems'
     }",
-    "question": "Short 1-sentence question with friendly emojis (suitable for 5-year-old)",
-    "promptAudio": "Simple voice read-aloud sentence for the child",
+    "question": "Short question text with friendly emojis (strictly suitable for ${kidAge}-year-old)",
+    "promptAudio": "Simple voice read-aloud sentence for the ${kidAge}-year-old child",
     "diagramType": ${selectedSkill === 'Visual' ? '"pattern-shapes"' : 'null'},
     "diagramData": {},
     "options": [
@@ -170,14 +154,14 @@ Return a JSON Array of exactly 10 question objects:
       { "id": "D", "text": "Option 4 (with emoji)" }
     ],
     "correctAnswerId": "A",
-    "solutionText": "1 joyful, encouraging sentence explaining the answer to a 5-year-old kid.",
+    "solutionText": "1 joyful, encouraging sentence explaining the answer to a ${kidAge}-year-old kid.",
     "solutionDiagramType": ${selectedSkill === 'Visual' ? '"pattern-shapes"' : 'null'},
     "solutionDiagramData": {},
-    "hint": "1 simple, friendly clue to help the child think."
+    "hint": "1 simple, friendly clue."
   }
 ]
 
-IMPORTANT: Output ONLY the valid JSON array. No markdown wrap, no other text.
+IMPORTANT: Output ONLY the valid JSON array.
 `;
 
   // Models to try in order of capability
@@ -212,7 +196,7 @@ IMPORTANT: Output ONLY the valid JSON array. No markdown wrap, no other text.
       if (!res.ok) {
         const errData = await res.text();
         console.warn(`Gemini API returned status ${res.status} for model ${modelName}:`, errData);
-        continue; // Try next model
+        continue;
       }
 
       const data = await res.json();
@@ -225,7 +209,7 @@ IMPORTANT: Output ONLY the valid JSON array. No markdown wrap, no other text.
           const formatted = shuffleAndFormatOptions(q);
           return {
             ...formatted,
-            id: `ai_5yo_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`,
+            id: `ai_${kidAge}yo_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`,
             category: selectedSkill,
             isAIGenerated: true
           };
@@ -236,6 +220,5 @@ IMPORTANT: Output ONLY the valid JSON array. No markdown wrap, no other text.
     }
   }
 
-  // If all Gemini REST calls fail (e.g. invalid key or network block), return null so procedural generator activates
   return null;
 }

@@ -25,7 +25,8 @@ import {
   loadProfileStats,
   recordCompletedSheet,
   getStoredKidName,
-  saveStoredKidName
+  getStoredKidAge,
+  saveStoredKidProfile
 } from './utils/progressTracker';
 import {
   clearSessionState,
@@ -36,6 +37,7 @@ import {
 export default function App() {
   // Kid Profile & Name State
   const [kidName, setKidName] = useState(getStoredKidName);
+  const [kidAge, setKidAge] = useState(getStoredKidAge);
   const [isNameModalOpen, setIsNameModalOpen] = useState(() => !getStoredKidName());
 
   // Navigation State
@@ -115,7 +117,7 @@ export default function App() {
   // Current Question Object
   const currentQuestion = questions[currentIndex] || {};
 
-  // Auto-read question for 5yo kids
+  // Auto-read question for kids
   useEffect(() => {
     if (
       speechEnabled &&
@@ -130,10 +132,11 @@ export default function App() {
     }
   }, [currentIndex, isCompleted, sheetNumber, isLoadingSheet, currentScreen]);
 
-  // Handle saving kid's name
-  const handleSaveKidName = (name) => {
-    saveStoredKidName(name);
+  // Handle saving kid's profile (name and age)
+  const handleSaveKidProfile = ({ name, age }) => {
+    saveStoredKidProfile(name, age);
     setKidName(name);
+    setKidAge(age);
     setIsNameModalOpen(false);
   };
 
@@ -149,7 +152,7 @@ export default function App() {
     setTimerSeconds(0);
     setIsCompleted(false);
 
-    const freshQuestions = await getFreshThinksheetSession(skill, 1);
+    const freshQuestions = await getFreshThinksheetSession(skill, 1, kidAge);
     setQuestions(freshQuestions);
     setIsLoadingSheet(false);
   };
@@ -234,7 +237,7 @@ export default function App() {
     setIsLoadingSheet(true);
 
     const nextSheetNum = sheetNumber + 1;
-    const newQuestions = await getFreshThinksheetSession(selectedSkill, nextSheetNum);
+    const newQuestions = await getFreshThinksheetSession(selectedSkill, nextSheetNum, kidAge);
 
     setSheetNumber(nextSheetNum);
     setQuestions(newQuestions);
@@ -253,6 +256,7 @@ export default function App() {
     exportSessionToFile(
       {
         studentName: kidName || 'Explorer',
+        studentAge: kidAge || 5,
         selectedSkill,
         sheetNumber,
         date: new Date().toISOString(),
@@ -264,7 +268,7 @@ export default function App() {
         questions,
         history
       },
-      `Thinksheet_${kidName || 'Explorer'}_${selectedSkill}_Sheet${sheetNumber}_${Date.now()}.json`
+      `Thinksheet_${kidName || 'Explorer'}_Age${kidAge}_${selectedSkill}_Sheet${sheetNumber}_${Date.now()}.json`
     );
   };
 
@@ -276,7 +280,8 @@ export default function App() {
 
     const freshQuestions = await getFreshThinksheetSession(
       selectedSkill,
-      sheetNumber + 1
+      sheetNumber + 1,
+      kidAge
     );
     setSheetNumber((prev) => prev + 1);
     setQuestions(freshQuestions);
@@ -303,12 +308,14 @@ export default function App() {
           onSelectSkill={handleSelectSkill}
           soundEnabled={soundEnabled}
           kidName={kidName}
+          kidAge={kidAge}
           onEditKidName={() => setIsNameModalOpen(true)}
         />
         <KidNameModal
           isOpen={isNameModalOpen}
-          onSaveName={handleSaveKidName}
+          onSaveProfile={handleSaveKidProfile}
           currentName={kidName}
+          currentAge={kidAge}
           soundEnabled={soundEnabled}
         />
       </>
@@ -346,7 +353,7 @@ export default function App() {
               Preparing Your {selectedSkill} Thinksheet! 🚀
             </h2>
             <p className="text-sm sm:text-base font-bold text-cyan-300">
-              Gathering 10 fresh {selectedSkill} challenges...
+              Gathering 10 fresh {selectedSkill} challenges for age {kidAge}...
             </p>
           </div>
         ) : !isCompleted ? (
@@ -517,8 +524,9 @@ export default function App() {
 
       <KidNameModal
         isOpen={isNameModalOpen}
-        onSaveName={handleSaveKidName}
+        onSaveProfile={handleSaveKidProfile}
         currentName={kidName}
+        currentAge={kidAge}
         soundEnabled={soundEnabled}
       />
     </div>
