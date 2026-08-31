@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Info, Sparkles, Key, Check } from 'lucide-react';
+import { Info, Sparkles, Key, Check, Edit2, User } from 'lucide-react';
 import { playButtonPop } from '../utils/audioSynthesis';
 import { calculateSkillLevel } from '../utils/progressTracker';
 import { getStoredApiKey, setStoredApiKey } from '../services/aiGenerator';
@@ -7,7 +7,9 @@ import { getStoredApiKey, setStoredApiKey } from '../services/aiGenerator';
 export default function SkillSelectionDashboard({
   profileStats,
   onSelectSkill,
-  soundEnabled
+  soundEnabled,
+  kidName,
+  onEditKidName
 }) {
   const [infoModalTopic, setInfoModalTopic] = useState(null);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -44,9 +46,20 @@ export default function SkillSelectionDashboard({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#5646B6] via-[#483B9D] to-[#392E83] text-white flex flex-col justify-between p-4 sm:p-6 select-none relative overflow-x-hidden font-sans">
-      {/* Top Bar: Centered Green "Thinksheet" Badge + Right AI Settings Button */}
+      {/* Top Bar: Left Kid Name Badge + Center Green "Thinksheet" Badge + Right AI Settings Button */}
       <header className="w-full max-w-5xl mx-auto flex items-center justify-between pt-2 pb-4 relative">
-        <div className="w-12" /> {/* Spacer */}
+        {/* Kid Name Personalization Badge */}
+        <button
+          onClick={() => {
+            playButtonPop(soundEnabled);
+            onEditKidName();
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-pink-200 transition-all cursor-pointer shadow-md transform hover:scale-105"
+          title="Click to edit name"
+        >
+          <span>👋 {kidName || 'Explorer'}</span>
+          <Edit2 className="w-3 h-3 text-pink-300 opacity-80" />
+        </button>
 
         {/* Green Center Pill Badge */}
         <div className="relative flex items-center justify-center">

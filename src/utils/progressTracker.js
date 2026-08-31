@@ -1,6 +1,7 @@
 // Progress Tracker & Profile Manager for Skill Thinksheets
 
-const PROFILE_KEY = 'thinksheet_kid_profile_v2';
+const PROFILE_KEY = 'thinksheet_kid_profile_v3';
+const KID_NAME_KEY = 'thinksheet_custom_kid_name_v1';
 
 export const INITIAL_PROFILE = {
   visualSolved: 0,
@@ -9,14 +10,35 @@ export const INITIAL_PROFILE = {
   analyticalScores: [],
   thinksheetsRemaining: 10,
   expiryDate: '31st October, 2026',
-  studentName: 'Little Explorer'
+  studentName: ''
 };
+
+export function getStoredKidName() {
+  try {
+    return localStorage.getItem(KID_NAME_KEY) || '';
+  } catch {
+    return '';
+  }
+}
+
+export function saveStoredKidName(name) {
+  try {
+    if (name) {
+      localStorage.setItem(KID_NAME_KEY, name.trim());
+    } else {
+      localStorage.removeItem(KID_NAME_KEY);
+    }
+  } catch (err) {
+    console.warn('Could not save kid name', err);
+  }
+}
 
 export function loadProfileStats() {
   try {
     const raw = localStorage.getItem(PROFILE_KEY);
-    if (!raw) return INITIAL_PROFILE;
-    return { ...INITIAL_PROFILE, ...JSON.parse(raw) };
+    const kidName = getStoredKidName();
+    if (!raw) return { ...INITIAL_PROFILE, studentName: kidName };
+    return { ...INITIAL_PROFILE, ...JSON.parse(raw), studentName: kidName };
   } catch {
     return INITIAL_PROFILE;
   }
@@ -33,6 +55,7 @@ export function saveProfileStats(stats) {
 export function resetProfileStats() {
   try {
     localStorage.removeItem(PROFILE_KEY);
+    localStorage.removeItem(KID_NAME_KEY);
   } catch (err) {
     console.warn('Could not clear profile stats', err);
   }

@@ -19,6 +19,7 @@ export default function ResultOverview({
 	setActiveTab,
 	soundEnabled,
 	onBackToDashboard,
+	kidName = ''
 }) {
 	// Determine star count based on score
 	const starCount =
@@ -194,7 +195,7 @@ export default function ResultOverview({
 
 											{/* Name */}
 											<span className='font-bold text-white text-xs sm:text-sm'>
-												{player.name}
+												{player.isUser ? (kidName ? `${kidName} (You)` : 'You') : player.name}
 											</span>
 										</div>
 

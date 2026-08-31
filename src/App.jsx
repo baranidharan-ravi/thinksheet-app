@@ -10,493 +10,517 @@ import ResultOverview from './components/ResultOverview';
 import SkillSelectionDashboard from './components/SkillSelectionDashboard';
 import SolutionPanel from './components/SolutionPanel';
 import ZoomModal from './components/ZoomModal';
+import KidNameModal from './components/KidNameModal';
 
 import confetti from 'canvas-confetti';
 import { Rocket, Zap } from 'lucide-react';
 import { getFreshThinksheetSession } from './services/questionService';
 import {
-	playButtonPop,
-	playCorrectSound,
-	playIncorrectSound,
-	speakText,
+  playButtonPop,
+  playCorrectSound,
+  playIncorrectSound,
+  speakText
 } from './utils/audioSynthesis';
 import {
-	loadProfileStats,
-	recordCompletedSheet,
+  loadProfileStats,
+  recordCompletedSheet,
+  getStoredKidName,
+  saveStoredKidName
 } from './utils/progressTracker';
 import {
-	clearSessionState,
-	exportSessionToFile,
-	saveSessionState,
+  clearSessionState,
+  exportSessionToFile,
+  saveSessionState
 } from './utils/storage';
 
 export default function App() {
-	// Navigation State
-	const [currentScreen, setCurrentScreen] = useState('dashboard'); // 'dashboard' | 'thinksheet'
-	const [selectedSkill, setSelectedSkill] = useState('Visual'); // 'Visual' | 'Analytical Thinking'
-	const [profileStats, setProfileStats] = useState(loadProfileStats);
+  // Kid Profile & Name State
+  const [kidName, setKidName] = useState(getStoredKidName);
+  const [isNameModalOpen, setIsNameModalOpen] = useState(() => !getStoredKidName());
 
-	// Thinksheet Session State
-	const [sheetNumber, setSheetNumber] = useState(1);
-	const [questions, setQuestions] = useState([]);
-	const [currentIndex, setCurrentIndex] = useState(0);
-	const [selectedOptionId, setSelectedOptionId] = useState(null);
-	const [isSubmitted, setIsSubmitted] = useState(false);
-	const [history, setHistory] = useState([]);
-	const [xp, setXp] = useState(0);
-	const [timerSeconds, setTimerSeconds] = useState(0);
-	const [isCompleted, setIsCompleted] = useState(false);
-	const [resultTab, setResultTab] = useState('overview'); // 'overview' | 'summary'
-	const [isLoadingSheet, setIsLoadingSheet] = useState(false);
+  // Navigation State
+  const [currentScreen, setCurrentScreen] = useState('dashboard'); // 'dashboard' | 'thinksheet'
+  const [selectedSkill, setSelectedSkill] = useState('Visual'); // 'Visual' | 'Analytical Thinking'
+  const [profileStats, setProfileStats] = useState(loadProfileStats);
 
-	// Settings & Audio Controls
-	const [soundEnabled, setSoundEnabled] = useState(true);
-	const [speechEnabled, setSpeechEnabled] = useState(true);
+  // Thinksheet Session State
+  const [sheetNumber, setSheetNumber] = useState(1);
+  const [questions, setQuestions] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [xp, setXp] = useState(0);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [resultTab, setResultTab] = useState('overview'); // 'overview' | 'summary'
+  const [isLoadingSheet, setIsLoadingSheet] = useState(false);
 
-	// Modals
-	const [isHintOpen, setIsHintOpen] = useState(false);
-	const [isZoomOpen, setIsZoomOpen] = useState(false);
-	const [isNewSheetOpen, setIsNewSheetOpen] = useState(false);
-	const [isAskDoubtOpen, setIsAskDoubtOpen] = useState(false);
+  // Settings & Audio Controls
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [speechEnabled, setSpeechEnabled] = useState(true);
 
-	// Always start with the skill selection dashboard on load
-	useEffect(() => {
-		setCurrentScreen('dashboard');
-	}, []);
+  // Modals
+  const [isHintOpen, setIsHintOpen] = useState(false);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [isNewSheetOpen, setIsNewSheetOpen] = useState(false);
+  const [isAskDoubtOpen, setIsAskDoubtOpen] = useState(false);
 
-	// Save session state to localStorage
-	useEffect(() => {
-		if (
-			questions.length > 0 &&
-			!isLoadingSheet &&
-			currentScreen === 'thinksheet'
-		) {
-			saveSessionState({
-				currentScreen,
-				selectedSkill,
-				sheetNumber,
-				questions,
-				currentIndex,
-				selectedOptionId,
-				isSubmitted,
-				history,
-				xp,
-				timerSeconds,
-				isCompleted,
-			});
-		}
-	}, [
-		currentScreen,
-		selectedSkill,
-		sheetNumber,
-		questions,
-		currentIndex,
-		selectedOptionId,
-		isSubmitted,
-		history,
-		xp,
-		timerSeconds,
-		isCompleted,
-		isLoadingSheet,
-	]);
+  // Always start with the skill selection dashboard on load
+  useEffect(() => {
+    setCurrentScreen('dashboard');
+  }, []);
 
-	// Live Timer
-	useEffect(() => {
-		if (isCompleted || isLoadingSheet || currentScreen !== 'thinksheet') return;
-		const interval = setInterval(() => {
-			setTimerSeconds((prev) => prev + 1);
-		}, 1000);
-		return () => clearInterval(interval);
-	}, [isCompleted, isLoadingSheet, currentScreen]);
+  // Save session state to localStorage
+  useEffect(() => {
+    if (questions.length > 0 && !isLoadingSheet && currentScreen === 'thinksheet') {
+      saveSessionState({
+        currentScreen,
+        selectedSkill,
+        sheetNumber,
+        questions,
+        currentIndex,
+        selectedOptionId,
+        isSubmitted,
+        history,
+        xp,
+        timerSeconds,
+        isCompleted
+      });
+    }
+  }, [
+    currentScreen,
+    selectedSkill,
+    sheetNumber,
+    questions,
+    currentIndex,
+    selectedOptionId,
+    isSubmitted,
+    history,
+    xp,
+    timerSeconds,
+    isCompleted,
+    isLoadingSheet
+  ]);
 
-	// Current Question Object
-	const currentQuestion = questions[currentIndex] || {};
+  // Live Timer
+  useEffect(() => {
+    if (isCompleted || isLoadingSheet || currentScreen !== 'thinksheet') return;
+    const interval = setInterval(() => {
+      setTimerSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isCompleted, isLoadingSheet, currentScreen]);
 
-	// Auto-read question for 5yo kids
-	useEffect(() => {
-		if (
-			speechEnabled &&
-			currentQuestion &&
-			!isCompleted &&
-			!isSubmitted &&
-			!isLoadingSheet &&
-			currentScreen === 'thinksheet'
-		) {
-			const textToRead =
-				currentQuestion.promptAudio || currentQuestion.question;
-			speakText(textToRead);
-		}
-	}, [currentIndex, isCompleted, sheetNumber, isLoadingSheet, currentScreen]);
+  // Current Question Object
+  const currentQuestion = questions[currentIndex] || {};
 
-	// Start Sheet for a selected skill
-	const handleSelectSkill = async (skill) => {
-		setSelectedSkill(skill);
-		setIsLoadingSheet(true);
-		setCurrentScreen('thinksheet');
-		setCurrentIndex(0);
-		setSelectedOptionId(null);
-		setIsSubmitted(false);
-		setHistory([]);
-		setTimerSeconds(0);
-		setIsCompleted(false);
+  // Auto-read question for 5yo kids
+  useEffect(() => {
+    if (
+      speechEnabled &&
+      currentQuestion &&
+      !isCompleted &&
+      !isSubmitted &&
+      !isLoadingSheet &&
+      currentScreen === 'thinksheet'
+    ) {
+      const textToRead = currentQuestion.promptAudio || currentQuestion.question;
+      speakText(textToRead);
+    }
+  }, [currentIndex, isCompleted, sheetNumber, isLoadingSheet, currentScreen]);
 
-		const freshQuestions = await getFreshThinksheetSession(skill, 1);
-		setQuestions(freshQuestions);
-		setIsLoadingSheet(false);
-	};
+  // Handle saving kid's name
+  const handleSaveKidName = (name) => {
+    saveStoredKidName(name);
+    setKidName(name);
+    setIsNameModalOpen(false);
+  };
 
-	// Handle Option Select
-	const handleSelectOption = (optionId) => {
-		if (isSubmitted) return;
-		setSelectedOptionId(optionId);
-	};
+  // Start Sheet for a selected skill
+  const handleSelectSkill = async (skill) => {
+    setSelectedSkill(skill);
+    setIsLoadingSheet(true);
+    setCurrentScreen('thinksheet');
+    setCurrentIndex(0);
+    setSelectedOptionId(null);
+    setIsSubmitted(false);
+    setHistory([]);
+    setTimerSeconds(0);
+    setIsCompleted(false);
 
-	// Handle Submit
-	const handleSubmit = () => {
-		if (!selectedOptionId || isSubmitted) return;
+    const freshQuestions = await getFreshThinksheetSession(skill, 1);
+    setQuestions(freshQuestions);
+    setIsLoadingSheet(false);
+  };
 
-		const isCorrect = selectedOptionId === currentQuestion.correctAnswerId;
-		setIsSubmitted(true);
+  // Handle Option Select
+  const handleSelectOption = (optionId) => {
+    if (isSubmitted) return;
+    setSelectedOptionId(optionId);
+  };
 
-		if (isCorrect) {
-			playCorrectSound(soundEnabled);
-			setXp((prev) => prev + 5);
+  // Handle Submit
+  const handleSubmit = () => {
+    if (!selectedOptionId || isSubmitted) return;
 
-			// Trigger Confetti Celebration
-			try {
-				confetti({
-					particleCount: 90,
-					spread: 70,
-					origin: { y: 0.6 },
-					colors: ['#00D166', '#FFD166', '#00E5FF', '#FF5B84', '#B845ED'],
-					shapes: ['star', 'circle'],
-					scalar: 1.2,
-				});
-			} catch (err) {
-				console.warn('Confetti error', err);
-			}
+    const isCorrect = selectedOptionId === currentQuestion.correctAnswerId;
+    setIsSubmitted(true);
 
-			if (speechEnabled) {
-				speakText('Correct! Great thinking! You got it right.');
-			}
-		} else {
-			playIncorrectSound(soundEnabled);
-			if (speechEnabled) {
-				speakText("Don't worry! Let's look at the solution to see why.");
-			}
-		}
+    if (isCorrect) {
+      playCorrectSound(soundEnabled);
+      setXp((prev) => prev + 5);
 
-		// Save to history
-		const newHistory = [...history];
-		newHistory[currentIndex] = {
-			questionId: currentQuestion.id,
-			selectedOptionId,
-			isCorrect,
-			timestamp: Date.now(),
-		};
-		setHistory(newHistory);
-	};
+      // Trigger Confetti Celebration
+      try {
+        confetti({
+          particleCount: 90,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#00D166', '#FFD166', '#00E5FF', '#FF5B84', '#B845ED'],
+          shapes: ['star', 'circle'],
+          scalar: 1.2
+        });
+      } catch (err) {
+        console.warn('Confetti error', err);
+      }
 
-	// Handle Next Question
-	const handleNext = () => {
-		playButtonPop(soundEnabled);
+      if (speechEnabled) {
+        speakText('Correct! Great thinking! You got it right.');
+      }
+    } else {
+      playIncorrectSound(soundEnabled);
+      if (speechEnabled) {
+        speakText("Don't worry! Let's look at the solution to see why.");
+      }
+    }
 
-		if (currentIndex + 1 < questions.length) {
-			setCurrentIndex((prev) => prev + 1);
-			setSelectedOptionId(null);
-			setIsSubmitted(false);
-		} else {
-			// Completed all 10 questions!
-			const correctCount = history.filter((h) => h && h.isCorrect).length;
-			const score = Math.round((correctCount / questions.length) * 100);
+    // Save to history
+    const newHistory = [...history];
+    newHistory[currentIndex] = {
+      questionId: currentQuestion.id,
+      selectedOptionId,
+      isCorrect,
+      timestamp: Date.now()
+    };
+    setHistory(newHistory);
+  };
 
-			// Update and record profile stats (solves count & score)
-			const updatedProfile = recordCompletedSheet(selectedSkill, score);
-			setProfileStats(updatedProfile);
+  // Handle Next Question
+  const handleNext = () => {
+    playButtonPop(soundEnabled);
 
-			setIsCompleted(true);
-			setResultTab('overview');
-		}
-	};
+    if (currentIndex + 1 < questions.length) {
+      setCurrentIndex((prev) => prev + 1);
+      setSelectedOptionId(null);
+      setIsSubmitted(false);
+    } else {
+      // Completed all 10 questions!
+      const correctCount = history.filter((h) => h && h.isCorrect).length;
+      const score = Math.round((correctCount / questions.length) * 100);
 
-	// Start Next Sheet in same skill
-	const handleStartNextSheet = async () => {
-		playButtonPop(soundEnabled);
-		setIsLoadingSheet(true);
+      // Update and record profile stats
+      const updatedProfile = recordCompletedSheet(selectedSkill, score);
+      setProfileStats(updatedProfile);
 
-		const nextSheetNum = sheetNumber + 1;
-		const newQuestions = await getFreshThinksheetSession(
-			selectedSkill,
-			nextSheetNum,
-		);
+      setIsCompleted(true);
+      setResultTab('overview');
+    }
+  };
 
-		setSheetNumber(nextSheetNum);
-		setQuestions(newQuestions);
-		setCurrentIndex(0);
-		setSelectedOptionId(null);
-		setIsSubmitted(false);
-		setHistory([]);
-		setIsCompleted(false);
-		setResultTab('overview');
-		setIsLoadingSheet(false);
-	};
+  // Start Next Sheet in same skill
+  const handleStartNextSheet = async () => {
+    playButtonPop(soundEnabled);
+    setIsLoadingSheet(true);
 
-	// Download Sheet Progress
-	const handleDownloadSheet = () => {
-		playButtonPop(soundEnabled);
-		exportSessionToFile(
-			{
-				selectedSkill,
-				sheetNumber,
-				date: new Date().toISOString(),
-				scorePercent,
-				correctCount,
-				totalQuestions: questions.length,
-				xp,
-				timerSeconds,
-				questions,
-				history,
-			},
-			`Thinksheet_${selectedSkill}_Sheet${sheetNumber}_${Date.now()}.json`,
-		);
-	};
+    const nextSheetNum = sheetNumber + 1;
+    const newQuestions = await getFreshThinksheetSession(selectedSkill, nextSheetNum);
 
-	// Confirm Creating a New Sheet
-	const handleConfirmNewSheet = async () => {
-		clearSessionState();
-		setIsNewSheetOpen(false);
-		setIsLoadingSheet(true);
+    setSheetNumber(nextSheetNum);
+    setQuestions(newQuestions);
+    setCurrentIndex(0);
+    setSelectedOptionId(null);
+    setIsSubmitted(false);
+    setHistory([]);
+    setIsCompleted(false);
+    setResultTab('overview');
+    setIsLoadingSheet(false);
+  };
 
-		const freshQuestions = await getFreshThinksheetSession(
-			selectedSkill,
-			sheetNumber + 1,
-		);
-		setSheetNumber((prev) => prev + 1);
-		setQuestions(freshQuestions);
-		setCurrentIndex(0);
-		setSelectedOptionId(null);
-		setIsSubmitted(false);
-		setHistory([]);
-		setTimerSeconds(0);
-		setIsCompleted(false);
-		setIsLoadingSheet(false);
-	};
+  // Download Sheet Progress
+  const handleDownloadSheet = () => {
+    playButtonPop(soundEnabled);
+    exportSessionToFile(
+      {
+        studentName: kidName || 'Explorer',
+        selectedSkill,
+        sheetNumber,
+        date: new Date().toISOString(),
+        scorePercent,
+        correctCount,
+        totalQuestions: questions.length,
+        xp,
+        timerSeconds,
+        questions,
+        history
+      },
+      `Thinksheet_${kidName || 'Explorer'}_${selectedSkill}_Sheet${sheetNumber}_${Date.now()}.json`
+    );
+  };
 
-	// Calculate score
-	const correctCount = history.filter((h) => h && h.isCorrect).length;
-	const scorePercent =
-		questions.length > 0 ?
-			Math.round((correctCount / questions.length) * 100)
-		:	0;
+  // Confirm Creating a New Sheet
+  const handleConfirmNewSheet = async () => {
+    clearSessionState();
+    setIsNewSheetOpen(false);
+    setIsLoadingSheet(true);
 
-	// Render Skill Selection Dashboard
-	if (currentScreen === 'dashboard') {
-		return (
-			<SkillSelectionDashboard
-				profileStats={profileStats}
-				onSelectSkill={handleSelectSkill}
-				soundEnabled={soundEnabled}
-			/>
-		);
-	}
+    const freshQuestions = await getFreshThinksheetSession(
+      selectedSkill,
+      sheetNumber + 1
+    );
+    setSheetNumber((prev) => prev + 1);
+    setQuestions(freshQuestions);
+    setCurrentIndex(0);
+    setSelectedOptionId(null);
+    setIsSubmitted(false);
+    setHistory([]);
+    setTimerSeconds(0);
+    setIsCompleted(false);
+    setIsLoadingSheet(false);
+  };
 
-	// Render Active Thinksheet Session
-	return (
-		<div className='min-h-screen space-background flex flex-col justify-between text-white font-sans overflow-x-hidden relative'>
-			{/* Top Header */}
-			<Header
-				questionIndex={currentIndex}
-				totalQuestions={questions.length || 10}
-				history={history}
-				xp={xp}
-				timerSeconds={timerSeconds}
-				soundEnabled={soundEnabled}
-				onToggleSound={() => setSoundEnabled((prev) => !prev)}
-				speechEnabled={speechEnabled}
-				onToggleSpeech={() => setSpeechEnabled((prev) => !prev)}
-				onDownloadClick={handleDownloadSheet}
-				onCreateNewSheetClick={() => setIsNewSheetOpen(true)}
-				onHomeClick={() => setCurrentScreen('dashboard')}
-			/>
+  // Calculate score
+  const correctCount = history.filter((h) => h && h.isCorrect).length;
+  const scorePercent =
+    questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
 
-			{/* Main Screen Body */}
-			<main className='flex-1 flex flex-col justify-center items-center px-3 sm:px-6 py-2 sm:py-4 w-full max-w-7xl mx-auto'>
-				{isLoadingSheet ?
-					/* Loading Cosmic State */
-					<div className='flex flex-col items-center justify-center p-12 text-center animate-in fade-in'>
-						<div className='w-20 h-20 rounded-3xl bg-gradient-to-tr from-pink-500 to-indigo-600 flex items-center justify-center shadow-2xl animate-bounce mb-6'>
-							<Rocket className='w-10 h-10 text-white animate-pulse' />
-						</div>
-						<h2 className='text-2xl sm:text-3xl font-black text-white mb-2'>
-							Preparing Your {selectedSkill} Thinksheet! 🚀
-						</h2>
-						<p className='text-sm sm:text-base font-bold text-cyan-300'>
-							Gathering 10 fresh {selectedSkill} challenges...
-						</p>
-					</div>
-				: !isCompleted ?
-					/* Question Playing View */
-					<div className='w-full flex flex-col justify-center'>
-						{/* Layout when NOT submitted */}
-						{!isSubmitted ?
-							<div className='grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch'>
-								{/* Left: Question Card */}
-								<div className='lg:col-span-6 flex flex-col'>
-									<QuestionCard
-										question={currentQuestion}
-										currentIndex={currentIndex}
-										totalQuestions={questions.length}
-										onZoomClick={() => setIsZoomOpen(true)}
-										soundEnabled={soundEnabled}
-									/>
-								</div>
+  // Render Skill Selection Dashboard
+  if (currentScreen === 'dashboard') {
+    return (
+      <>
+        <SkillSelectionDashboard
+          profileStats={profileStats}
+          onSelectSkill={handleSelectSkill}
+          soundEnabled={soundEnabled}
+          kidName={kidName}
+          onEditKidName={() => setIsNameModalOpen(true)}
+        />
+        <KidNameModal
+          isOpen={isNameModalOpen}
+          onSaveName={handleSaveKidName}
+          currentName={kidName}
+          soundEnabled={soundEnabled}
+        />
+      </>
+    );
+  }
 
-								{/* Right: Options 2x2 Grid + Submit Bar */}
-								<div className='lg:col-span-6 flex flex-col justify-between gap-4'>
-									<OptionsGrid
-										options={currentQuestion.options || []}
-										selectedOptionId={selectedOptionId}
-										onSelectOption={handleSelectOption}
-										isSubmitted={false}
-										correctAnswerId={currentQuestion.correctAnswerId}
-										soundEnabled={soundEnabled}
-									/>
+  // Render Active Thinksheet Session
+  return (
+    <div className="min-h-screen space-background flex flex-col justify-between text-white font-sans overflow-x-hidden relative">
+      {/* Top Header */}
+      <Header
+        questionIndex={currentIndex}
+        totalQuestions={questions.length || 10}
+        history={history}
+        xp={xp}
+        timerSeconds={timerSeconds}
+        soundEnabled={soundEnabled}
+        onToggleSound={() => setSoundEnabled((prev) => !prev)}
+        speechEnabled={speechEnabled}
+        onToggleSpeech={() => setSpeechEnabled((prev) => !prev)}
+        onDownloadClick={handleDownloadSheet}
+        onCreateNewSheetClick={() => setIsNewSheetOpen(true)}
+        onHomeClick={() => setCurrentScreen('dashboard')}
+      />
 
-									{/* Action Bar directly below Options on right */}
-									<div className='flex items-center justify-end gap-3 mt-2 select-none'>
-										{/* Power-up Hint Button */}
-										<button
-											type='button'
-											onClick={() => {
-												playButtonPop(soundEnabled);
-												setIsHintOpen(true);
-											}}
-											className='w-12 h-12 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 hover:scale-110 active:scale-95 text-white flex items-center justify-center shadow-lg transition-all border-2 border-white/40 flex-shrink-0'
-											title='Hint Clue'>
-											<Zap className='w-6 h-6 fill-white' />
-										</button>
+      {/* Main Screen Body */}
+      <main className="flex-1 flex flex-col justify-center items-center px-3 sm:px-6 py-2 sm:py-4 w-full max-w-7xl mx-auto">
+        {isLoadingSheet ? (
+          /* Loading Cosmic State */
+          <div className="flex flex-col items-center justify-center p-12 text-center animate-in fade-in">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-pink-500 to-indigo-600 flex items-center justify-center shadow-2xl animate-bounce mb-6">
+              <Rocket className="w-10 h-10 text-white animate-pulse" />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
+              Preparing Your {selectedSkill} Thinksheet! 🚀
+            </h2>
+            <p className="text-sm sm:text-base font-bold text-cyan-300">
+              Gathering 10 fresh {selectedSkill} challenges...
+            </p>
+          </div>
+        ) : !isCompleted ? (
+          /* Question Playing View */
+          <div className="w-full flex flex-col justify-center">
+            {/* Layout when NOT submitted */}
+            {!isSubmitted ? (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
+                {/* Left: Question Card */}
+                <div className="lg:col-span-6 flex flex-col">
+                  <QuestionCard
+                    question={currentQuestion}
+                    currentIndex={currentIndex}
+                    totalQuestions={questions.length}
+                    onZoomClick={() => setIsZoomOpen(true)}
+                    soundEnabled={soundEnabled}
+                  />
+                </div>
 
-										{/* Submit Button */}
-										<button
-											disabled={!selectedOptionId}
-											onClick={handleSubmit}
-											type='button'
-											className={`px-8 sm:px-12 py-3.5 sm:py-4 rounded-full font-black text-sm sm:text-lg tracking-wider uppercase transition-all shadow-xl ${
-												selectedOptionId ?
-													'bg-[#FF5B84] hover:bg-[#FF435A] text-white hover:scale-105 active:scale-95 shadow-[0_8px_20px_rgba(255,91,132,0.4)] cursor-pointer'
-												:	'bg-slate-300 text-slate-500 cursor-not-allowed opacity-70'
-											}`}>
-											Submit
-										</button>
-									</div>
-								</div>
-							</div>
-						:	/* Layout when SUBMITTED: Question Card & compact Options on Left, Solution Panel with NEXT button on Right */
-							<div className='grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start'>
-								{/* Left Column: Question Card & compact Options */}
-								<div className='lg:col-span-7 flex flex-col gap-3'>
-									<QuestionCard
-										question={currentQuestion}
-										currentIndex={currentIndex}
-										totalQuestions={questions.length}
-										onZoomClick={() => setIsZoomOpen(true)}
-										soundEnabled={soundEnabled}
-										isSubmitted={true}
-									/>
-									<OptionsGrid
-										options={currentQuestion.options || []}
-										selectedOptionId={selectedOptionId}
-										onSelectOption={handleSelectOption}
-										isSubmitted={true}
-										correctAnswerId={currentQuestion.correctAnswerId}
-										soundEnabled={soundEnabled}
-									/>
-								</div>
+                {/* Right: Options 2x2 Grid + Submit Bar */}
+                <div className="lg:col-span-6 flex flex-col justify-between gap-4">
+                  <OptionsGrid
+                    options={currentQuestion.options || []}
+                    selectedOptionId={selectedOptionId}
+                    onSelectOption={handleSelectOption}
+                    isSubmitted={false}
+                    correctAnswerId={currentQuestion.correctAnswerId}
+                    soundEnabled={soundEnabled}
+                  />
 
-								{/* Right Column: Solution & Feedback Panel with NEXT BUTTON right below solution! */}
-								<div className='lg:col-span-5 flex flex-col'>
-									<SolutionPanel
-										isCorrect={
-											selectedOptionId === currentQuestion.correctAnswerId
-										}
-										question={currentQuestion}
-										onAskDoubt={() => setIsAskDoubtOpen(true)}
-										soundEnabled={soundEnabled}
-										onNext={handleNext}
-									/>
-								</div>
-							</div>
-						}
-					</div>
-				:	/* Completion & Summary View */
-					<div className='w-full'>
-						{resultTab === 'overview' ?
-							<ResultOverview
-								scorePercent={scorePercent}
-								correctCount={correctCount}
-								totalCount={questions.length}
-								earnedXp={correctCount * 5}
-								onStartNextSheet={handleStartNextSheet}
-								onViewSummary={() => setResultTab('summary')}
-								activeTab={resultTab}
-								setActiveTab={setResultTab}
-								soundEnabled={soundEnabled}
-								onBackToDashboard={() => setCurrentScreen('dashboard')}
-							/>
-						:	<QuestionSummary
-								questions={questions}
-								history={history}
-								onStartNextSheet={handleStartNextSheet}
-								activeTab={resultTab}
-								setActiveTab={setResultTab}
-								soundEnabled={soundEnabled}
-								onBackToDashboard={() => setCurrentScreen('dashboard')}
-							/>
-						}
-					</div>
-				}
-			</main>
+                  {/* Action Bar directly below Options on right */}
+                  <div className="flex items-center justify-end gap-3 mt-2 select-none">
+                    {/* Power-up Hint Button */}
+                    <button
+                      onClick={() => {
+                        playButtonPop(soundEnabled);
+                        setIsHintOpen(true);
+                      }}
+                      className="w-12 h-12 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 hover:scale-110 active:scale-95 text-white flex items-center justify-center shadow-lg transition-all border-2 border-white/40 flex-shrink-0"
+                      title="Hint Clue"
+                    >
+                      <Zap className="w-6 h-6 fill-white" />
+                    </button>
 
-			{/* Interactive Modals */}
-			<HintModal
-				hintText={currentQuestion.hint}
-				isOpen={isHintOpen}
-				onClose={() => setIsHintOpen(false)}
-				soundEnabled={soundEnabled}
-			/>
+                    {/* Submit Button */}
+                    <button
+                      disabled={!selectedOptionId}
+                      onClick={handleSubmit}
+                      className={`px-8 sm:px-12 py-3.5 sm:py-4 rounded-full font-black text-sm sm:text-lg tracking-wider uppercase transition-all shadow-xl ${
+                        selectedOptionId
+                          ? 'bg-[#FF5B84] hover:bg-[#FF435A] text-white hover:scale-105 active:scale-95 shadow-[0_8px_20px_rgba(255,91,132,0.4)] cursor-pointer'
+                          : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-70'
+                      }`}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Layout when SUBMITTED: Question Card & compact Options on Left, Solution Panel with NEXT button on Right */
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
+                {/* Left Column: Question Card & compact Options */}
+                <div className="lg:col-span-7 flex flex-col gap-3">
+                  <QuestionCard
+                    question={currentQuestion}
+                    currentIndex={currentIndex}
+                    totalQuestions={questions.length}
+                    onZoomClick={() => setIsZoomOpen(true)}
+                    soundEnabled={soundEnabled}
+                    isSubmitted={true}
+                  />
+                  <OptionsGrid
+                    options={currentQuestion.options || []}
+                    selectedOptionId={selectedOptionId}
+                    onSelectOption={handleSelectOption}
+                    isSubmitted={true}
+                    correctAnswerId={currentQuestion.correctAnswerId}
+                    soundEnabled={soundEnabled}
+                  />
+                </div>
 
-			<ZoomModal
-				diagramType={currentQuestion.diagramType}
-				diagramData={currentQuestion.diagramData}
-				isOpen={isZoomOpen}
-				onClose={() => setIsZoomOpen(false)}
-				soundEnabled={soundEnabled}
-			/>
+                {/* Right Column: Solution & Feedback Panel with NEXT BUTTON right below solution! */}
+                <div className="lg:col-span-5 flex flex-col">
+                  <SolutionPanel
+                    isCorrect={selectedOptionId === currentQuestion.correctAnswerId}
+                    question={currentQuestion}
+                    onAskDoubt={() => setIsAskDoubtOpen(true)}
+                    soundEnabled={soundEnabled}
+                    onNext={handleNext}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Completion & Summary View */
+          <div className="w-full">
+            {resultTab === 'overview' ? (
+              <ResultOverview
+                scorePercent={scorePercent}
+                correctCount={correctCount}
+                totalCount={questions.length}
+                earnedXp={correctCount * 5}
+                onStartNextSheet={handleStartNextSheet}
+                onViewSummary={() => setResultTab('summary')}
+                activeTab={resultTab}
+                setActiveTab={setResultTab}
+                soundEnabled={soundEnabled}
+                onBackToDashboard={() => setCurrentScreen('dashboard')}
+                kidName={kidName}
+              />
+            ) : (
+              <QuestionSummary
+                questions={questions}
+                history={history}
+                onStartNextSheet={handleStartNextSheet}
+                activeTab={resultTab}
+                setActiveTab={setResultTab}
+                soundEnabled={soundEnabled}
+                onBackToDashboard={() => setCurrentScreen('dashboard')}
+              />
+            )}
+          </div>
+        )}
+      </main>
 
-			<AskDoubtModal
-				question={currentQuestion}
-				isOpen={isAskDoubtOpen}
-				onClose={() => setIsAskDoubtOpen(false)}
-				soundEnabled={soundEnabled}
-			/>
+      {/* Interactive Modals */}
+      <HintModal
+        hintText={currentQuestion.hint}
+        isOpen={isHintOpen}
+        onClose={() => setIsHintOpen(false)}
+        soundEnabled={soundEnabled}
+      />
 
-			<NewSheetModal
-				isOpen={isNewSheetOpen}
-				onClose={() => setIsNewSheetOpen(false)}
-				onConfirmNewSheet={handleConfirmNewSheet}
-				sessionState={{
-					selectedSkill,
-					sheetNumber,
-					questions,
-					currentIndex,
-					selectedOptionId,
-					history,
-					xp,
-					timerSeconds,
-					isCompleted,
-				}}
-				soundEnabled={soundEnabled}
-			/>
-		</div>
-	);
+      <ZoomModal
+        diagramType={currentQuestion.diagramType}
+        diagramData={currentQuestion.diagramData}
+        isOpen={isZoomOpen}
+        onClose={() => setIsZoomOpen(false)}
+        soundEnabled={soundEnabled}
+      />
+
+      <AskDoubtModal
+        question={currentQuestion}
+        isOpen={isAskDoubtOpen}
+        onClose={() => setIsAskDoubtOpen(false)}
+        soundEnabled={soundEnabled}
+      />
+
+      <NewSheetModal
+        isOpen={isNewSheetOpen}
+        onClose={() => setIsNewSheetOpen(false)}
+        onConfirmNewSheet={handleConfirmNewSheet}
+        sessionState={{
+          selectedSkill,
+          sheetNumber,
+          questions,
+          currentIndex,
+          selectedOptionId,
+          history,
+          xp,
+          timerSeconds,
+          isCompleted
+        }}
+        soundEnabled={soundEnabled}
+      />
+
+      <KidNameModal
+        isOpen={isNameModalOpen}
+        onSaveName={handleSaveKidName}
+        currentName={kidName}
+        soundEnabled={soundEnabled}
+      />
+    </div>
+  );
 }
