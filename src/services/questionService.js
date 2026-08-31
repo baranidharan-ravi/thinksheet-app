@@ -1,3 +1,5 @@
+import { generateAIQuestions } from './aiGenerator';
+
 // Question Service: Infinite Dynamic & Internet-Sourced Engine (Visual & Analytical Thinking)
 // Strictly guarantees non-repeating questions across all sessions!
 
@@ -532,7 +534,8 @@ function saveSeenSignatures(seenSet) {
 // -------------------------------------------------------------
 
 /**
- * Fetches exactly 10 fresh, unseen questions from the internet & procedural engine.
+ * Fetches exactly 10 fresh, unseen questions using AI (Google Gemini API)
+ * with instant fallback to the internet & procedural engine.
  * Never repeats the same question in subsequent sessions!
  *
  * @param {'Visual' | 'Analytical Thinking'} selectedSkill
@@ -540,10 +543,26 @@ function saveSeenSignatures(seenSet) {
  */
 export async function getFreshThinksheetSession(selectedSkill = 'Visual', sheetNumber = 1) {
   const seenSignatures = getSeenSignatures();
+
+  // 1. First Priority: AI-Powered Question Generation via Gemini API
+  try {
+    const aiQuestions = await generateAIQuestions(selectedSkill, sheetNumber);
+    if (aiQuestions && Array.isArray(aiQuestions) && aiQuestions.length >= 8) {
+      aiQuestions.forEach(q => {
+        if (q.signature) seenSignatures.add(q.signature);
+      });
+      saveSeenSignatures(seenSignatures);
+      return aiQuestions.slice(0, 10);
+    }
+  } catch (err) {
+    console.warn('AI generator fallback activated:', err);
+  }
+
+  // 2. Secondary: Dynamic Internet & Infinite Procedural Engine
   const result = [];
 
   if (selectedSkill === 'Analytical Thinking') {
-    // 1. Attempt to pull fresh internet questions first
+    // Attempt to pull fresh internet questions first
     const internetQuestions = await fetchFromInternetAPI(4);
     for (const iq of internetQuestions) {
       if (!seenSignatures.has(iq.signature) && result.length < 10) {
@@ -552,7 +571,7 @@ export async function getFreshThinksheetSession(selectedSkill = 'Visual', sheetN
       }
     }
 
-    // 2. Fill the remaining spots with dynamic procedural reasoning questions
+    // Fill remaining with dynamic procedural reasoning questions
     while (result.length < 10) {
       const dynQ = generateInfiniteAnalyticalQuestion(seenSignatures);
       result.push(dynQ);
