@@ -214,7 +214,7 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
     }
 
     case 'apple-counting': {
-      const count = data.count || 7;
+      const count = Number(data.count) > 0 ? Number(data.count) : 4;
       const emoji = data.emoji || '🍎';
       return (
         <div className="flex flex-col items-center justify-center p-2">
