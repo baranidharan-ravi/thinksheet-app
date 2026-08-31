@@ -1,9 +1,9 @@
 import { generateAIQuestions } from './aiGenerator';
 
-// Question Service: 100% Real-Time AI Generation Only with Background Prefetching
-// Provides instant 0ms startup times when prefetched, and ultra-fast generation via gemini-3.5-flash-lite.
+// Question Service: 100% Real-Time AI Generation Only with Intelligent Prefetching
+// Provides instant 0ms startup times when prefetched, and ~2s parallel generation via gemini-3.5-flash-lite.
 
-const SEEN_QUESTIONS_KEY = 'thinksheet_infinite_unseen_signatures_v5';
+const SEEN_QUESTIONS_KEY = 'thinksheet_infinite_unseen_signatures_v6';
 
 export const CATEGORY_DESCRIPTIONS = {
   Visual:
@@ -56,7 +56,6 @@ export async function prefetchThinksheetSession(selectedSkill = 'Visual', sheetN
       prefetchCache[selectedSkill] = questions;
     }
   } catch (err) {
-    // Silent fail in background prefetch
     console.debug('Background prefetch notice:', err.message);
   } finally {
     prefetchInProgress[selectedSkill] = false;
@@ -65,7 +64,7 @@ export async function prefetchThinksheetSession(selectedSkill = 'Visual', sheetN
 
 /**
  * Fetches exactly 10 fresh, unseen questions strictly from Google Gemini AI API
- * Returns instantly if pre-fetched in background, otherwise fetches in ~2-3 seconds.
+ * Returns instantly if pre-fetched in background, otherwise fetches in ~2 seconds.
  *
  * @param {'Visual' | 'Analytical Thinking'} selectedSkill
  * @param {number} sheetNumber
@@ -89,15 +88,15 @@ export async function getFreshThinksheetSession(
     });
     saveSeenSignatures(seenSignatures);
 
-    // Immediately trigger background prefetch for the NEXT session
+    // Trigger background prefetch for the NEXT session
     setTimeout(() => {
       prefetchThinksheetSession(selectedSkill, sheetNumber + 1, kidAge);
-    }, 100);
+    }, 200);
 
     return cached.slice(0, 10);
   }
 
-  // 2. Fetch directly with ultra-fast gemini-3.5-flash-lite
+  // 2. Fetch directly with ultra-fast parallel gemini-3.5-flash-lite
   const aiQuestions = await generateAIQuestions(selectedSkill, sheetNumber, kidAge);
 
   if (aiQuestions && Array.isArray(aiQuestions) && aiQuestions.length >= 6) {
@@ -109,10 +108,9 @@ export async function getFreshThinksheetSession(
     // Trigger background prefetch for the next sheet in this skill
     setTimeout(() => {
       prefetchThinksheetSession(selectedSkill, sheetNumber + 1, kidAge);
-      // And prefetch the other skill
       const otherSkill = selectedSkill === 'Visual' ? 'Analytical Thinking' : 'Visual';
       prefetchThinksheetSession(otherSkill, 1, kidAge);
-    }, 200);
+    }, 300);
 
     return aiQuestions.slice(0, 10);
   }

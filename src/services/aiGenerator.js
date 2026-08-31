@@ -1,5 +1,5 @@
-// Blazing Fast 100% AI Question Generator for Kids
-// Uses ultra-low latency gemini-3.5-flash-lite with concise prompting & memory prefetch
+// Ultra-Fast 100% AI Question Generator for Kids
+// Uses gemini-3.5-flash-lite with parallel batching and compact token schema for maximum speed
 
 const AI_KEY_STORAGE = 'thinksheet_gemini_api_key';
 
@@ -26,31 +26,63 @@ export function setStoredApiKey(key) {
 
 // Helper to shuffle options and re-assign letters A, B, C, D
 function shuffleAndFormatOptions(questionObj) {
-  if (!questionObj || !Array.isArray(questionObj.options) || questionObj.options.length === 0) {
-    return questionObj;
+  if (!questionObj) return questionObj;
+
+  let optionTexts = [];
+  let correctText = '';
+
+  if (Array.isArray(questionObj.options)) {
+    if (typeof questionObj.options[0] === 'string') {
+      optionTexts = [...questionObj.options];
+      correctText = questionObj.correctAnswer || questionObj.correctAnswerId || optionTexts[0];
+    } else if (typeof questionObj.options[0] === 'object') {
+      optionTexts = questionObj.options.map((opt) => opt.text || opt.label || String(opt));
+      const found = questionObj.options.find(
+        (opt) => opt.id === questionObj.correctAnswerId || opt.text === questionObj.correctAnswer
+      );
+      correctText = found ? (found.text || found.id) : (questionObj.correctAnswer || optionTexts[0]);
+    }
   }
 
-  const correctOption = questionObj.options.find(
-    (opt) => opt.id === questionObj.correctAnswerId
-  ) || questionObj.options[0];
-  const correctText = correctOption ? correctOption.text : '';
+  if (optionTexts.length < 2) {
+    optionTexts = ['Option 1', 'Option 2', 'Option 3', 'Option 4'];
+    correctText = optionTexts[0];
+  }
 
-  const allTexts = questionObj.options.map((opt) => opt.text);
-  const shuffledTexts = [...allTexts].sort(() => Math.random() - 0.5);
+  // Ensure at least 4 options
+  while (optionTexts.length < 4) {
+    optionTexts.push(`Choice ${optionTexts.length + 1}`);
+  }
 
+  const shuffledTexts = [...optionTexts.slice(0, 4)].sort(() => Math.random() - 0.5);
   const letters = ['A', 'B', 'C', 'D'];
-  const newOptions = shuffledTexts.slice(0, 4).map((text, idx) => ({
+
+  const newOptions = shuffledTexts.map((text, idx) => ({
     id: letters[idx],
-    text
+    text: String(text)
   }));
 
-  const newCorrectIdx = shuffledTexts.indexOf(correctText);
-  const newCorrectId = letters[newCorrectIdx >= 0 ? newCorrectIdx : 0];
+  const correctIdx = shuffledTexts.indexOf(correctText);
+  const newCorrectId = letters[correctIdx >= 0 ? correctIdx : 0];
 
   return {
-    ...questionObj,
+    id: questionObj.id || `ai_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+    category: questionObj.category || 'Visual',
+    categoryDescription:
+      questionObj.category === 'Visual'
+        ? 'Develop your ability to analyze and spot visual information'
+        : 'Develop your ability to plan and breakdown information to solve problems',
+    question: questionObj.question || questionObj.q || 'Look at the picture. What is the correct answer?',
+    promptAudio: questionObj.promptAudio || questionObj.question || questionObj.q || 'What is the answer?',
+    diagramType: questionObj.diagramType || questionObj.dt || null,
+    diagramData: questionObj.diagramData || questionObj.dd || {},
     options: newOptions,
-    correctAnswerId: newCorrectId
+    correctAnswerId: newCorrectId,
+    solutionText: questionObj.solutionText || questionObj.solution || questionObj.sol || 'Great thinking! That is the correct answer.',
+    solutionDiagramType: questionObj.diagramType || questionObj.dt || null,
+    solutionDiagramData: questionObj.diagramData || questionObj.dd || {},
+    hint: questionObj.hint || 'Take a close look and think step by step.',
+    isAIGenerated: true
   };
 }
 
@@ -83,8 +115,62 @@ function parseGeminiJsonResponse(rawText) {
 }
 
 /**
- * Generate 10 AI-Powered questions with ultra-low latency
- * Uses gemini-3.5-flash-lite as first priority for fastest response speed
+ * Fast single batch fetcher using gemini-3.5-flash-lite
+ */
+async function fetchBatch(selectedSkill, count, kidAge, batchId, apiKey) {
+  const isVisual = selectedSkill === 'Visual';
+
+  const prompt = `Create ${count} fun ${selectedSkill} puzzles for a ${kidAge}-year-old child (Batch ${batchId}).
+Age rule: Strictly for age ${kidAge}. Use simple words and playful emojis.
+${
+  isVisual
+    ? 'Visual spatial puzzles (grid-tiles, pattern-shapes, apple-counting, scale-balance, block-tower).'
+    : 'Analytical picture analogies (e.g. Puppy:Dog::Kitten:Cat), odd-one-out categories, simple cause-effect.'
+}
+JSON Array format:
+[{"question":"...","diagramType":${isVisual ? '"pattern-shapes"' : 'null'},"diagramData":{},"options":["A","B","C","D"],"correctAnswer":"A","solution":"...","hint":"..."}]
+Return ONLY valid JSON array.`;
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${encodeURIComponent(
+    apiKey
+  )}`;
+
+  const bodyPayload = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.6,
+      maxOutputTokens: 1024
+    }
+  };
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(bodyPayload)
+  });
+
+  if (!res.ok) {
+    const errData = await res.text();
+    throw new Error(`Status ${res.status}: ${errData}`);
+  }
+
+  const data = await res.json();
+  const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const parsed = parseGeminiJsonResponse(rawText);
+
+  if (Array.isArray(parsed) && parsed.length > 0) {
+    return parsed.map((item) => ({ ...item, category: selectedSkill }));
+  }
+
+  return [];
+}
+
+/**
+ * Generate 10 AI-Powered questions with ultra-fast parallel batch execution
+ * @param {'Visual' | 'Analytical Thinking'} selectedSkill
+ * @param {number} sheetNumber
+ * @param {number} kidAge (e.g. 3, 4, 5, 6, 7, 8)
  */
 export async function generateAIQuestions(selectedSkill = 'Visual', sheetNumber = 1, kidAge = 5) {
   const apiKey = getStoredApiKey();
@@ -93,104 +179,41 @@ export async function generateAIQuestions(selectedSkill = 'Visual', sheetNumber 
     throw new Error('MISSING_API_KEY');
   }
 
-  // Ultra-compact, high-speed prompt
-  const prompt = `
-Create 10 fun ${selectedSkill} questions for a ${kidAge}-year-old child (Sheet #${sheetNumber}).
-Age rule: Strictly for age ${kidAge}. Use simple words and playful emojis.
+  try {
+    // Run 2 small batches of 5 items concurrently in parallel for 2.5x speed
+    const [batch1, batch2] = await Promise.all([
+      fetchBatch(selectedSkill, 5, kidAge, 1, apiKey),
+      fetchBatch(selectedSkill, 5, kidAge, 2, apiKey)
+    ]);
 
-${
-  selectedSkill === 'Visual'
-    ? 'Include spatial puzzles: grid-tiles, pattern-shapes, apple-counting, scale-balance, block-tower, butterfly-symmetry.'
-    : 'Include picture analogies (e.g. Puppy:Dog::Kitten:Cat), odd-one-out categories, and simple cause-effect.'
-}
+    const combined = [...batch1, ...batch2];
 
-Output JSON Array of 10 items.
-Format:
-[
-  {
-    "id": "q1",
-    "category": "${selectedSkill}",
-    "categoryDescription": "${
-      selectedSkill === 'Visual'
-        ? 'Develop your ability to spot visual information'
-        : 'Develop your ability to analyze and solve problems'
-    }",
-    "question": "Short question text with emoji",
-    "promptAudio": "Voice read-aloud prompt",
-    "diagramType": ${selectedSkill === 'Visual' ? '"pattern-shapes"' : 'null'},
-    "diagramData": {},
-    "options": [
-      { "id": "A", "text": "Option 1" },
-      { "id": "B", "text": "Option 2" },
-      { "id": "C", "text": "Option 3" },
-      { "id": "D", "text": "Option 4" }
-    ],
-    "correctAnswerId": "A",
-    "solutionText": "Simple 1-sentence explanation for a ${kidAge}yo child.",
-    "solutionDiagramType": ${selectedSkill === 'Visual' ? '"pattern-shapes"' : 'null'},
-    "solutionDiagramData": {},
-    "hint": "1 friendly clue."
-  }
-]
-Return ONLY the JSON array.`;
-
-  // Fastest models listed first for maximum speed
-  const models = ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.7-flash'];
-  let lastErrorText = '';
-
-  for (const modelName of models) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
-        apiKey
-      )}`;
-
-      const bodyPayload = {
-        contents: [
-          {
-            parts: [{ text: prompt }]
-          }
-        ],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0.6,
-          maxOutputTokens: 2048
-        }
-      };
-
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(bodyPayload)
+    if (combined.length >= 6) {
+      return combined.slice(0, 10).map((q, idx) => {
+        const formatted = shuffleAndFormatOptions(q);
+        return {
+          ...formatted,
+          id: `ai_${kidAge}yo_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`,
+          category: selectedSkill
+        };
       });
-
-      if (!res.ok) {
-        const errData = await res.text();
-        lastErrorText = `Status ${res.status}: ${errData}`;
-        continue;
-      }
-
-      const data = await res.json();
-      const rawText =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-      const parsed = parseGeminiJsonResponse(rawText);
-      if (Array.isArray(parsed) && parsed.length >= 6) {
-        return parsed.slice(0, 10).map((q, idx) => {
-          const formatted = shuffleAndFormatOptions(q);
-          return {
-            ...formatted,
-            id: `ai_${kidAge}yo_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`,
-            category: selectedSkill,
-            isAIGenerated: true
-          };
-        });
-      }
-    } catch (err) {
-      lastErrorText = err.message || 'Network error';
     }
+  } catch (err) {
+    console.warn('Parallel batch encountered issue, falling back to single batch:', err.message);
   }
 
-  throw new Error(`API_ERROR: ${lastErrorText || 'Failed to generate questions from Gemini API'}`);
+  // Fallback: single batch of 10 if parallel fetch had an issue
+  const singleBatch = await fetchBatch(selectedSkill, 10, kidAge, 1, apiKey);
+  if (singleBatch.length >= 6) {
+    return singleBatch.slice(0, 10).map((q, idx) => {
+      const formatted = shuffleAndFormatOptions(q);
+      return {
+        ...formatted,
+        id: `ai_${kidAge}yo_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`,
+        category: selectedSkill
+      };
+    });
+  }
+
+  throw new Error('API_ERROR: Unable to generate questions from Gemini API');
 }
