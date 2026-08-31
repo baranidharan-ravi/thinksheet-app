@@ -15,7 +15,8 @@ import AISetupModal from './components/AISetupModal';
 
 import confetti from 'canvas-confetti';
 import { Rocket, Zap, AlertTriangle, Key, RefreshCw, ArrowLeft, Sparkles } from 'lucide-react';
-import { getFreshThinksheetSession } from './services/questionService';
+import { getFreshThinksheetSession, prefetchThinksheetSession } from './services/questionService';
+import { getStoredApiKey } from './services/aiGenerator';
 import {
   playButtonPop,
   playCorrectSound,
@@ -75,6 +76,14 @@ export default function App() {
   useEffect(() => {
     setCurrentScreen('dashboard');
   }, []);
+
+  // Background pre-fetch sessions when on dashboard for instant opening (0ms wait)
+  useEffect(() => {
+    if (currentScreen === 'dashboard' && getStoredApiKey()) {
+      prefetchThinksheetSession('Visual', 1, kidAge);
+      prefetchThinksheetSession('Analytical Thinking', 1, kidAge);
+    }
+  }, [currentScreen, kidAge]);
 
   // Save session state to localStorage
   useEffect(() => {

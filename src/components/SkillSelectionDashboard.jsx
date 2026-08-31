@@ -47,6 +47,7 @@ export default function SkillSelectionDashboard({
 			<header className='w-full max-w-5xl mx-auto flex items-center justify-between pt-2 pb-4 relative'>
 				{/* Kid Name & Age Personalization Badge */}
 				<button
+					type='button'
 					onClick={() => {
 						playButtonPop(soundEnabled);
 						onEditKidName();
