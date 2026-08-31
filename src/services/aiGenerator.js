@@ -1,5 +1,5 @@
-// Browser-Native AI Question Generator with Strict Age Calibration
-// Uses direct Gemini REST API calls with multi-model fallback and JSON parsing
+// 100% AI-Powered Dynamic Question Generator (Google Gemini API Only)
+// NO offline/static questions are used. All questions are generated in real-time.
 
 const AI_KEY_STORAGE = 'thinksheet_gemini_api_key';
 
@@ -89,7 +89,9 @@ function parseGeminiJsonResponse(rawText) {
 
 /**
  * Generate 10 AI-Powered questions strictly customized for the child's exact age
- * using Google Gemini REST API with robust multi-model fallback
+ * using Google Gemini REST API with multi-model fallback.
+ * Exclusively uses real-time AI generation — ZERO offline questions.
+ *
  * @param {'Visual' | 'Analytical Thinking'} selectedSkill
  * @param {number} sheetNumber
  * @param {number} kidAge (e.g. 3, 4, 5, 6, 7, 8)
@@ -98,8 +100,7 @@ export async function generateAIQuestions(selectedSkill = 'Visual', sheetNumber 
   const apiKey = getStoredApiKey();
 
   if (!apiKey) {
-    // Fallback to procedural/internet generator if key is not configured
-    return null;
+    throw new Error('MISSING_API_KEY');
   }
 
   const prompt = `
@@ -166,6 +167,7 @@ IMPORTANT: Output ONLY the valid JSON array.
 
   // Models to try in order of capability
   const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  let lastErrorText = '';
 
   for (const modelName of models) {
     try {
@@ -195,6 +197,7 @@ IMPORTANT: Output ONLY the valid JSON array.
 
       if (!res.ok) {
         const errData = await res.text();
+        lastErrorText = `Status ${res.status}: ${errData}`;
         console.warn(`Gemini API returned status ${res.status} for model ${modelName}:`, errData);
         continue;
       }
@@ -216,9 +219,10 @@ IMPORTANT: Output ONLY the valid JSON array.
         });
       }
     } catch (err) {
+      lastErrorText = err.message || 'Network error';
       console.warn(`Network/fetch error for model ${modelName}:`, err);
     }
   }
 
-  return null;
+  throw new Error(`API_ERROR: ${lastErrorText || 'Failed to generate questions from Gemini API'}`);
 }

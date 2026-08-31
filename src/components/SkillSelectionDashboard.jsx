@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Info, Sparkles, Key, Check, Edit2, User } from 'lucide-react';
 import { playButtonPop } from '../utils/audioSynthesis';
 import { calculateSkillLevel } from '../utils/progressTracker';
-import { getStoredApiKey, setStoredApiKey } from '../services/aiGenerator';
+import { getStoredApiKey } from '../services/aiGenerator';
+import AISetupModal from './AISetupModal';
 
 export default function SkillSelectionDashboard({
   profileStats,
@@ -14,20 +15,15 @@ export default function SkillSelectionDashboard({
 }) {
   const [infoModalTopic, setInfoModalTopic] = useState(null);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState('');
   const [hasApiKey, setHasApiKey] = useState(false);
 
   useEffect(() => {
     const key = getStoredApiKey();
     setHasApiKey(Boolean(key));
-    setApiKeyInput(key);
   }, []);
 
-  const handleSaveApiKey = () => {
-    playButtonPop(soundEnabled);
-    setStoredApiKey(apiKeyInput);
-    setHasApiKey(Boolean(apiKeyInput.trim()));
-    setIsAiModalOpen(false);
+  const handleKeySaved = (key) => {
+    setHasApiKey(Boolean(key));
   };
 
   const visualLevel = calculateSkillLevel(
@@ -295,53 +291,12 @@ export default function SkillSelectionDashboard({
       </main>
 
       {/* AI Key & Settings Modal */}
-      {isAiModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-[#141846] border-2 border-[#2C3480] text-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
-            <h3 className="text-lg sm:text-xl font-black text-white mb-2 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-400" />
-              <span>AI Question Generator Settings</span>
-            </h3>
-
-            <p className="text-xs font-semibold text-slate-300 leading-relaxed my-3">
-              The Thinksheet automatically calls Google Gemini API (
-              <code className="text-amber-300">gemini-2.5-flash</code>) to generate unique, age-appropriate questions for 5-year-olds on each session.
-            </p>
-
-            <div className="my-4">
-              <label className="block text-xs font-bold text-slate-300 mb-1">
-                Google Gemini API Key (Optional Override):
-              </label>
-              <input
-                type="password"
-                value={apiKeyInput}
-                onChange={(e) => setApiKeyInput(e.target.value)}
-                placeholder="AIzaSy..."
-                className="w-full bg-[#0D1030] border border-[#2D357A] rounded-xl px-3 py-2.5 text-sm text-white font-mono placeholder:text-slate-500 focus:outline-none focus:border-amber-400"
-              />
-              <span className="text-[11px] text-slate-400 mt-1 block">
-                Leave empty to use default environment API configuration or procedural engine.
-              </span>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={handleSaveApiKey}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-sm shadow-lg flex items-center justify-center gap-1.5"
-              >
-                <Check className="w-4 h-4 stroke-[3]" />
-                <span>Save & Apply</span>
-              </button>
-              <button
-                onClick={() => setIsAiModalOpen(false)}
-                className="px-5 py-3 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold text-sm"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AISetupModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        onKeySaved={handleKeySaved}
+        soundEnabled={soundEnabled}
+      />
 
       {/* Skill Info Modal */}
       {infoModalTopic && (

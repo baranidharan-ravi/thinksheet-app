@@ -11,9 +11,10 @@ import SkillSelectionDashboard from './components/SkillSelectionDashboard';
 import SolutionPanel from './components/SolutionPanel';
 import ZoomModal from './components/ZoomModal';
 import KidNameModal from './components/KidNameModal';
+import AISetupModal from './components/AISetupModal';
 
 import confetti from 'canvas-confetti';
-import { Rocket, Zap } from 'lucide-react';
+import { Rocket, Zap, AlertTriangle, Key, RefreshCw, ArrowLeft, Sparkles } from 'lucide-react';
 import { getFreshThinksheetSession } from './services/questionService';
 import {
   playButtonPop,
@@ -57,6 +58,7 @@ export default function App() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [resultTab, setResultTab] = useState('overview'); // 'overview' | 'summary'
   const [isLoadingSheet, setIsLoadingSheet] = useState(false);
+  const [aiError, setAiError] = useState(null); // null | 'MISSING_KEY' | 'API_ERROR' | 'GENERIC_ERROR'
 
   // Settings & Audio Controls
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -67,6 +69,7 @@ export default function App() {
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [isNewSheetOpen, setIsNewSheetOpen] = useState(false);
   const [isAskDoubtOpen, setIsAskDoubtOpen] = useState(false);
+  const [isAiSetupOpen, setIsAiSetupOpen] = useState(false);
 
   // Always start with the skill selection dashboard on load
   useEffect(() => {
@@ -75,7 +78,7 @@ export default function App() {
 
   // Save session state to localStorage
   useEffect(() => {
-    if (questions.length > 0 && !isLoadingSheet && currentScreen === 'thinksheet') {
+    if (questions.length > 0 && !isLoadingSheet && currentScreen === 'thinksheet' && !aiError) {
       saveSessionState({
         currentScreen,
         selectedSkill,
@@ -102,17 +105,18 @@ export default function App() {
     xp,
     timerSeconds,
     isCompleted,
-    isLoadingSheet
+    isLoadingSheet,
+    aiError
   ]);
 
   // Live Timer
   useEffect(() => {
-    if (isCompleted || isLoadingSheet || currentScreen !== 'thinksheet') return;
+    if (isCompleted || isLoadingSheet || currentScreen !== 'thinksheet' || aiError) return;
     const interval = setInterval(() => {
       setTimerSeconds((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, [isCompleted, isLoadingSheet, currentScreen]);
+  }, [isCompleted, isLoadingSheet, currentScreen, aiError]);
 
   // Current Question Object
   const currentQuestion = questions[currentIndex] || {};
@@ -125,12 +129,13 @@ export default function App() {
       !isCompleted &&
       !isSubmitted &&
       !isLoadingSheet &&
+      !aiError &&
       currentScreen === 'thinksheet'
     ) {
       const textToRead = currentQuestion.promptAudio || currentQuestion.question;
       speakText(textToRead);
     }
-  }, [currentIndex, isCompleted, sheetNumber, isLoadingSheet, currentScreen]);
+  }, [currentIndex, isCompleted, sheetNumber, isLoadingSheet, currentScreen, aiError]);
 
   // Handle saving kid's profile (name and age)
   const handleSaveKidProfile = ({ name, age }) => {
@@ -140,10 +145,11 @@ export default function App() {
     setIsNameModalOpen(false);
   };
 
-  // Start Sheet for a selected skill
+  // Start Sheet for a selected skill (100% Real-Time AI Generation)
   const handleSelectSkill = async (skill) => {
     setSelectedSkill(skill);
     setIsLoadingSheet(true);
+    setAiError(null);
     setCurrentScreen('thinksheet');
     setCurrentIndex(0);
     setSelectedOptionId(null);
@@ -152,9 +158,19 @@ export default function App() {
     setTimerSeconds(0);
     setIsCompleted(false);
 
-    const freshQuestions = await getFreshThinksheetSession(skill, 1, kidAge);
-    setQuestions(freshQuestions);
-    setIsLoadingSheet(false);
+    try {
+      const freshQuestions = await getFreshThinksheetSession(skill, 1, kidAge);
+      setQuestions(freshQuestions);
+    } catch (err) {
+      console.error('AI Question Generation Failed:', err);
+      if (err.message === 'MISSING_API_KEY') {
+        setAiError('MISSING_KEY');
+      } else {
+        setAiError('API_ERROR');
+      }
+    } finally {
+      setIsLoadingSheet(false);
+    }
   };
 
   // Handle Option Select
@@ -235,19 +251,29 @@ export default function App() {
   const handleStartNextSheet = async () => {
     playButtonPop(soundEnabled);
     setIsLoadingSheet(true);
+    setAiError(null);
 
     const nextSheetNum = sheetNumber + 1;
-    const newQuestions = await getFreshThinksheetSession(selectedSkill, nextSheetNum, kidAge);
-
-    setSheetNumber(nextSheetNum);
-    setQuestions(newQuestions);
-    setCurrentIndex(0);
-    setSelectedOptionId(null);
-    setIsSubmitted(false);
-    setHistory([]);
-    setIsCompleted(false);
-    setResultTab('overview');
-    setIsLoadingSheet(false);
+    try {
+      const newQuestions = await getFreshThinksheetSession(selectedSkill, nextSheetNum, kidAge);
+      setSheetNumber(nextSheetNum);
+      setQuestions(newQuestions);
+      setCurrentIndex(0);
+      setSelectedOptionId(null);
+      setIsSubmitted(false);
+      setHistory([]);
+      setIsCompleted(false);
+      setResultTab('overview');
+    } catch (err) {
+      console.error('AI Next Sheet Failed:', err);
+      if (err.message === 'MISSING_API_KEY') {
+        setAiError('MISSING_KEY');
+      } else {
+        setAiError('API_ERROR');
+      }
+    } finally {
+      setIsLoadingSheet(false);
+    }
   };
 
   // Download Sheet Progress
@@ -277,21 +303,32 @@ export default function App() {
     clearSessionState();
     setIsNewSheetOpen(false);
     setIsLoadingSheet(true);
+    setAiError(null);
 
-    const freshQuestions = await getFreshThinksheetSession(
-      selectedSkill,
-      sheetNumber + 1,
-      kidAge
-    );
-    setSheetNumber((prev) => prev + 1);
-    setQuestions(freshQuestions);
-    setCurrentIndex(0);
-    setSelectedOptionId(null);
-    setIsSubmitted(false);
-    setHistory([]);
-    setTimerSeconds(0);
-    setIsCompleted(false);
-    setIsLoadingSheet(false);
+    try {
+      const freshQuestions = await getFreshThinksheetSession(
+        selectedSkill,
+        sheetNumber + 1,
+        kidAge
+      );
+      setSheetNumber((prev) => prev + 1);
+      setQuestions(freshQuestions);
+      setCurrentIndex(0);
+      setSelectedOptionId(null);
+      setIsSubmitted(false);
+      setHistory([]);
+      setTimerSeconds(0);
+      setIsCompleted(false);
+    } catch (err) {
+      console.error('AI Confirm New Sheet Failed:', err);
+      if (err.message === 'MISSING_API_KEY') {
+        setAiError('MISSING_KEY');
+      } else {
+        setAiError('API_ERROR');
+      }
+    } finally {
+      setIsLoadingSheet(false);
+    }
   };
 
   // Calculate score
@@ -347,14 +384,65 @@ export default function App() {
           /* Loading Cosmic State */
           <div className="flex flex-col items-center justify-center p-12 text-center animate-in fade-in">
             <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-pink-500 to-indigo-600 flex items-center justify-center shadow-2xl animate-bounce mb-6">
-              <Rocket className="w-10 h-10 text-white animate-pulse" />
+              <Sparkles className="w-10 h-10 text-amber-300 animate-spin-slow" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
-              Preparing Your {selectedSkill} Thinksheet! 🚀
+              Generating {selectedSkill} Challenges via AI... 🤖
             </h2>
             <p className="text-sm sm:text-base font-bold text-cyan-300">
-              Gathering 10 fresh {selectedSkill} challenges for age {kidAge}...
+              Synthesizing 10 brand-new puzzles for {kidName || 'Explorer'} (Age {kidAge})...
             </p>
+          </div>
+        ) : aiError ? (
+          /* AI Error / API Key Setup Prompt Screen */
+          <div className="w-full max-w-xl mx-auto p-6 sm:p-8 bg-gradient-to-b from-[#1C1F5E] via-[#141846] to-[#0D1030] border-4 border-amber-400/80 rounded-3xl shadow-2xl text-center animate-in fade-in">
+            <div className="w-16 h-16 rounded-3xl bg-amber-400/20 border border-amber-400/50 flex items-center justify-center mx-auto mb-4 text-amber-300">
+              <Key className="w-8 h-8" />
+            </div>
+
+            <h2 className="text-xl sm:text-2xl font-black text-white mb-2">
+              {aiError === 'MISSING_KEY'
+                ? 'Google Gemini API Key Required'
+                : 'AI Generation Connection Error'}
+            </h2>
+
+            <p className="text-sm text-slate-300 font-semibold mb-6 leading-relaxed">
+              {aiError === 'MISSING_KEY'
+                ? 'All thinksheet challenges are generated live by Google Gemini AI. Please configure your API key to start generating customized questions.'
+                : 'Unable to connect to the Gemini AI API. Please check your internet connection or verify your API key in AI Setup.'}
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => {
+                  playButtonPop(soundEnabled);
+                  setIsAiSetupOpen(true);
+                }}
+                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-sm sm:text-base shadow-lg flex items-center justify-center gap-2 transform hover:scale-105 transition-all"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Configure Gemini API Key</span>
+              </button>
+
+              <button
+                onClick={() => handleSelectSkill(selectedSkill)}
+                className="px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm flex items-center justify-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Try Again</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  playButtonPop(soundEnabled);
+                  setCurrentScreen('dashboard');
+                }}
+                className="px-4 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm flex items-center justify-center gap-1.5"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Skills Hub</span>
+              </button>
+            </div>
           </div>
         ) : !isCompleted ? (
           /* Question Playing View */
@@ -527,6 +615,16 @@ export default function App() {
         onSaveProfile={handleSaveKidProfile}
         currentName={kidName}
         currentAge={kidAge}
+        soundEnabled={soundEnabled}
+      />
+
+      <AISetupModal
+        isOpen={isAiSetupOpen}
+        onClose={() => setIsAiSetupOpen(false)}
+        onKeySaved={() => {
+          setIsAiSetupOpen(false);
+          handleSelectSkill(selectedSkill);
+        }}
         soundEnabled={soundEnabled}
       />
     </div>
