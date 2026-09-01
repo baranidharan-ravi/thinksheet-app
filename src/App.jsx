@@ -16,6 +16,7 @@ import confetti from 'canvas-confetti';
 import { ArrowLeft, Key, RefreshCw, Sparkles, Zap } from 'lucide-react';
 import { getStoredApiKey } from './services/aiGenerator';
 import {
+	clearPrefetchCache,
 	getFreshThinksheetSession,
 	prefetchThinksheetSession,
 } from './services/questionService';
@@ -217,6 +218,7 @@ export default function App() {
 		age,
 		timerConfig: newTimerConfig,
 	}) => {
+		clearPrefetchCache();
 		saveStoredKidProfile(name, age);
 		setKidName(name);
 		setKidAge(age);

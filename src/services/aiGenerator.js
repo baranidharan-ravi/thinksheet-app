@@ -1,5 +1,5 @@
-// High-Quality, Sensible 100% AI Question Generator for Kids
-// Guarantees logical consistency, age-appropriate questions, and exact visual synchronization
+// High-Quality, Sensible 100% AI Question Generator with Strict Age Calibration (Ages 2 to 14)
+// Guarantees logical consistency, exact age-appropriate difficulty, and diagram synchronization
 
 const AI_KEY_STORAGE = 'thinksheet_gemini_api_key';
 
@@ -33,8 +33,7 @@ function synchronizeDiagramData(diagramType, rawData = {}, questionText = '', co
   const parsedNum = numMatch ? parseInt(numMatch[0], 10) : null;
 
   if (diagramType === 'apple-counting') {
-    // Ensure the number of items in the SVG EXACTLY matches the answer!
-    const count = parsedNum && parsedNum > 0 && parsedNum <= 15 ? parsedNum : (Number(data.count) || 4);
+    const count = parsedNum && parsedNum > 0 && parsedNum <= 25 ? parsedNum : (Number(data.count) || 4);
     data.count = count;
     const emojiMatch = questionText.match(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u);
     data.emoji = data.emoji || (emojiMatch ? emojiMatch[0] : '🍎');
@@ -46,7 +45,7 @@ function synchronizeDiagramData(diagramType, rawData = {}, questionText = '', co
   } else if (diagramType === 'grid-tiles') {
     const count = parsedNum && parsedNum > 0 ? parsedNum : (data.count || 4);
     data.count = count;
-    data.holeW = count <= 4 ? count : Math.min(3, count);
+    data.holeW = count <= 4 ? count : Math.min(4, Math.ceil(Math.sqrt(count)));
     data.holeH = Math.ceil(count / data.holeW);
     data.rows = Math.max(5, data.holeH + 2);
     data.cols = Math.max(5, data.holeW + 2);
@@ -54,10 +53,12 @@ function synchronizeDiagramData(diagramType, rawData = {}, questionText = '', co
     data.holeCol = 1;
   } else if (diagramType === 'block-tower') {
     const total = parsedNum && parsedNum > 0 ? parsedNum : 6;
-    if (total === 3) {
+    if (total <= 4) {
       data.bottom = 2; data.middle = 1; data.top = 0;
-    } else {
+    } else if (total <= 7) {
       data.bottom = 3; data.middle = 2; data.top = Math.max(1, total - 5);
+    } else {
+      data.bottom = 4; data.middle = 3; data.top = Math.max(1, total - 7);
     }
   }
 
@@ -89,7 +90,6 @@ function shuffleAndFormatOptions(questionObj, selectedSkill) {
     correctText = optionTexts[0];
   }
 
-  // Ensure at least 4 unique options
   while (optionTexts.length < 4) {
     optionTexts.push(`Choice ${optionTexts.length + 1}`);
   }
@@ -165,43 +165,96 @@ function parseGeminiJsonResponse(rawText) {
 }
 
 /**
- * Fetch a high-quality batch with crystal-clear kindergarten pedagogy rules
+ * Generates age-specific pedagogy rules, teacher personas, and relevant few-shot examples
+ */
+function getAgeSpecificPedagogy(age, selectedSkill) {
+  const numAge = parseInt(age, 10) || 5;
+
+  if (numAge <= 4) {
+    return {
+      persona: `preschool and early childhood educator creating simple, colorful, engaging challenges for a ${numAge}-year-old toddler`,
+      guidelines: `
+- Keep questions super short, simple, and visual with familiar animals, fruits, and shapes.
+- For Visual: simple counting (1-5 objects), AB color patterns (🔴 🔵 🔴 🔵).
+- For Analytical: Animal babies (Puppy to Dog, Kitten to Cat), basic sounds, color matching.`,
+      examples: selectedSkill === 'Visual'
+        ? `Example: "How many red apples 🍎 are in the basket?" -> "diagramType": "apple-counting", "diagramData": {"count": 3, "emoji": "🍎"}, "correctAnswer": "3 apples"`
+        : `Example: "Puppy 🐶 is to Dog 🐕, as Kitten 🐱 is to...?" -> "correctAnswer": "Cat 🐈"`
+    };
+  }
+
+  if (numAge <= 7) {
+    return {
+      persona: `elementary educator creating fun, logical puzzles for a ${numAge}-year-old early elementary student`,
+      guidelines: `
+- Use kindergarten/early grade-school vocabulary, addition within 1-12, AAB/ABC repeating patterns.
+- For Visual: Counting 4-12 objects, grid tile gaps, balance scales.
+- For Analytical: Functional analogies (Bird : Nest :: Bee : Hive), everyday cause-and-effect (sun melts ice, rain grows plants), odd-one-out categories.`,
+      examples: selectedSkill === 'Visual'
+        ? `Example: "Complete the pattern: 🔴 🔴 🔷 🔴 🔴 ?" -> "diagramType": "pattern-shapes", "diagramData": {"sequence": ["🔴", "🔴", "🔷", "🔴", "🔴"], "nextItem": "🔷"}, "correctAnswer": "🔷"`
+        : `Example: "If you leave an ice cube 🧊 in the warm sun ☀️, what happens?" -> "correctAnswer": "It melts into water 💧"`
+    };
+  }
+
+  if (numAge <= 10) {
+    return {
+      persona: `upper elementary logic and STEM instructor creating thought-provoking puzzles for a ${numAge}-year-old student (Grades 3-5)`,
+      guidelines: `
+- DO NOT generate baby/preschool counting questions!
+- Use multi-step reasoning, geometric & number sequences (e.g. 4, 8, 12, 16, ? or 3, 6, 12, 24, ?), 3D block projections, grid matrices.
+- For Analytical: Higher-order analogies (Author : Novel :: Sculptor : Statue, Thermometer : Temperature :: Speedometer : Speed), scientific classification (Carnivore/Herbivore/Omnivore, States of matter, simple machines), multi-step deductive clues.`,
+      examples: selectedSkill === 'Visual'
+        ? `Example: "Look at the number sequence: 5, 10, 20, 40, ? What comes next?" -> "correctAnswer": "80", "options": ["60", "70", "80", "90"]`
+        : `Example: "Author is to Book, as Architect is to...?" -> "correctAnswer": "Building", "options": ["Painting", "Building", "Song", "Meal"]`
+    };
+  }
+
+  // Ages 11-14 (Middle School / Teen)
+  return {
+    persona: `middle school logic, mathematics, and advanced STEM educator creating challenging analytical puzzles for a ${numAge}-year-old teenager (Grades 6-9)`,
+    guidelines: `
+- STRICTLY FORBIDDEN: Do NOT give young kid questions (NO simple apple counting, NO baby animal pairings like puppy-dog!).
+- For Visual: Challenging numerical sequences (e.g. 2, 5, 10, 17, 26, ? or Fibonacci), geometric matrix transformations, spatial rotations, isometric block tower volumes, coordinate reflections.
+- For Analytical: Advanced abstract analogies (Microscope : Microorganism :: Telescope : Distant Galaxy, Catalyst : Chemical Reaction :: Mentor : Personal Growth), deductive syllogisms, physics principles (density, balance levers, electric circuits, refraction), critical thinking puzzles.`,
+    examples: selectedSkill === 'Visual'
+      ? `Example: "Identify the pattern rule in the sequence: 2, 5, 10, 17, 26, ? What is the next term?" -> "correctAnswer": "37", "options": ["35", "37", "39", "41"], "solution": "The difference between terms increases by consecutive odd numbers (+3, +5, +7, +9, +11). 26 + 11 = 37."`
+      : `Example: "Microscope is to Microorganism, as Telescope is to...?" -> "correctAnswer": "Distant Galaxy", "options": ["Subatomic Particle", "Distant Galaxy", "Microscopic Cell", "Sound Wave"], "solution": "A microscope is an instrument used to observe microscopic organisms, just as a telescope is used to observe distant galaxies."`
+  };
+}
+
+/**
+ * Fetch a high-quality batch with age-calibrated pedagogy rules
  */
 async function fetchBatch(selectedSkill, count, kidAge, batchId, apiKey) {
   const isVisual = selectedSkill === 'Visual';
+  const pedagogy = getAgeSpecificPedagogy(kidAge, selectedSkill);
 
-  const prompt = `You are a warm kindergarten and early-childhood teacher creating a sensible Thinksheet for a ${kidAge}-year-old child (Batch ${batchId}).
-Generate ${count} questions that make complete logical sense to a ${kidAge}-year-old child.
+  const prompt = `You are an expert ${pedagogy.persona} (Batch ${batchId}).
+Generate ${count} engaging, non-repeating questions STRICTLY CALIBRATED FOR A ${kidAge}-YEAR-OLD.
 
-CRITICAL QUALITY & PEDAGOGY RULES:
-1. Every question MUST be intuitive, logical, and easy for a ${kidAge}-year-old to understand.
-2. For counting visual questions:
-   - "diagramType": "apple-counting"
-   - "diagramData": {"count": 4, "emoji": "🍎"}
-   - "correctAnswer": "4 apples" (MUST match the exact count!)
-   - "options": ["2 apples", "3 apples", "4 apples", "5 apples"]
-3. For pattern visual questions:
-   - "diagramType": "pattern-shapes"
-   - "diagramData": {"sequence": ["🍎", "🍌", "🍎", "🍌"], "nextItem": "🍎"}
-   - "correctAnswer": "🍎"
-4. For Analytical Thinking questions:
-   - Use sensible analogies: "Puppy 🐶 is to Dog 🐕, as Kitten 🐱 is to?" -> "Cat 🐈"
-   - Use clear Odd-One-Out: "Which animal does NOT fly in the sky?" -> "Fish 🐟"
-   - Use everyday cause-effect: "If you leave an ice cube 🧊 in the warm sun ☀️, what happens?" -> "It melts into water 💧"
+AGE PEDAGOGY GUIDELINES (Age ${kidAge}):
+${pedagogy.guidelines}
 
-Output JSON Array of ${count} items. Format:
+${pedagogy.examples}
+
+CRITICAL RULES:
+1. The complexity, vocabulary, and concepts MUST match the cognitive level of a ${kidAge}-year-old.
+2. Every question must have 4 clear, plausible multiple-choice options with exactly 1 correct answer.
+3. For ${kidAge >= 11 ? 'Teenagers (Age 11-14)' : `${kidAge}-year-olds`}, ensure the questions are genuinely engaging, mature, and intellectually stimulating.
+
+Output a valid JSON Array of ${count} items. Format:
 [
   {
-    "question": "Clear, friendly question with emoji",
-    "diagramType": ${isVisual ? '"apple-counting"' : 'null'},
-    "diagramData": ${isVisual ? '{"count": 4, "emoji": "🍎"}' : '{}'},
-    "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-    "correctAnswer": "Option 1",
-    "solution": "1 cheerful sentence explaining why.",
-    "hint": "1 helpful clue."
+    "question": "Age-appropriate question text",
+    "diagramType": ${isVisual ? (kidAge >= 8 ? '"block-tower"' : '"apple-counting"') : 'null'},
+    "diagramData": ${isVisual ? (kidAge >= 8 ? '{"count": 6}' : '{"count": 4, "emoji": "🍎"}') : '{}'},
+    "options": ["Choice 1", "Choice 2", "Choice 3", "Choice 4"],
+    "correctAnswer": "Choice 1",
+    "solution": "1-2 sentences explaining why this is the correct logical answer.",
+    "hint": "1 helpful clue that guides the thinking process."
   }
 ]
-Return ONLY the valid JSON array.`;
+Return ONLY the valid JSON array without any markdown preamble.`;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${encodeURIComponent(
     apiKey
@@ -239,7 +292,7 @@ Return ONLY the valid JSON array.`;
 }
 
 /**
- * Generate 10 sensible, high-quality AI questions in parallel
+ * Generate 10 sensible, high-quality AI questions in parallel calibrated to kidAge
  */
 export async function generateAIQuestions(selectedSkill = 'Visual', sheetNumber = 1, kidAge = 5) {
   const apiKey = getStoredApiKey();
