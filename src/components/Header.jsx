@@ -115,9 +115,8 @@ export default function Header({
 							'bg-rose-950/90 border-rose-500 text-rose-300 animate-bounce'
 						: isUrgent ?
 							'bg-amber-950/80 border-amber-400 text-amber-300 animate-pulse'
-						: isTimerMode ?
-							'bg-[#121644] border-cyan-500/50 text-cyan-300'
-						:	'bg-[#121644] border-[#29307A] text-pink-300'
+						: isTimerMode ? 'bg-[#121644] border-cyan-500/50 text-cyan-300'
+						: 'bg-[#121644] border-[#29307A] text-pink-300'
 					}`}
 					title={
 						isTimerMode ?
