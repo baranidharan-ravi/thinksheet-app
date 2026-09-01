@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import AskDoubtModal from './components/AskDoubtModal';
 import Header from './components/Header';
 import HintModal from './components/HintModal';
-import NewSheetModal from './components/NewSheetModal';
+import KidNameModal from './components/KidNameModal';
+import ExitConfirmationModal from './components/ExitConfirmationModal';
 import OptionsGrid from './components/OptionsGrid';
 import QuestionCard from './components/QuestionCard';
 import QuestionSummary from './components/QuestionSummary';
@@ -10,12 +11,14 @@ import ResultOverview from './components/ResultOverview';
 import SkillSelectionDashboard from './components/SkillSelectionDashboard';
 import SolutionPanel from './components/SolutionPanel';
 import ZoomModal from './components/ZoomModal';
-import KidNameModal from './components/KidNameModal';
 
 import confetti from 'canvas-confetti';
-import { Rocket, Zap, AlertTriangle, Key, RefreshCw, ArrowLeft, Sparkles } from 'lucide-react';
-import { getFreshThinksheetSession, prefetchThinksheetSession } from './services/questionService';
+import { ArrowLeft, Key, RefreshCw, Sparkles, Zap } from 'lucide-react';
 import { getStoredApiKey } from './services/aiGenerator';
+import {
+	getFreshThinksheetSession,
+	prefetchThinksheetSession,
+} from './services/questionService';
 import {
 	playButtonPop,
 	playCorrectSound,
@@ -25,10 +28,10 @@ import {
 import {
 	getStoredKidAge,
 	getStoredKidName,
+	getStoredTimerConfig,
 	loadProfileStats,
 	recordCompletedSheet,
 	saveStoredKidProfile,
-	getStoredTimerConfig,
 	saveStoredTimerConfig,
 } from './utils/progressTracker';
 import {
@@ -51,7 +54,7 @@ export default function App() {
 	// Timer Settings & Per-Question Limit State
 	const [timerConfig, setTimerConfig] = useState(getStoredTimerConfig);
 	const [questionTimeRemaining, setQuestionTimeRemaining] = useState(
-		() => getStoredTimerConfig().secondsPerQuestion || 90
+		() => getStoredTimerConfig().secondsPerQuestion || 90,
 	);
 	const [isTimedOut, setIsTimedOut] = useState(false);
 	const [autoAdvanceCountdown, setAutoAdvanceCountdown] = useState(null);
@@ -77,7 +80,7 @@ export default function App() {
 	// Modals
 	const [isHintOpen, setIsHintOpen] = useState(false);
 	const [isZoomOpen, setIsZoomOpen] = useState(false);
-	const [isNewSheetOpen, setIsNewSheetOpen] = useState(false);
+	const [isExitModalOpen, setIsExitModalOpen] = useState(false);
 	const [isAskDoubtOpen, setIsAskDoubtOpen] = useState(false);
 
 	// Always start with the skill selection dashboard on load
@@ -209,7 +212,11 @@ export default function App() {
 	const currentQuestion = questions[currentIndex] || {};
 
 	// Handle saving kid's profile (name, age, mandatory API key, and timer)
-	const handleSaveKidProfile = ({ name, age, timerConfig: newTimerConfig }) => {
+	const handleSaveKidProfile = ({
+		name,
+		age,
+		timerConfig: newTimerConfig,
+	}) => {
 		saveStoredKidProfile(name, age);
 		setKidName(name);
 		setKidAge(age);
@@ -240,7 +247,9 @@ export default function App() {
 		playIncorrectSound(soundEnabled);
 
 		if (speechEnabled) {
-			speakText("Time's up! No answer was selected. Look at the correct solution. The next question will load automatically!");
+			speakText(
+				"Time's up! No answer was selected. Look at the correct solution. The next question will load automatically!",
+			);
 		}
 
 		// Record in history as timed out / un-answered
@@ -420,40 +429,19 @@ export default function App() {
 		);
 	};
 
-	// Confirm Creating a New Sheet
-	const handleConfirmNewSheet = async () => {
+	// Exit and Download
+	const handleExitAndDownload = () => {
+		handleDownloadSheet();
 		clearSessionState();
-		setIsNewSheetOpen(false);
-		setIsLoadingSheet(true);
-		setAiError(null);
-		setIsTimedOut(false);
-		setAutoAdvanceCountdown(null);
-		setQuestionTimeRemaining(timerConfig.secondsPerQuestion || 90);
+		setIsExitModalOpen(false);
+		setCurrentScreen('dashboard');
+	};
 
-		try {
-			const freshQuestions = await getFreshThinksheetSession(
-				selectedSkill,
-				sheetNumber + 1,
-				kidAge,
-			);
-			setSheetNumber((prev) => prev + 1);
-			setQuestions(freshQuestions);
-			setCurrentIndex(0);
-			setSelectedOptionId(null);
-			setIsSubmitted(false);
-			setHistory([]);
-			setTimerSeconds(0);
-			setIsCompleted(false);
-		} catch (err) {
-			console.error('AI Confirm New Sheet Failed:', err);
-			if (err.message === 'MISSING_API_KEY') {
-				setAiError('MISSING_KEY');
-			} else {
-				setAiError('API_ERROR');
-			}
-		} finally {
-			setIsLoadingSheet(false);
-		}
+	// Exit without downloading
+	const handleExitWithoutDownload = () => {
+		clearSessionState();
+		setIsExitModalOpen(false);
+		setCurrentScreen('dashboard');
 	};
 
 	// Calculate score
@@ -510,9 +498,7 @@ export default function App() {
 				onToggleSound={() => setSoundEnabled((prev) => !prev)}
 				speechEnabled={speechEnabled}
 				onToggleSpeech={() => setSpeechEnabled((prev) => !prev)}
-				onDownloadClick={handleDownloadSheet}
-				onCreateNewSheetClick={() => setIsNewSheetOpen(true)}
-				onHomeClick={() => setCurrentScreen('dashboard')}
+				onExitClick={() => setIsExitModalOpen(true)}
 			/>
 
 			{/* Main Screen Body */}
@@ -557,14 +543,14 @@ export default function App() {
 									playButtonPop(soundEnabled);
 									setIsNameModalOpen(true);
 								}}
-								className='px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-sm sm:text-base shadow-lg flex items-center justify-center gap-2 transform hover:scale-105 transition-all'>
+								className='px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-sm sm:text-base shadow-lg flex items-center justify-center gap-2 transform hover:scale-105 transition-all cursor-pointer'>
 								<Sparkles className='w-4 h-4' />
 								<span>Configure Gemini API Key</span>
 							</button>
 
 							<button
 								onClick={() => handleSelectSkill(selectedSkill)}
-								className='px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm flex items-center justify-center gap-2'>
+								className='px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer'>
 								<RefreshCw className='w-4 h-4' />
 								<span>Try Again</span>
 							</button>
@@ -574,7 +560,7 @@ export default function App() {
 									playButtonPop(soundEnabled);
 									setCurrentScreen('dashboard');
 								}}
-								className='px-4 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm flex items-center justify-center gap-1.5'>
+								className='px-4 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm flex items-center justify-center gap-1.5 cursor-pointer'>
 								<ArrowLeft className='w-4 h-4' />
 								<span>Skills Hub</span>
 							</button>
@@ -582,10 +568,10 @@ export default function App() {
 					</div>
 				: !isCompleted ?
 					/* Question Playing View */
-					<div className='w-full flex flex-col justify-center'>
-						{/* Layout when NOT submitted */}
+					<div className='w-full flex flex-col justify-center flex-1'>
+						{/* Layout when NOT submitted: Options fill available height, Submit button stuck to bottom */}
 						{!isSubmitted ?
-							<div className='grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch'>
+							<div className='grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch flex-1'>
 								{/* Left: Question Card */}
 								<div className='lg:col-span-6 flex flex-col'>
 									<QuestionCard
@@ -597,26 +583,29 @@ export default function App() {
 									/>
 								</div>
 
-								{/* Right: Options 2x2 Grid + Submit Bar */}
-								<div className='lg:col-span-6 flex flex-col justify-between gap-4'>
-									<OptionsGrid
-										options={currentQuestion.options || []}
-										selectedOptionId={selectedOptionId}
-										onSelectOption={handleSelectOption}
-										isSubmitted={false}
-										correctAnswerId={currentQuestion.correctAnswerId}
-										soundEnabled={soundEnabled}
-									/>
+								{/* Right: Options fill space, Submit Bar locked to bottom */}
+								<div className='lg:col-span-6 flex flex-col justify-between gap-3 flex-1 min-h-[460px] sm:min-h-[500px]'>
+									{/* Options Container expanding to fill page */}
+									<div className='flex-1 flex flex-col w-full'>
+										<OptionsGrid
+											options={currentQuestion.options || []}
+											selectedOptionId={selectedOptionId}
+											onSelectOption={handleSelectOption}
+											isSubmitted={false}
+											correctAnswerId={currentQuestion.correctAnswerId}
+											soundEnabled={soundEnabled}
+										/>
+									</div>
 
-									{/* Action Bar directly below Options on right */}
-									<div className='flex items-center justify-end gap-3 mt-2 select-none'>
+									{/* Action Bar stuck to bottom of the card/page */}
+									<div className='flex items-center justify-end gap-3 pt-3 mt-auto select-none border-t border-white/10'>
 										{/* Power-up Hint Button */}
 										<button
 											onClick={() => {
 												playButtonPop(soundEnabled);
 												setIsHintOpen(true);
 											}}
-											className='w-12 h-12 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 hover:scale-110 active:scale-95 text-white flex items-center justify-center shadow-lg transition-all border-2 border-white/40 flex-shrink-0'
+											className='w-12 h-12 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 hover:scale-110 active:scale-95 text-white flex items-center justify-center shadow-lg transition-all border-2 border-white/40 flex-shrink-0 cursor-pointer'
 											title='Hint Clue'>
 											<Zap className='w-6 h-6 fill-white' />
 										</button>
@@ -625,10 +614,10 @@ export default function App() {
 										<button
 											disabled={!selectedOptionId}
 											onClick={handleSubmit}
-											className={`px-8 sm:px-12 py-3.5 sm:py-4 rounded-full font-black text-sm sm:text-lg tracking-wider uppercase transition-all shadow-xl ${
+											className={`px-8 sm:px-14 py-3.5 sm:py-4 rounded-full font-black text-sm sm:text-lg tracking-wider uppercase transition-all shadow-xl ${
 												selectedOptionId ?
 													'bg-[#FF5B84] hover:bg-[#FF435A] text-white hover:scale-105 active:scale-95 shadow-[0_8px_20px_rgba(255,91,132,0.4)] cursor-pointer'
-												:	'bg-slate-300 text-slate-500 cursor-not-allowed opacity-70'
+												:	'bg-slate-700 text-slate-400 cursor-not-allowed opacity-60'
 											}`}>
 											Submit
 										</button>
@@ -727,21 +716,15 @@ export default function App() {
 				soundEnabled={soundEnabled}
 			/>
 
-			<NewSheetModal
-				isOpen={isNewSheetOpen}
-				onClose={() => setIsNewSheetOpen(false)}
-				onConfirmNewSheet={handleConfirmNewSheet}
-				sessionState={{
-					selectedSkill,
-					sheetNumber,
-					questions,
-					currentIndex,
-					selectedOptionId,
-					history,
-					xp,
-					timerSeconds,
-					isCompleted,
-				}}
+			{/* Exit Confirmation Modal */}
+			<ExitConfirmationModal
+				isOpen={isExitModalOpen}
+				onClose={() => setIsExitModalOpen(false)}
+				onEndAndDownload={handleExitAndDownload}
+				onExitWithoutDownload={handleExitWithoutDownload}
+				currentIndex={currentIndex}
+				totalQuestions={questions.length}
+				selectedSkill={selectedSkill}
 				soundEnabled={soundEnabled}
 			/>
 

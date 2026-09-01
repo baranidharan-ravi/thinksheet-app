@@ -1,14 +1,12 @@
 import {
 	Clock,
-	Download,
-	LayoutGrid,
 	Maximize,
 	Mic,
 	MicOff,
 	Minimize,
-	Plus,
 	Volume2,
 	VolumeX,
+	LogOut,
 } from 'lucide-react';
 import React from 'react';
 import { playButtonPop } from '../utils/audioSynthesis';
@@ -25,9 +23,7 @@ export default function Header({
 	onToggleSound,
 	speechEnabled,
 	onToggleSpeech,
-	onDownloadClick,
-	onCreateNewSheetClick,
-	onHomeClick,
+	onExitClick,
 }) {
 	const [isFullscreen, setIsFullscreen] = React.useState(false);
 
@@ -98,7 +94,7 @@ export default function Header({
 				})}
 			</div>
 
-			{/* Right Controls Area: XP, Timer, Audio, Speech, Download, New Sheet */}
+			{/* Right Controls Area: XP, Timer, Audio, Speech, Fullscreen, Exit */}
 			<div className='flex items-center gap-1 sm:gap-2.5'>
 				{/* XP Counter */}
 				<div className='flex items-center gap-1.5 bg-[#121644] border border-[#29307A] px-2 sm:px-3 py-1.5 rounded-xl shadow-md'>
@@ -115,8 +111,9 @@ export default function Header({
 							'bg-rose-950/90 border-rose-500 text-rose-300 animate-bounce'
 						: isUrgent ?
 							'bg-amber-950/80 border-amber-400 text-amber-300 animate-pulse'
-						: isTimerMode ? 'bg-[#121644] border-cyan-500/50 text-cyan-300'
-						: 'bg-[#121644] border-[#29307A] text-pink-300'
+						: isTimerMode ?
+							'bg-[#121644] border-cyan-500/50 text-cyan-300'
+						:	'bg-[#121644] border-[#29307A] text-pink-300'
 					}`}
 					title={
 						isTimerMode ?
@@ -135,13 +132,13 @@ export default function Header({
 					</span>
 				</div>
 
-				{/* Read-Aloud Voice Narrator for 5yo Kids */}
+				{/* Read-Aloud Voice Narrator */}
 				<button
 					onClick={() => {
 						playButtonPop(soundEnabled);
 						onToggleSpeech();
 					}}
-					className={`p-2 rounded-xl border transition-all ${
+					className={`p-2 rounded-xl border transition-all cursor-pointer ${
 						speechEnabled ?
 							'bg-purple-600/40 border-purple-400 text-purple-200'
 						:	'bg-[#121644] border-[#29307A] text-gray-400 hover:text-white'
@@ -158,7 +155,7 @@ export default function Header({
 						playButtonPop(soundEnabled);
 						onToggleSound();
 					}}
-					className={`p-2 rounded-xl border transition-all ${
+					className={`p-2 rounded-xl border transition-all cursor-pointer ${
 						soundEnabled ?
 							'bg-[#121644] border-[#29307A] text-gray-200 hover:text-white'
 						:	'bg-rose-950/40 border-rose-800 text-rose-300'
@@ -172,50 +169,26 @@ export default function Header({
 				{/* Fullscreen Toggle */}
 				<button
 					onClick={toggleFullscreen}
-					className='hidden md:block p-2 rounded-xl bg-[#121644] border border-[#29307A] text-gray-300 hover:text-white hover:bg-[#1E2568] transition-all'
+					className='hidden md:block p-2 rounded-xl bg-[#121644] border border-[#29307A] text-gray-300 hover:text-white hover:bg-[#1E2568] transition-all cursor-pointer'
 					title='Toggle Fullscreen'>
 					{isFullscreen ?
 						<Minimize className='w-4 h-4' />
 					:	<Maximize className='w-4 h-4' />}
 				</button>
 
-				{/* Download Sheet Button */}
-				<button
-					onClick={() => {
-						playButtonPop(soundEnabled);
-						onDownloadClick();
-					}}
-					className='p-2 rounded-xl bg-[#121644] border border-[#29307A] text-cyan-300 hover:text-white hover:bg-cyan-900/40 hover:border-cyan-500/50 shadow-md transition-all flex items-center gap-1.5'
-					title='Download Thinksheet Progress'>
-					<Download className='w-4 h-4' />
-					<span className='hidden lg:inline text-xs font-bold'>Download</span>
-				</button>
-
-				{/* Skills Hub / Home Button */}
-				{onHomeClick && (
+				{/* Exit Button */}
+				{onExitClick && (
 					<button
 						onClick={() => {
 							playButtonPop(soundEnabled);
-							onHomeClick();
+							onExitClick();
 						}}
-						className='p-2 rounded-xl bg-[#121644] border border-[#29307A] text-purple-300 hover:text-white hover:bg-purple-900/40 hover:border-purple-500/50 shadow-md transition-all flex items-center gap-1'
-						title='Back to Skills Hub'>
-						<LayoutGrid className='w-4 h-4' />
-						<span className='hidden sm:inline text-xs font-bold'>Skills</span>
+						className='px-3 sm:px-3.5 py-2 rounded-xl bg-[#121644] hover:bg-rose-950/60 border border-[#29307A] hover:border-rose-500 text-rose-300 hover:text-white shadow-md transition-all flex items-center gap-1.5 cursor-pointer transform hover:scale-105 active:scale-95'
+						title='Exit Thinksheet'>
+						<LogOut className='w-4 h-4 text-rose-400' />
+						<span className='text-xs font-bold'>Exit</span>
 					</button>
 				)}
-
-				{/* Create New Sheet Button */}
-				<button
-					onClick={() => {
-						playButtonPop(soundEnabled);
-						onCreateNewSheetClick();
-					}}
-					className='px-2.5 sm:px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold text-xs sm:text-xs flex items-center gap-1.5 shadow-lg hover:scale-105 active:scale-95 transition-all'
-					title='Create New Thinksheet'>
-					<Plus className='w-3.5 h-3.5 stroke-[3]' />
-					<span>New Sheet</span>
-				</button>
 			</div>
 		</header>
 	);
