@@ -1,6 +1,6 @@
 # 🚀 Skill Thinksheet - 100% AI-Powered Cosmic Learning for Early Explorers
 
-An engaging, visual-first React.js educational platform designed for early childhood learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time AI question generation via Google Gemini API (Mandatory API Key)**, customizable per-question countdown timers, and strict age-calibrated difficulty with zero offline/hardcoded questions.
+An engaging, visual-first React.js educational platform designed for early childhood learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time AI question generation via Google Gemini API (Mandatory API Key)**, customizable per-question countdown timers, streamlined exit workflows, and strict age-calibrated difficulty with zero offline/hardcoded questions.
 
 ---
 
@@ -10,8 +10,8 @@ An engaging, visual-first React.js educational platform designed for early child
 - **All-in-One Configuration**: A single, clean setup window combines all settings on startup:
   1. **Child's Name** *(Required)*: Personalized explorer name.
   2. **Child's Age** *(Required)*: Quick age selector pills (`3`–`8`) + custom +/- stepper supporting ages `2` to `14`.
-  3. **Google Gemini API Key** *(Mandatory 🔑)*: Securely saved in `localStorage` with a direct link to get a free key from Google AI Studio.
-  4. **Question Timer Challenge** *(Optional ⏱️)*: Toggle ON/OFF, select preset limits (`45s`, `60s`, `90s`, `2m`, `3m`), or set a custom time.
+  3. **Google Gemini API Key** *(Mandatory 🔑)*: Features an **Eye (`👁️`) visibility toggle** to easily show or mask your API key, with a direct link to get a free key from Google AI Studio.
+  4. **Question Timer Challenge** *(Optional ⏱️)*: Toggle ON/OFF, select preset limits (`45s`, `60s`, `90s`, `2m`, `3m`), or set a custom duration.
 - **Easy Re-configuration**: Click the profile badge (`👋 Leo (Age 5)`) or the **`Setup & Key ⚙️`** button in the dashboard anytime to edit all settings in one place.
 
 ### 2. 🤖 100% Real-Time AI Generation (Mandatory Gemini API Key)
@@ -20,27 +20,39 @@ An engaging, visual-first React.js educational platform designed for early child
 - **Mathematical & Diagram Synchronization**: Automated validation ensures SVG visual puzzles (apple counting, pattern shapes, grid tiles, scale balance) match the exact numeric count and sequence of the correct answer.
 - **Mandatory Enforcement**: Ensures every child receives fresh, dynamic, non-repeating questions customized to their exact age.
 
-### 3. ⏱️ Optional & Customizable Question Timer Limit
+### 3. 📐 Symmetrical Layout & Bottom-Anchored Submit Button
+- **Equal-Height Cards**: The left Question Card and right Options Section share identical vertical heights (`items-stretch` & `h-full`), keeping prompts and visual diagrams neatly centered.
+- **Expanding Options Grid**: Option buttons dynamically expand (`flex-1 h-full`) to fill available vertical space.
+- **Bottom-Anchored Submit Button**: The Submit button and Hint power-up are anchored to the bottom of the card/page (`mt-auto border-t border-white/10`) for consistent, intuitive interaction.
+
+### 4. 🚪 Exit Confirmation Workflow
+- **Distraction-Free Header**: Clean top bar featuring live XP, timer, voice/sound toggles, fullscreen, and an **`Exit` button**.
+- **Interactive Exit Options**: Clicking **Exit** opens a dialog with three choices:
+  1. **📥 End Sheet & Download**: Saves the session progress JSON report and returns to the Skill Selection Hub.
+  2. **🚪 Exit Without Downloading**: Discards the session and returns directly to the Skill Selection Hub.
+  3. **🚀 Continue Sheet**: Resumes the current question seamlessly.
+
+### 5. ⏱️ Optional & Customizable Question Timer Limit
 - **Configurable in Setup Window & Hub**: Turn Timer Challenge **ON** or **OFF** (default is `OFF` for relaxed, untimed learning).
 - **Quick Presets**: `45s`, `60s`, **`90s (Default)`**, `2m`, `3m`, plus `Custom ✍️` stepper (`15s`–`300s`).
 - **Live Countdown & Urgency Visuals**: Real-time timer in the header (`⏱️ 01:30`) with cyan, pulsating amber (<= 15s), and bouncing red (<= 5s) urgency states.
 - **5-Second Solution Reveal & Auto-Advance**: If the timer runs out on a question:
-  - The question is marked as **Timed Out (Not Answered)**.
+  - The question is marked as **Timed Out (Not Answered)** with red wrong-answer styling.
   - The **Solution Panel immediately opens and highlights the correct answer for 5 seconds** (`Next in 5s... 4s... 3s...`).
-  - Includes a `Next ➔` button to advance immediately without waiting.
-  - Automatically advances to the next question when the 5 seconds expire.
+  - Voice narration announces that time expired and the next question will load automatically.
+  - Includes an immediate `Next ➔` button to skip waiting.
 
-### 4. 🎬 ThinkSheet Intro Animation
+### 6. 🎬 ThinkSheet Intro Animation
 - **Center Stage Splash**: On opening the dashboard, the green **ThinkSheet** banner starts in the center of the viewport with a huge, glowing bold font (`text-4xl` to `text-7xl`) and cosmic space sparkles (`✨` & `🚀`).
 - **Smooth Shrink-to-Top Glide**: Scales down smoothly and glides into its docked position in the top header using an organic spring transition (`cubic-bezier(0.34, 1.3, 0.64, 1)`).
 - **Deferred Welcome Prompt**: The Unified Setup Modal pops up smoothly right after the header animation finishes docking.
 
-### 5. 🗣️ Smart Emoji-Aware Voice Narration (Web Speech API)
+### 7. 🗣️ Smart Emoji-Aware Voice Narration (Web Speech API)
 - **No Duplicate Reading**: Intelligently strips emoji characters from sentences when reading text aloud, preventing speech synthesis from redundantly repeating the word and emoji name (e.g. *"How many shiny red apples are in the basket?"* instead of *"shiny red apples red apple"*).
 - **Emoji-Only Sequences**: For pattern puzzles composed of emojis (e.g. `🍎 🍌 🍎 🍌`), each emoji is translated into a clean child-friendly word (*"apple banana apple banana"*).
 - **On-Demand Only**: Questions and solutions are read aloud only when clicking the speaker button (`🔊`).
 
-### 6. 🧠 Dual Skill Learning Tracks
+### 8. 🧠 Dual Skill Learning Tracks
 - **Visual Puzzles**:
   - Missing grid tiles (scaled by age with numbered step-by-step overlays).
   - Fruit & shape pattern completions (AB, AAB, and ABC repeating sequences).
@@ -51,7 +63,7 @@ An engaging, visual-first React.js educational platform designed for early child
   - Picture classification and Odd-One-Out categories.
   - Everyday cause-and-effect reasoning (melting ice in sunshine, seeds sprouting, floating toys).
 
-### 7. 🏆 Space Cadet Leaderboard & Results System
+### 9. 🏆 Space Cadet Leaderboard & Results System
 - **Celebratory Feedback**: 3D `COMPLETED` ribbon banner, glowing star ratings (1 to 3 stars), and confetti particle bursts.
 - **Space Cadet League**: Dynamic leaderboard featuring the child as `[Name] (You)` with accumulated XP.
 - **Question Summary Breakdown**: Detailed accordion review comparing the child's selected answers against correct solutions, with clear `⏱️ Timed Out` indicators for unanswered questions.
