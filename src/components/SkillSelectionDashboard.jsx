@@ -234,9 +234,7 @@ export default function SkillSelectionDashboard({
 									<span className='text-cyan-700 font-extrabold'>
 										{visualLevel.levelName}
 									</span>
-									<span>
-										Level {visualLevel.levelNumber} / 5
-									</span>
+									<span>Level {visualLevel.levelNumber} / 5</span>
 								</div>
 								{/* Candy striped level track */}
 								<div className='w-full h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200'>
@@ -286,9 +284,7 @@ export default function SkillSelectionDashboard({
 												onClick={(e) => {
 													e.stopPropagation();
 													playButtonPop(soundEnabled);
-													setInfoModalTopic(
-														'Analytical Thinking',
-													);
+													setInfoModalTopic('Analytical Thinking');
 												}}
 												className='text-slate-400 hover:text-purple-600 p-1 rounded-full hover:bg-slate-100 transition-all'
 												title='Skill Information'>
@@ -304,8 +300,7 @@ export default function SkillSelectionDashboard({
 								{/* Solved Badge Counter */}
 								<div className='text-right'>
 									<span className='inline-block text-xs sm:text-sm font-extrabold text-purple-900 bg-purple-50 border border-purple-100 px-3 py-1 rounded-full'>
-										{profileStats.analyticalSolved || 0}{' '}
-										Solved
+										{profileStats.analyticalSolved || 0} Solved
 									</span>
 								</div>
 							</div>
@@ -316,9 +311,7 @@ export default function SkillSelectionDashboard({
 									<span className='text-purple-700 font-extrabold'>
 										{analyticalLevel.levelName}
 									</span>
-									<span>
-										Level {analyticalLevel.levelNumber} / 5
-									</span>
+									<span>Level {analyticalLevel.levelNumber} / 5</span>
 								</div>
 								{/* Candy striped level track */}
 								<div className='w-full h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200'>
