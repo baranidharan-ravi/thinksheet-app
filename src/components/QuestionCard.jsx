@@ -20,10 +20,10 @@ export default function QuestionCard({
 
 	return (
 		<div
-			className={`bg-white text-[#1E293B] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col justify-between border-4 border-white/90 relative overflow-hidden transition-all duration-300 ${
+			className={`bg-white text-[#1E293B] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col justify-between border-4 border-white/90 relative overflow-hidden transition-all duration-300 flex-1 h-full w-full ${
 				isSubmitted ?
-					'min-h-[220px] sm:min-h-[260px]'
-				:	'min-h-[380px] sm:min-h-[440px]'
+					'min-h-[200px] sm:min-h-[240px]'
+				:	'min-h-[380px] sm:min-h-[460px]'
 			}`}>
 			{/* Top Bar: Question Index, Category Badge, Zoom Button */}
 			<div className='flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5 mb-2'>
@@ -56,7 +56,7 @@ export default function QuestionCard({
 							playButtonPop(soundEnabled);
 							onZoomClick();
 						}}
-						className='flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-all'
+						className='flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-all cursor-pointer'
 						title='Zoom image'>
 						<ZoomIn className='w-3.5 h-3.5' />
 						<span>ZOOM</span>
@@ -71,34 +71,37 @@ export default function QuestionCard({
 				:	'🎯 Goal: Plan & break down relationships to solve the problem'}
 			</div>
 
-			{/* Question Prompt */}
-			<div className='flex items-start gap-3 my-auto py-1'>
-				<h2 className='text-base sm:text-xl md:text-2xl font-extrabold text-slate-800 leading-snug'>
-					{question.question}
-				</h2>
+			{/* Center Section: Question Prompt & Diagram */}
+			<div className='flex-1 flex flex-col justify-center my-auto py-2'>
+				{/* Question Prompt */}
+				<div className='flex items-start gap-3 my-2'>
+					<h2 className='text-base sm:text-xl md:text-2xl font-extrabold text-slate-800 leading-snug'>
+						{question.question}
+					</h2>
 
-				{/* Read-Aloud Speaker Button */}
-				<button
-					type='button'
-					onClick={handleListenQuestion}
-					className='p-1.5 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 hover:scale-110 active:scale-95 transition-all shadow-sm flex-shrink-0 mt-0.5'
-					title='Listen to question'>
-					<Volume2 className='w-4 h-4 sm:w-5 sm:h-5' />
-				</button>
+					{/* Read-Aloud Speaker Button */}
+					<button
+						type='button'
+						onClick={handleListenQuestion}
+						className='p-1.5 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 hover:scale-110 active:scale-95 transition-all shadow-sm flex-shrink-0 mt-0.5 cursor-pointer'
+						title='Listen to question'>
+						<Volume2 className='w-4 h-4 sm:w-5 sm:h-5' />
+					</button>
+				</div>
+
+				{/* Visual Diagram (If Visual Question) */}
+				{question.diagramType && (
+					<div className='flex justify-center items-center py-2'>
+						<VisualDiagram
+							type={question.diagramType}
+							data={question.diagramData}
+						/>
+					</div>
+				)}
 			</div>
 
-			{/* Visual Diagram (If Visual Question) */}
-			{question.diagramType && (
-				<div className='my-auto flex justify-center items-center py-2'>
-					<VisualDiagram
-						type={question.diagramType}
-						data={question.diagramData}
-					/>
-				</div>
-			)}
-
 			{/* Footer cue */}
-			<div className='mt-2 text-center text-xs font-semibold text-slate-400'>
+			<div className='mt-auto pt-2 text-center text-xs font-semibold text-slate-400 border-t border-slate-50'>
 				✨ Tap an answer choice on the right
 			</div>
 		</div>

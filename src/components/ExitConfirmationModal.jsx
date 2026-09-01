@@ -1,5 +1,4 @@
-import React from 'react';
-import { Download, LogOut, Play, X, HelpCircle, ArrowRight } from 'lucide-react';
+import { ArrowRight, Download, LogOut, Play, X } from 'lucide-react';
 import { playButtonPop } from '../utils/audioSynthesis';
 
 export default function ExitConfirmationModal({

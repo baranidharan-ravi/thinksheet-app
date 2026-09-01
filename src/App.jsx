@@ -568,12 +568,12 @@ export default function App() {
 					</div>
 				: !isCompleted ?
 					/* Question Playing View */
-					<div className='w-full flex flex-col justify-center flex-1'>
-						{/* Layout when NOT submitted: Options fill available height, Submit button stuck to bottom */}
+					<div className='w-full flex flex-col justify-center flex-1 my-auto'>
+						{/* Layout when NOT submitted: Both question and options share identical height */}
 						{!isSubmitted ?
-							<div className='grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch flex-1'>
-								{/* Left: Question Card */}
-								<div className='lg:col-span-6 flex flex-col'>
+							<div className='grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch w-full'>
+								{/* Left: Question Card (Matches full height of right side) */}
+								<div className='lg:col-span-6 flex flex-col h-full'>
 									<QuestionCard
 										question={currentQuestion}
 										currentIndex={currentIndex}
@@ -583,10 +583,10 @@ export default function App() {
 									/>
 								</div>
 
-								{/* Right: Options fill space, Submit Bar locked to bottom */}
-								<div className='lg:col-span-6 flex flex-col justify-between gap-3 flex-1 min-h-[460px] sm:min-h-[500px]'>
-									{/* Options Container expanding to fill page */}
-									<div className='flex-1 flex flex-col w-full'>
+								{/* Right: Options Grid + Submit Bar (Equal height) */}
+								<div className='lg:col-span-6 flex flex-col justify-between gap-3 h-full'>
+									{/* Options Container expanding to fill height */}
+									<div className='flex-1 flex flex-col w-full h-full'>
 										<OptionsGrid
 											options={currentQuestion.options || []}
 											selectedOptionId={selectedOptionId}
@@ -597,7 +597,7 @@ export default function App() {
 										/>
 									</div>
 
-									{/* Action Bar stuck to bottom of the card/page */}
+									{/* Action Bar aligned at the bottom */}
 									<div className='flex items-center justify-end gap-3 pt-3 mt-auto select-none border-t border-white/10'>
 										{/* Power-up Hint Button */}
 										<button
