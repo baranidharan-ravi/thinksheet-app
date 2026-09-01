@@ -11,7 +11,6 @@ import SkillSelectionDashboard from './components/SkillSelectionDashboard';
 import SolutionPanel from './components/SolutionPanel';
 import ZoomModal from './components/ZoomModal';
 import KidNameModal from './components/KidNameModal';
-import AISetupModal from './components/AISetupModal';
 
 import confetti from 'canvas-confetti';
 import { Rocket, Zap, AlertTriangle, Key, RefreshCw, ArrowLeft, Sparkles } from 'lucide-react';
@@ -80,7 +79,6 @@ export default function App() {
 	const [isZoomOpen, setIsZoomOpen] = useState(false);
 	const [isNewSheetOpen, setIsNewSheetOpen] = useState(false);
 	const [isAskDoubtOpen, setIsAskDoubtOpen] = useState(false);
-	const [isAiSetupOpen, setIsAiSetupOpen] = useState(false);
 
 	// Always start with the skill selection dashboard on load
 	useEffect(() => {
@@ -89,11 +87,11 @@ export default function App() {
 
 	// Background pre-fetch sessions when on dashboard for instant opening (0ms wait)
 	useEffect(() => {
-		if (currentScreen === 'dashboard' && getStoredApiKey()) {
+		if (currentScreen === 'dashboard' && getStoredApiKey() && kidName) {
 			prefetchThinksheetSession('Visual', 1, kidAge);
 			prefetchThinksheetSession('Analytical Thinking', 1, kidAge);
 		}
-	}, [currentScreen, kidAge]);
+	}, [currentScreen, kidAge, kidName]);
 
 	// Save session state to localStorage
 	useEffect(() => {
@@ -210,12 +208,20 @@ export default function App() {
 	// Current Question Object
 	const currentQuestion = questions[currentIndex] || {};
 
-	// Handle saving kid's profile (name and age)
-	const handleSaveKidProfile = ({ name, age }) => {
+	// Handle saving kid's profile (name, age, mandatory API key, and timer)
+	const handleSaveKidProfile = ({ name, age, timerConfig: newTimerConfig }) => {
 		saveStoredKidProfile(name, age);
 		setKidName(name);
 		setKidAge(age);
+		if (newTimerConfig) {
+			setTimerConfig(newTimerConfig);
+			setQuestionTimeRemaining(newTimerConfig.secondsPerQuestion || 90);
+		}
 		setIsNameModalOpen(false);
+
+		// Trigger prefetching with newly saved key and age
+		prefetchThinksheetSession('Visual', 1, age);
+		prefetchThinksheetSession('Analytical Thinking', 1, age);
 	};
 
 	// Handle Updating Timer Configuration
@@ -247,6 +253,11 @@ export default function App() {
 
 	// Start Sheet for a selected skill (100% Real-Time AI Generation)
 	const handleSelectSkill = async (skill) => {
+		if (!getStoredApiKey() || !getStoredKidName()) {
+			setIsNameModalOpen(true);
+			return;
+		}
+
 		setSelectedSkill(skill);
 		setIsLoadingSheet(true);
 		setAiError(null);
@@ -460,7 +471,7 @@ export default function App() {
 					kidAge={kidAge}
 					onEditKidName={() => setIsNameModalOpen(true)}
 					onAnimationComplete={() => {
-						if (!getStoredKidName()) {
+						if (!getStoredKidName() || !getStoredApiKey()) {
 							setIsNameModalOpen(true);
 						}
 					}}
@@ -470,6 +481,7 @@ export default function App() {
 				<KidNameModal
 					isOpen={isNameModalOpen}
 					onSaveProfile={handleSaveKidProfile}
+					onClose={() => setIsNameModalOpen(false)}
 					currentName={kidName}
 					currentAge={kidAge}
 					soundEnabled={soundEnabled}
@@ -539,7 +551,7 @@ export default function App() {
 							<button
 								onClick={() => {
 									playButtonPop(soundEnabled);
-									setIsAiSetupOpen(true);
+									setIsNameModalOpen(true);
 								}}
 								className='px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-sm sm:text-base shadow-lg flex items-center justify-center gap-2 transform hover:scale-105 transition-all'>
 								<Sparkles className='w-4 h-4' />
@@ -729,21 +741,13 @@ export default function App() {
 				soundEnabled={soundEnabled}
 			/>
 
+			{/* Unified Explorer Profile, Mandatory API Key & Timer Setup Modal */}
 			<KidNameModal
 				isOpen={isNameModalOpen}
 				onSaveProfile={handleSaveKidProfile}
+				onClose={() => setIsNameModalOpen(false)}
 				currentName={kidName}
 				currentAge={kidAge}
-				soundEnabled={soundEnabled}
-			/>
-
-			<AISetupModal
-				isOpen={isAiSetupOpen}
-				onClose={() => setIsAiSetupOpen(false)}
-				onKeySaved={() => {
-					setIsAiSetupOpen(false);
-					handleSelectSkill(selectedSkill);
-				}}
 				soundEnabled={soundEnabled}
 			/>
 		</div>
