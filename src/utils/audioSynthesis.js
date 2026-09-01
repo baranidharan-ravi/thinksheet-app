@@ -182,15 +182,94 @@ export function playVictoryFanfare(enabled = true) {
 	});
 }
 
+// Emoji-to-word dictionary for emoji-only prompts (e.g. pattern sequences "🍎 🍌 🍎 🍌")
+const EMOJI_SPEECH_MAP = {
+	'🍎': 'apple',
+	'🍏': 'green apple',
+	'🍌': 'banana',
+	'🍓': 'strawberry',
+	'🍇': 'grapes',
+	'🍊': 'orange',
+	'🍉': 'watermelon',
+	'🐶': 'puppy',
+	'🐕': 'dog',
+	'🐱': 'kitten',
+	'🐈': 'cat',
+	'🦆': 'duck',
+	'🐄': 'cow',
+	'🐮': 'cow',
+	'🐦': 'bird',
+	'🐟': 'fish',
+	'🦁': 'lion',
+	'🐸': 'frog',
+	'🐝': 'bee',
+	'🦋': 'butterfly',
+	'🔴': 'red circle',
+	'🔵': 'blue circle',
+	'🟡': 'yellow circle',
+	'🟢': 'green circle',
+	'🔷': 'blue diamond',
+	'⭐': 'star',
+	'⬛': 'black square',
+	'⬜': 'white square',
+	'🚗': 'car',
+	'🚀': 'rocket',
+	'🎈': 'balloon',
+	'🧊': 'ice cube',
+	'☀️': 'sun',
+	'🌙': 'moon',
+	'🧢': 'hat',
+	'🧦': 'socks'
+};
+
+const EMOJI_REGEX = /\p{Extended_Pictographic}|\p{Emoji_Presentation}|[\uFE00-\uFE0F\u200D\u20E3]/gu;
+
 /**
- * Web Speech API Voice Narrator for 5-Year-Old Kids
+ * Sanitizes question text for speech synthesis so it doesn't read both word and emoji.
+ * e.g. "How many shiny red apples are in the basket? 🍎" -> "How many shiny red apples are in the basket?"
+ * e.g. "Puppy 🐶 is to Dog 🐕" -> "Puppy is to Dog"
+ * e.g. "🍎 🍌 🍎 🍌" (emoji only) -> "apple banana apple banana"
+ */
+export function cleanTextForSpeech(raw) {
+	if (!raw) return '';
+	let text = String(raw).trim();
+
+	// Strip common prefixes
+	text = text.replace(/^(Prompt:|Question:)\s*/i, '');
+
+	// Check if the string has regular alphanumeric words
+	const wordsOnly = text.replace(EMOJI_REGEX, '').trim();
+	if (wordsOnly.length >= 2) {
+		// When words exist, strip the emojis to avoid redundant speech (e.g. "red apple red apple")
+		return text
+			.replace(EMOJI_REGEX, '')
+			.replace(/\s+/g, ' ')
+			.replace(/\s+([.,!?:])/g, '$1')
+			.trim();
+	}
+
+	// For emoji-only phrases (e.g. sequences), translate emojis to clean friendly words
+	return text
+		.replace(EMOJI_REGEX, (match) => {
+			return ' ' + (EMOJI_SPEECH_MAP[match] || '') + ' ';
+		})
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+/**
+ * Web Speech API Voice Narrator for Kids
+ * Cleans emojis from spoken sentences to prevent redundant duplicate reading.
  */
 export function speakText(text) {
 	try {
 		if (!('speechSynthesis' in window)) return;
 		window.speechSynthesis.cancel(); // cancel any ongoing speech
 
-		const utterance = new SpeechSynthesisUtterance(text);
+		const cleaned = cleanTextForSpeech(text);
+		if (!cleaned) return;
+
+		const utterance = new SpeechSynthesisUtterance(cleaned);
 		utterance.rate = 0.9; // slightly slower & friendly
 		utterance.pitch = 1.15; // slightly cheerful pitch
 
