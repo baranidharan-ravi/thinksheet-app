@@ -11,7 +11,8 @@ import {
   Minus,
   ExternalLink,
   X,
-  Check
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { playButtonPop, speakText } from '../utils/audioSynthesis';
 import { getStoredApiKey, setStoredApiKey } from '../services/aiGenerator';
@@ -31,6 +32,7 @@ export default function KidNameModal({
   const [nameInput, setNameInput] = useState('');
   const [ageInput, setAgeInput] = useState(5);
   const [apiKeyInput, setApiKeyInput] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
   const [isCustomAge, setIsCustomAge] = useState(false);
   const [timerEnabled, setTimerEnabled] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(90);
@@ -49,6 +51,7 @@ export default function KidNameModal({
       setNameInput(existingName);
       setAgeInput(existingAge);
       setApiKeyInput(existingKey);
+      setShowApiKey(false);
       setIsCustomAge(!quickAges.includes(Number(existingAge)));
       setTimerEnabled(Boolean(existingTimer.enabled));
       setTimerSeconds(Number(existingTimer.secondsPerQuestion) || 90);
@@ -139,7 +142,7 @@ export default function KidNameModal({
               playButtonPop(soundEnabled);
               onClose();
             }}
-            className="absolute top-4 right-4 p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all"
+            className="absolute top-4 right-4 p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all cursor-pointer"
             title="Close"
           >
             <X className="w-5 h-5" />
@@ -265,7 +268,7 @@ export default function KidNameModal({
             )}
           </div>
 
-          {/* Section 3: Google Gemini API Key (MANDATORY) */}
+          {/* Section 3: Google Gemini API Key (MANDATORY with Eye Password Visibility Toggle) */}
           <div className="bg-[#090B24]/80 p-3 sm:p-3.5 rounded-2xl border-2 border-amber-400/60 shadow-inner">
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
@@ -283,16 +286,33 @@ export default function KidNameModal({
               </a>
             </div>
 
-            <input
-              type="password"
-              value={apiKeyInput}
-              onChange={(e) => {
-                setApiKeyInput(e.target.value);
-                if (error) setError('');
-              }}
-              placeholder="Paste your Gemini API key (AIzaSy...)"
-              className="w-full bg-[#0D1030] border border-amber-400/50 focus:border-amber-400 text-white font-mono text-xs sm:text-sm rounded-xl px-3.5 py-2.5 placeholder:text-slate-500 focus:outline-none transition-all"
-            />
+            <div className="relative flex items-center">
+              <input
+                type={showApiKey ? "text" : "password"}
+                value={apiKeyInput}
+                onChange={(e) => {
+                  setApiKeyInput(e.target.value);
+                  if (error) setError('');
+                }}
+                placeholder="Paste your Gemini API key (AIzaSy...)"
+                className="w-full bg-[#0D1030] border border-amber-400/50 focus:border-amber-400 text-white font-mono text-xs sm:text-sm rounded-xl pl-3.5 pr-11 py-2.5 placeholder:text-slate-500 focus:outline-none transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  playButtonPop(soundEnabled);
+                  setShowApiKey((prev) => !prev);
+                }}
+                className="absolute right-2.5 p-1.5 rounded-lg text-slate-400 hover:text-amber-300 hover:bg-white/10 transition-all cursor-pointer"
+                title={showApiKey ? "Hide API Key" : "Show API Key"}
+              >
+                {showApiKey ? (
+                  <EyeOff className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
             <span className="text-[10px] text-slate-400 mt-1 block">
               Required to generate 100% personalized, real-time AI questions.
             </span>
@@ -387,7 +407,7 @@ export default function KidNameModal({
                   </div>
                 )}
                 <span className="text-[10px] text-slate-400 block font-semibold">
-                  Shows solution for 5 seconds if time expires before auto-advancing.
+                  If time expires without selecting an answer, the solution is shown for 5 seconds before moving to the next question automatically.
                 </span>
               </div>
             ) : (

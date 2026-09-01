@@ -28,34 +28,37 @@ export default function SolutionPanel({
 
   return (
     <div className="flex flex-col gap-3.5 sm:gap-4 animate-in fade-in slide-in-from-right-4 duration-300">
-      {/* Feedback Banner with Celebratory Animation on Correct or Urgency on Timeout */}
+      {/* Feedback Banner with Celebratory Animation on Correct or Wrong/Timeout Styling */}
       <div
         className={`rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex items-center gap-3.5 shadow-xl border-2 transition-all relative overflow-hidden ${
-          isTimedOut
-            ? 'bg-[#FFFBEB] border-[#F59E0B] text-[#92400E] ring-4 ring-amber-400/30'
-            : isCorrect
+          isCorrect
             ? 'bg-[#E8F8F0] border-[#00D166] text-[#0A5D37] ring-4 ring-emerald-400/40 shadow-[0_0_20px_rgba(0,209,102,0.3)] animate-bounce-short'
-            : 'bg-[#FFF0F2] border-[#FF435A] text-[#9E1B2D]'
+            : 'bg-[#FFF0F2] border-[#FF435A] text-[#9E1B2D] ring-4 ring-rose-400/20'
         }`}
       >
         <div className="flex-shrink-0">
-          {isTimedOut ? (
-            <div className="relative">
-              <Clock className="w-8 h-8 sm:w-10 sm:h-10 text-amber-500 animate-pulse" />
-            </div>
-          ) : isCorrect ? (
+          {isCorrect ? (
             <div className="relative">
               <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-[#00D166] fill-[#00D166]/20 animate-pulse" />
               <Sparkles className="w-4 h-4 text-amber-500 fill-amber-400 absolute -top-1 -right-1 animate-spin-slow" />
+            </div>
+          ) : isTimedOut ? (
+            <div className="relative">
+              <XCircle className="w-8 h-8 sm:w-10 sm:h-10 text-[#FF435A] fill-[#FF435A]/20" />
+              <Clock className="w-4 h-4 text-amber-500 absolute -top-1 -right-1 animate-spin-slow" />
             </div>
           ) : (
             <XCircle className="w-8 h-8 sm:w-10 sm:h-10 text-[#FF435A] fill-[#FF435A]/20" />
           )}
         </div>
         <div className="flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h3 className="text-base sm:text-lg font-black leading-tight">
-              {isTimedOut ? "Time's Up! ⏰" : isCorrect ? 'Correct! 🎉' : 'Incorrect!'}
+              {isCorrect
+                ? 'Correct! 🎉'
+                : isTimedOut
+                ? "Time's Up! (No Answer Selected) ⏰"
+                : 'Incorrect!'}
             </h3>
             {isCorrect && (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-xs font-black shadow-sm animate-pulse">
@@ -63,16 +66,16 @@ export default function SolutionPanel({
               </span>
             )}
             {isTimedOut && autoAdvanceCountdown !== null && (
-              <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[11px] font-black shadow-sm animate-pulse">
-                Next in {autoAdvanceCountdown}s
+              <span className="px-2.5 py-0.5 rounded-full bg-rose-600 text-white text-xs font-black shadow-sm animate-pulse">
+                Next in {autoAdvanceCountdown}s 🚀
               </span>
             )}
           </div>
           <p className="text-xs sm:text-sm font-semibold opacity-90 mt-0.5">
-            {isTimedOut
-              ? `Timer ran out! Revealing the answer for 5s before moving forward.`
-              : isCorrect
+            {isCorrect
               ? 'Great thinking! You got it right.'
+              : isTimedOut
+              ? `No answer was selected. See the correct solution below! Moving to next question in ${autoAdvanceCountdown || 5}s...`
               : "Don't worry, See the solution to know why"}
           </p>
         </div>

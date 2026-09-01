@@ -239,6 +239,10 @@ export default function App() {
 		setAutoAdvanceCountdown(5);
 		playIncorrectSound(soundEnabled);
 
+		if (speechEnabled) {
+			speakText("Time's up! No answer was selected. Look at the correct solution. The next question will load automatically!");
+		}
+
 		// Record in history as timed out / un-answered
 		const newHistory = [...history];
 		newHistory[currentIndex] = {
