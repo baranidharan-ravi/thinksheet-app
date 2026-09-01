@@ -1,43 +1,44 @@
 # 🚀 Skill Thinksheet - 100% AI-Powered Cosmic Learning for Early Explorers
 
-An engaging, visual-first React.js educational platform designed for early childhood learners (Ages 3–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time AI question generation via Google Gemini API**, customizable per-question countdown timers, and strict age-calibrated difficulty with zero offline/hardcoded questions.
+An engaging, visual-first React.js educational platform designed for early childhood learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time AI question generation via Google Gemini API (Mandatory API Key)**, customizable per-question countdown timers, and strict age-calibrated difficulty with zero offline/hardcoded questions.
 
 ---
 
 ## ✨ Key Features
 
-### 1. 🤖 100% Real-Time AI Generation (Google Gemini API)
-- **Real-Time Synthesis**: Every single question, analogy, option, and visual spatial puzzle is synthesized on demand via the **Google Gemini REST API** (`gemini-3.5-flash-lite` / `gemini-3.6-flash` / `gemini-3.7-flash`).
-- **High-Throughput Parallel Batching**: Fetches questions in concurrent batches in ~2 seconds for rapid generation.
-- **Mathematical & Diagram Synchronization**: Automated validation ensures SVG visual puzzles (apple counting, pattern shapes, grid tiles, block towers) match the exact numeric count and sequence of the correct answer.
-- **No Hardcoded/Static Questions**: The codebase contains zero offline questions or pre-recorded question banks.
+### 1. 🪟 Unified Explorer & AI Setup Window
+- **All-in-One Configuration**: A single, clean setup window combines all settings on startup:
+  1. **Child's Name** *(Required)*: Personalized explorer name.
+  2. **Child's Age** *(Required)*: Quick age selector pills (`3`–`8`) + custom +/- stepper supporting ages `2` to `14`.
+  3. **Google Gemini API Key** *(Mandatory 🔑)*: Securely saved in `localStorage` with a direct link to get a free key from Google AI Studio.
+  4. **Question Timer Challenge** *(Optional ⏱️)*: Toggle ON/OFF, select preset limits (`45s`, `60s`, `90s`, `2m`, `3m`), or set a custom time.
+- **Easy Re-configuration**: Click the profile badge (`👋 Leo (Age 5)`) or the **`Setup & Key ⚙️`** button in the dashboard anytime to edit all settings in one place.
 
-### 2. 🎬 ThinkSheet Intro Animation
-- **Center Stage Splash**: On opening the dashboard, the green **ThinkSheet** banner starts in the center of the viewport with a huge, glowing bold font (`text-4xl` to `text-7xl`) and cosmic space sparkles (`✨` & `🚀`).
-- **Smooth Shrink-to-Top Glide**: Scales down smoothly and glides into its docked position in the top header using an organic spring transition (`cubic-bezier(0.34, 1.3, 0.64, 1)`).
-- **Deferred Welcome Prompt**: The Kid Profile dialog (Name & Age) pops up smoothly right after the header animation finishes docking.
+### 2. 🤖 100% Real-Time AI Generation (Mandatory Gemini API Key)
+- **Zero Offline / Hardcoded Questions**: The app synthesizes every single question, analogy, and visual puzzle live on demand via the **Google Gemini REST API** (`gemini-3.5-flash-lite`).
+- **High-Throughput Parallel Batching**: Fetches 10 questions in parallel batches in ~2 seconds for near-instant loading.
+- **Mathematical & Diagram Synchronization**: Automated validation ensures SVG visual puzzles (apple counting, pattern shapes, grid tiles, scale balance) match the exact numeric count and sequence of the correct answer.
+- **Mandatory Enforcement**: Ensures every child receives fresh, dynamic, non-repeating questions customized to their exact age.
 
 ### 3. ⏱️ Optional & Customizable Question Timer Limit
-- **Configurable on Skill Selection Hub**: Easily toggle the timer challenge **ON** or **OFF** (default is `OFF` for the original relaxed, untimed learning experience).
-- **Quick Presets**: `45s`, `60s`, **`90s (Default)`**, `2m`, `3m`.
-- **Custom Stepper (`Custom ✍️`)**: Adjust seconds using `+` / `-` buttons from 15s to 300s.
+- **Configurable in Setup Window & Hub**: Turn Timer Challenge **ON** or **OFF** (default is `OFF` for relaxed, untimed learning).
+- **Quick Presets**: `45s`, `60s`, **`90s (Default)`**, `2m`, `3m`, plus `Custom ✍️` stepper (`15s`–`300s`).
 - **Live Countdown & Urgency Visuals**: Real-time timer in the header (`⏱️ 01:30`) with cyan, pulsating amber (<= 15s), and bouncing red (<= 5s) urgency states.
 - **5-Second Solution Reveal & Auto-Advance**: If the timer runs out on a question:
   - The question is marked as **Timed Out (Not Answered)**.
   - The **Solution Panel immediately opens and highlights the correct answer for 5 seconds** (`Next in 5s... 4s... 3s...`).
-  - Includes a `Next ➔` button so the user can immediately advance without waiting.
+  - Includes a `Next ➔` button to advance immediately without waiting.
   - Automatically advances to the next question when the 5 seconds expire.
 
-### 4. 🗣️ Smart Emoji-Aware Voice Narration (Web Speech API)
+### 4. 🎬 ThinkSheet Intro Animation
+- **Center Stage Splash**: On opening the dashboard, the green **ThinkSheet** banner starts in the center of the viewport with a huge, glowing bold font (`text-4xl` to `text-7xl`) and cosmic space sparkles (`✨` & `🚀`).
+- **Smooth Shrink-to-Top Glide**: Scales down smoothly and glides into its docked position in the top header using an organic spring transition (`cubic-bezier(0.34, 1.3, 0.64, 1)`).
+- **Deferred Welcome Prompt**: The Unified Setup Modal pops up smoothly right after the header animation finishes docking.
+
+### 5. 🗣️ Smart Emoji-Aware Voice Narration (Web Speech API)
 - **No Duplicate Reading**: Intelligently strips emoji characters from sentences when reading text aloud, preventing speech synthesis from redundantly repeating the word and emoji name (e.g. *"How many shiny red apples are in the basket?"* instead of *"shiny red apples red apple"*).
 - **Emoji-Only Sequences**: For pattern puzzles composed of emojis (e.g. `🍎 🍌 🍎 🍌`), each emoji is translated into a clean child-friendly word (*"apple banana apple banana"*).
 - **On-Demand Only**: Questions and solutions are read aloud only when clicking the speaker button (`🔊`).
-
-### 5. 🎂 Personalized Kid Profile & Custom Age Calibration
-- **Startup Name & Age Prompt**: Welcomes the child and asks for their **Name** and **Age**.
-- **Quick-Select & Custom Age Stepper**: Quick buttons for ages **3, 4, 5, 6, 7, 8** plus an **`Edit ✍️` Custom Stepper** supporting any age from **2 to 14 years old**.
-- **Strict Age Calibration**: The AI prompt strictly limits vocabulary, counting ranges, and reasoning complexity to the child's exact age with zero overshoot.
-- **Header Profile Badge**: Displays `👋 [Name] (Age [X])` in the top header with one-tap editing anytime.
 
 ### 6. 🧠 Dual Skill Learning Tracks
 - **Visual Puzzles**:
@@ -60,7 +61,7 @@ An engaging, visual-first React.js educational platform designed for early child
 
 ## 🔑 How to Get a Google Gemini API Key (Step-by-Step)
 
-The application uses Google Gemini to generate fresh questions dynamically. Follow these steps to obtain a free API key:
+A Gemini API key is mandatory for generating questions in real time. Follow these simple steps to obtain a free key:
 
 ### Step 1: Open Google AI Studio
 1. Navigate to [Google AI Studio](https://aistudio.google.com/app/apikey) in your web browser.
@@ -77,11 +78,11 @@ The application uses Google Gemini to generate fresh questions dynamically. Foll
 
 You can configure your API key using either of the following two methods:
 
-### Option A: Enter via the Web Interface (Easiest)
+### Option A: Enter in the App Setup Window (Easiest)
 1. Launch the app (`npm run dev`) and open `http://localhost:3000`.
-2. On the **Skill Selection Hub** screen, click the **`AI Setup`** button in the top right corner (or click **Configure Gemini API Key** on the AI setup screen).
-3. Paste your Gemini API key and click **"Save & Connect 🚀"**.
-4. The key is securely saved in your browser's local storage and used for subsequent sessions.
+2. Enter your child's Name, Age, and paste your Gemini API Key in the **Explorer & AI Setup** window.
+3. Click **"Launch Thinksheet 🚀"**.
+4. The key is securely saved in your browser's local storage and used for all subsequent sessions.
 
 ### Option B: Configure via `.env` File
 1. In the root directory of the project, create a `.env` file:
