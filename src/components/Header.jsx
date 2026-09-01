@@ -19,6 +19,8 @@ export default function Header({
 	history,
 	xp,
 	timerSeconds,
+	timerConfig = { enabled: false, secondsPerQuestion: 90 },
+	questionTimeRemaining = 90,
 	soundEnabled,
 	onToggleSound,
 	speechEnabled,
@@ -31,12 +33,17 @@ export default function Header({
 
 	// Format MM:SS
 	const formatTime = (secs) => {
-		const m = Math.floor(secs / 60)
+		const safeSecs = Math.max(0, Math.floor(secs));
+		const m = Math.floor(safeSecs / 60)
 			.toString()
 			.padStart(2, '0');
-		const s = (secs % 60).toString().padStart(2, '0');
+		const s = (safeSecs % 60).toString().padStart(2, '0');
 		return `${m}:${s}`;
 	};
+
+	const isTimerMode = timerConfig?.enabled;
+	const isUrgent = isTimerMode && questionTimeRemaining <= 15;
+	const isCritical = isTimerMode && questionTimeRemaining <= 5;
 
 	const toggleFullscreen = () => {
 		playButtonPop(soundEnabled);
@@ -101,10 +108,32 @@ export default function Header({
 					<span className='text-white font-bold text-xs sm:text-sm'>{xp}</span>
 				</div>
 
-				{/* Timer */}
-				<div className='flex items-center gap-1.5 bg-[#121644] border border-[#29307A] px-2 sm:px-2.5 py-1.5 rounded-xl text-pink-300 font-bold text-xs sm:text-sm shadow-md'>
-					<Clock className='w-3.5 h-3.5 text-pink-400 animate-spin-slow' />
-					<span>{formatTime(timerSeconds)}</span>
+				{/* Timer Display (Countdown when enabled, Stopwatch when disabled) */}
+				<div
+					className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all border ${
+						isCritical ?
+							'bg-rose-950/90 border-rose-500 text-rose-300 animate-bounce'
+						: isUrgent ?
+							'bg-amber-950/80 border-amber-400 text-amber-300 animate-pulse'
+						: isTimerMode ?
+							'bg-[#121644] border-cyan-500/50 text-cyan-300'
+						:	'bg-[#121644] border-[#29307A] text-pink-300'
+					}`}
+					title={
+						isTimerMode ?
+							`Question countdown timer: ${questionTimeRemaining}s remaining`
+						:	'Elapsed session time'
+					}>
+					<Clock
+						className={`w-3.5 h-3.5 ${
+							isUrgent ? 'text-amber-400 animate-spin'
+							: isTimerMode ? 'text-cyan-400'
+							: 'text-pink-400 animate-spin-slow'
+						}`}
+					/>
+					<span className='font-mono font-black'>
+						{formatTime(isTimerMode ? questionTimeRemaining : timerSeconds)}
+					</span>
 				</div>
 
 				{/* Read-Aloud Voice Narrator for 5yo Kids */}

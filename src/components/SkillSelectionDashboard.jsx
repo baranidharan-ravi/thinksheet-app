@@ -1,4 +1,4 @@
-import { Edit2, Info, Sparkles } from 'lucide-react';
+import { Edit2, Info, Sparkles, Clock, Timer, Plus, Minus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getStoredApiKey } from '../services/aiGenerator';
 import { playButtonPop } from '../utils/audioSynthesis';
@@ -13,11 +13,14 @@ export default function SkillSelectionDashboard({
 	kidAge = 5,
 	onEditKidName,
 	onAnimationComplete,
+	timerConfig = { enabled: false, secondsPerQuestion: 90 },
+	onUpdateTimerConfig,
 }) {
 	const [infoModalTopic, setInfoModalTopic] = useState(null);
 	const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 	const [hasApiKey, setHasApiKey] = useState(false);
 	const [animationPhase, setAnimationPhase] = useState('center'); // 'center' | 'shrinking' | 'docked'
+	const [isCustomTimerOpen, setIsCustomTimerOpen] = useState(false);
 
 	useEffect(() => {
 		const key = getStoredApiKey();
@@ -59,6 +62,41 @@ export default function SkillSelectionDashboard({
 	const handleCardClick = (skill) => {
 		playButtonPop(soundEnabled);
 		onSelectSkill(skill);
+	};
+
+	const handleToggleTimer = () => {
+		playButtonPop(soundEnabled);
+		if (onUpdateTimerConfig) {
+			onUpdateTimerConfig({
+				...timerConfig,
+				enabled: !timerConfig.enabled,
+			});
+		}
+	};
+
+	const handleSelectTimerPreset = (seconds) => {
+		playButtonPop(soundEnabled);
+		setIsCustomTimerOpen(false);
+		if (onUpdateTimerConfig) {
+			onUpdateTimerConfig({
+				...timerConfig,
+				enabled: true,
+				secondsPerQuestion: seconds,
+			});
+		}
+	};
+
+	const handleStepTimer = (delta) => {
+		playButtonPop(soundEnabled);
+		const current = timerConfig.secondsPerQuestion || 90;
+		const nextVal = Math.max(15, Math.min(300, current + delta));
+		if (onUpdateTimerConfig) {
+			onUpdateTimerConfig({
+				...timerConfig,
+				enabled: true,
+				secondsPerQuestion: nextVal,
+			});
+		}
 	};
 
 	const isIntroActive = animationPhase === 'center';
@@ -163,19 +201,130 @@ export default function SkillSelectionDashboard({
 
 			{/* Main Content Area */}
 			<main
-				className={`w-full max-w-5xl mx-auto flex flex-col items-center flex-1 justify-center py-6 transition-all duration-700 delay-100 ${
+				className={`w-full max-w-5xl mx-auto flex flex-col items-center flex-1 justify-center py-4 sm:py-6 transition-all duration-700 delay-100 ${
 					isIntroActive ?
 						'opacity-0 translate-y-8 pointer-events-none'
 					:	'opacity-100 translate-y-0'
 				}`}>
-				{/* AI Active Indicator */}
-				<div className='flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/15 px-4 py-1.5 rounded-full text-xs font-bold text-cyan-200 mb-4 shadow-sm'>
+				{/* Top Status & AI Indicator */}
+				<div className='flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/15 px-4 py-1.5 rounded-full text-xs font-bold text-cyan-200 mb-3 shadow-sm'>
 					<Sparkles className='w-4 h-4 text-amber-300' />
 					<span>AI-Powered Dynamic Question Engine Active</span>
 				</div>
 
+				{/* Optional Question Timer Challenge Setting Card */}
+				<div className='w-full bg-white/10 backdrop-blur-md border border-white/15 rounded-3xl p-3.5 sm:p-4 mb-5 shadow-xl flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4'>
+					{/* Left: Info */}
+					<div className='flex items-center gap-3 w-full md:w-auto'>
+						<div
+							className={`w-10 h-10 rounded-2xl flex items-center justify-center border flex-shrink-0 transition-all ${
+								timerConfig.enabled ?
+									'bg-amber-400/20 border-amber-400/40 text-amber-300'
+								:	'bg-white/10 border-white/20 text-slate-300'
+							}`}>
+							<Clock className='w-5 h-5' />
+						</div>
+						<div>
+							<div className='flex items-center gap-2'>
+								<span className='font-extrabold text-sm sm:text-base text-white'>
+									⏱️ Question Timer Limit
+								</span>
+								<span
+									className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
+										timerConfig.enabled ?
+											'bg-amber-400 text-slate-950 shadow-sm'
+										:	'bg-white/20 text-slate-300'
+									}`}>
+									{timerConfig.enabled ? 'Enabled' : 'Optional'}
+								</span>
+							</div>
+							<p className='text-xs text-slate-300 font-semibold mt-0.5'>
+								{timerConfig.enabled ?
+									`⏱️ ${timerConfig.secondsPerQuestion}s limit per question (auto-reveals answer for 5s on timeout)`
+								:	'Take your time without time limits (default behaviour)'}
+							</p>
+						</div>
+					</div>
+
+					{/* Right: Controls */}
+					<div className='flex flex-wrap items-center gap-2 justify-center md:justify-end w-full md:w-auto'>
+						{/* Toggle ON/OFF */}
+						<button
+							onClick={handleToggleTimer}
+							className={`px-3.5 py-1.5 rounded-xl font-extrabold text-xs transition-all shadow-md flex items-center gap-1.5 ${
+								timerConfig.enabled ?
+									'bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.4)]'
+								:	'bg-white/15 text-white hover:bg-white/25 border border-white/20'
+							}`}>
+							<Timer className='w-3.5 h-3.5' />
+							<span>{timerConfig.enabled ? 'Timer ON' : 'Turn ON Timer'}</span>
+						</button>
+
+						{/* Preset Buttons when Timer is Active */}
+						{timerConfig.enabled && (
+							<div className='flex items-center gap-1 bg-[#0F1338]/60 p-1 rounded-xl border border-white/10 flex-wrap justify-center'>
+								{[
+									{ label: '45s', sec: 45 },
+									{ label: '60s', sec: 60 },
+									{ label: '90s (Default)', sec: 90 },
+									{ label: '2m', sec: 120 },
+									{ label: '3m', sec: 180 },
+								].map((preset) => (
+									<button
+										key={preset.sec}
+										onClick={() => handleSelectTimerPreset(preset.sec)}
+										className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+											timerConfig.secondsPerQuestion === preset.sec && !isCustomTimerOpen ?
+												'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black shadow'
+											:	'text-slate-300 hover:text-white hover:bg-white/10'
+										}`}>
+										{preset.label}
+									</button>
+								))}
+
+								<button
+									onClick={() => {
+										playButtonPop(soundEnabled);
+										setIsCustomTimerOpen((prev) => !prev);
+									}}
+									className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+										isCustomTimerOpen ?
+											'bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black shadow'
+										:	'text-slate-300 hover:text-white hover:bg-white/10'
+									}`}>
+									Custom ✍️
+								</button>
+							</div>
+						)}
+					</div>
+				</div>
+
+				{/* Custom Timer Stepper (if opened) */}
+				{timerConfig.enabled && isCustomTimerOpen && (
+					<div className='w-full max-w-md bg-[#141846] border-2 border-amber-400/60 rounded-2xl p-3 mb-5 shadow-2xl flex items-center justify-between gap-3 animate-in fade-in zoom-in-95 duration-200'>
+						<span className='text-xs font-bold text-slate-300'>
+							Custom Question Duration:
+						</span>
+						<div className='flex items-center gap-2'>
+							<button
+								onClick={() => handleStepTimer(-15)}
+								className='w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black flex items-center justify-center text-sm shadow'>
+								<Minus className='w-3.5 h-3.5' />
+							</button>
+							<div className='px-3 py-1 bg-[#090C28] border border-amber-400/40 rounded-lg text-amber-300 font-mono font-black text-sm text-center min-w-[70px]'>
+								{timerConfig.secondsPerQuestion}s
+							</div>
+							<button
+								onClick={() => handleStepTimer(15)}
+								className='w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-black flex items-center justify-center text-sm shadow'>
+								<Plus className='w-3.5 h-3.5' />
+							</button>
+						</div>
+					</div>
+				)}
+
 				{/* Call to Action Heading */}
-				<h2 className='text-xl sm:text-2xl font-extrabold text-white text-center mb-8 tracking-wide drop-shadow'>
+				<h2 className='text-xl sm:text-2xl font-extrabold text-white text-center mb-6 tracking-wide drop-shadow'>
 					Select a skill and solve thinksheets
 				</h2>
 
@@ -234,7 +383,9 @@ export default function SkillSelectionDashboard({
 									<span className='text-cyan-700 font-extrabold'>
 										{visualLevel.levelName}
 									</span>
-									<span>Level {visualLevel.levelNumber} / 5</span>
+									<span>
+										Level {visualLevel.levelNumber} / 5
+									</span>
 								</div>
 								{/* Candy striped level track */}
 								<div className='w-full h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200'>
@@ -284,7 +435,9 @@ export default function SkillSelectionDashboard({
 												onClick={(e) => {
 													e.stopPropagation();
 													playButtonPop(soundEnabled);
-													setInfoModalTopic('Analytical Thinking');
+													setInfoModalTopic(
+														'Analytical Thinking',
+													);
 												}}
 												className='text-slate-400 hover:text-purple-600 p-1 rounded-full hover:bg-slate-100 transition-all'
 												title='Skill Information'>
@@ -300,7 +453,8 @@ export default function SkillSelectionDashboard({
 								{/* Solved Badge Counter */}
 								<div className='text-right'>
 									<span className='inline-block text-xs sm:text-sm font-extrabold text-purple-900 bg-purple-50 border border-purple-100 px-3 py-1 rounded-full'>
-										{profileStats.analyticalSolved || 0} Solved
+										{profileStats.analyticalSolved || 0}{' '}
+										Solved
 									</span>
 								</div>
 							</div>
@@ -311,7 +465,9 @@ export default function SkillSelectionDashboard({
 									<span className='text-purple-700 font-extrabold'>
 										{analyticalLevel.levelName}
 									</span>
-									<span>Level {analyticalLevel.levelNumber} / 5</span>
+									<span>
+										Level {analyticalLevel.levelNumber} / 5
+									</span>
 								</div>
 								{/* Candy striped level track */}
 								<div className='w-full h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200'>

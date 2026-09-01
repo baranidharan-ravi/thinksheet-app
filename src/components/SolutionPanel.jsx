@@ -6,13 +6,16 @@ import {
   Volume2,
   XCircle,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Clock
 } from 'lucide-react';
 import { playButtonPop, speakText } from '../utils/audioSynthesis';
 import VisualDiagram from './VisualDiagrams';
 
 export default function SolutionPanel({
   isCorrect,
+  isTimedOut = false,
+  autoAdvanceCountdown = null,
   question,
   onAskDoubt,
   soundEnabled,
@@ -25,16 +28,22 @@ export default function SolutionPanel({
 
   return (
     <div className="flex flex-col gap-3.5 sm:gap-4 animate-in fade-in slide-in-from-right-4 duration-300">
-      {/* Feedback Banner with Celebratory Animation on Correct */}
+      {/* Feedback Banner with Celebratory Animation on Correct or Urgency on Timeout */}
       <div
         className={`rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex items-center gap-3.5 shadow-xl border-2 transition-all relative overflow-hidden ${
-          isCorrect
+          isTimedOut
+            ? 'bg-[#FFFBEB] border-[#F59E0B] text-[#92400E] ring-4 ring-amber-400/30'
+            : isCorrect
             ? 'bg-[#E8F8F0] border-[#00D166] text-[#0A5D37] ring-4 ring-emerald-400/40 shadow-[0_0_20px_rgba(0,209,102,0.3)] animate-bounce-short'
             : 'bg-[#FFF0F2] border-[#FF435A] text-[#9E1B2D]'
         }`}
       >
         <div className="flex-shrink-0">
-          {isCorrect ? (
+          {isTimedOut ? (
+            <div className="relative">
+              <Clock className="w-8 h-8 sm:w-10 sm:h-10 text-amber-500 animate-pulse" />
+            </div>
+          ) : isCorrect ? (
             <div className="relative">
               <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-[#00D166] fill-[#00D166]/20 animate-pulse" />
               <Sparkles className="w-4 h-4 text-amber-500 fill-amber-400 absolute -top-1 -right-1 animate-spin-slow" />
@@ -46,16 +55,23 @@ export default function SolutionPanel({
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h3 className="text-base sm:text-lg font-black leading-tight">
-              {isCorrect ? 'Correct! 🎉' : 'Incorrect!'}
+              {isTimedOut ? "Time's Up! ⏰" : isCorrect ? 'Correct! 🎉' : 'Incorrect!'}
             </h3>
             {isCorrect && (
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-xs font-black shadow-sm animate-pulse">
                 +5 XP ✨
               </span>
             )}
+            {isTimedOut && autoAdvanceCountdown !== null && (
+              <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[11px] font-black shadow-sm animate-pulse">
+                Next in {autoAdvanceCountdown}s
+              </span>
+            )}
           </div>
           <p className="text-xs sm:text-sm font-semibold opacity-90 mt-0.5">
-            {isCorrect
+            {isTimedOut
+              ? `Timer ran out! Revealing the answer for 5s before moving forward.`
+              : isCorrect
               ? 'Great thinking! You got it right.'
               : "Don't worry, See the solution to know why"}
           </p>
@@ -119,7 +135,7 @@ export default function SolutionPanel({
             onClick={onNext}
             className="w-full sm:w-auto px-10 py-3.5 sm:py-4 rounded-full bg-[#FF5B84] hover:bg-[#FF435A] text-white font-black text-sm sm:text-lg tracking-wider uppercase hover:scale-105 active:scale-95 shadow-[0_8px_20px_rgba(255,91,132,0.5)] flex items-center justify-center gap-2 cursor-pointer transition-all animate-bounce-short"
           >
-            <span>Next</span>
+            <span>{isTimedOut && autoAdvanceCountdown !== null ? `Next (${autoAdvanceCountdown}s)` : 'Next'}</span>
             <ArrowRight className="w-5 h-5 stroke-[3]" />
           </button>
         </div>

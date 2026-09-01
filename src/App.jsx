@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
-import AISetupModal from './components/AISetupModal';
 import AskDoubtModal from './components/AskDoubtModal';
 import Header from './components/Header';
 import HintModal from './components/HintModal';
-import KidNameModal from './components/KidNameModal';
 import NewSheetModal from './components/NewSheetModal';
 import OptionsGrid from './components/OptionsGrid';
 import QuestionCard from './components/QuestionCard';
@@ -12,14 +10,13 @@ import ResultOverview from './components/ResultOverview';
 import SkillSelectionDashboard from './components/SkillSelectionDashboard';
 import SolutionPanel from './components/SolutionPanel';
 import ZoomModal from './components/ZoomModal';
+import KidNameModal from './components/KidNameModal';
+import AISetupModal from './components/AISetupModal';
 
 import confetti from 'canvas-confetti';
-import { ArrowLeft, Key, RefreshCw, Sparkles, Zap } from 'lucide-react';
+import { Rocket, Zap, AlertTriangle, Key, RefreshCw, ArrowLeft, Sparkles } from 'lucide-react';
+import { getFreshThinksheetSession, prefetchThinksheetSession } from './services/questionService';
 import { getStoredApiKey } from './services/aiGenerator';
-import {
-	getFreshThinksheetSession,
-	prefetchThinksheetSession,
-} from './services/questionService';
 import {
 	playButtonPop,
 	playCorrectSound,
@@ -32,6 +29,8 @@ import {
 	loadProfileStats,
 	recordCompletedSheet,
 	saveStoredKidProfile,
+	getStoredTimerConfig,
+	saveStoredTimerConfig,
 } from './utils/progressTracker';
 import {
 	clearSessionState,
@@ -49,6 +48,14 @@ export default function App() {
 	const [currentScreen, setCurrentScreen] = useState('dashboard'); // 'dashboard' | 'thinksheet'
 	const [selectedSkill, setSelectedSkill] = useState('Visual'); // 'Visual' | 'Analytical Thinking'
 	const [profileStats, setProfileStats] = useState(loadProfileStats);
+
+	// Timer Settings & Per-Question Limit State
+	const [timerConfig, setTimerConfig] = useState(getStoredTimerConfig);
+	const [questionTimeRemaining, setQuestionTimeRemaining] = useState(
+		() => getStoredTimerConfig().secondsPerQuestion || 90
+	);
+	const [isTimedOut, setIsTimedOut] = useState(false);
+	const [autoAdvanceCountdown, setAutoAdvanceCountdown] = useState(null);
 
 	// Thinksheet Session State
 	const [sheetNumber, setSheetNumber] = useState(1);
@@ -126,20 +133,79 @@ export default function App() {
 		aiError,
 	]);
 
-	// Live Timer
+	// Live Countdown / Stopwatch Timer Loop
 	useEffect(() => {
 		if (
 			isCompleted ||
 			isLoadingSheet ||
 			currentScreen !== 'thinksheet' ||
 			aiError
-		)
+		) {
 			return;
+		}
+
 		const interval = setInterval(() => {
-			setTimerSeconds((prev) => prev + 1);
+			if (!timerConfig.enabled) {
+				// Normal unlimited session timer
+				setTimerSeconds((prev) => prev + 1);
+			} else {
+				// Per-question countdown timer mode
+				if (!isSubmitted && !isTimedOut) {
+					setQuestionTimeRemaining((prev) => {
+						if (prev <= 1) {
+							// Trigger question timeout
+							handleQuestionTimeout();
+							return 0;
+						}
+						return prev - 1;
+					});
+				}
+			}
 		}, 1000);
+
 		return () => clearInterval(interval);
-	}, [isCompleted, isLoadingSheet, currentScreen, aiError]);
+	}, [
+		isCompleted,
+		isLoadingSheet,
+		currentScreen,
+		aiError,
+		timerConfig.enabled,
+		isSubmitted,
+		isTimedOut,
+		currentIndex,
+		questions,
+	]);
+
+	// Auto-advance 5-second countdown on timeout
+	useEffect(() => {
+		if (
+			!timerConfig.enabled ||
+			!isTimedOut ||
+			autoAdvanceCountdown === null ||
+			isCompleted
+		) {
+			return;
+		}
+
+		const advanceInterval = setInterval(() => {
+			setAutoAdvanceCountdown((prev) => {
+				if (prev <= 1) {
+					handleNext();
+					return null;
+				}
+				return prev - 1;
+			});
+		}, 1000);
+
+		return () => clearInterval(advanceInterval);
+	}, [
+		timerConfig.enabled,
+		isTimedOut,
+		autoAdvanceCountdown,
+		isCompleted,
+		currentIndex,
+		questions.length,
+	]);
 
 	// Current Question Object
 	const currentQuestion = questions[currentIndex] || {};
@@ -152,6 +218,33 @@ export default function App() {
 		setIsNameModalOpen(false);
 	};
 
+	// Handle Updating Timer Configuration
+	const handleUpdateTimerConfig = (newConfig) => {
+		saveStoredTimerConfig(newConfig);
+		setTimerConfig(newConfig);
+		setQuestionTimeRemaining(newConfig.secondsPerQuestion || 90);
+	};
+
+	// Handle Question Timeout (when timer runs out)
+	const handleQuestionTimeout = () => {
+		setIsSubmitted(true);
+		setIsTimedOut(true);
+		setSelectedOptionId(null);
+		setAutoAdvanceCountdown(5);
+		playIncorrectSound(soundEnabled);
+
+		// Record in history as timed out / un-answered
+		const newHistory = [...history];
+		newHistory[currentIndex] = {
+			questionId: currentQuestion.id,
+			selectedOptionId: null,
+			isCorrect: false,
+			timedOut: true,
+			timestamp: Date.now(),
+		};
+		setHistory(newHistory);
+	};
+
 	// Start Sheet for a selected skill (100% Real-Time AI Generation)
 	const handleSelectSkill = async (skill) => {
 		setSelectedSkill(skill);
@@ -161,6 +254,9 @@ export default function App() {
 		setCurrentIndex(0);
 		setSelectedOptionId(null);
 		setIsSubmitted(false);
+		setIsTimedOut(false);
+		setAutoAdvanceCountdown(null);
+		setQuestionTimeRemaining(timerConfig.secondsPerQuestion || 90);
 		setHistory([]);
 		setTimerSeconds(0);
 		setIsCompleted(false);
@@ -182,13 +278,13 @@ export default function App() {
 
 	// Handle Option Select
 	const handleSelectOption = (optionId) => {
-		if (isSubmitted) return;
+		if (isSubmitted || isTimedOut) return;
 		setSelectedOptionId(optionId);
 	};
 
 	// Handle Submit
 	const handleSubmit = () => {
-		if (!selectedOptionId || isSubmitted) return;
+		if (!selectedOptionId || isSubmitted || isTimedOut) return;
 
 		const isCorrect = selectedOptionId === currentQuestion.correctAnswerId;
 		setIsSubmitted(true);
@@ -210,15 +306,8 @@ export default function App() {
 			} catch (err) {
 				console.warn('Confetti error', err);
 			}
-
-			if (speechEnabled) {
-				speakText('Correct! Great thinking! You got it right.');
-			}
 		} else {
 			playIncorrectSound(soundEnabled);
-			if (speechEnabled) {
-				speakText("Don't worry! Let's look at the solution to see why.");
-			}
 		}
 
 		// Save to history
@@ -227,6 +316,7 @@ export default function App() {
 			questionId: currentQuestion.id,
 			selectedOptionId,
 			isCorrect,
+			timedOut: false,
 			timestamp: Date.now(),
 		};
 		setHistory(newHistory);
@@ -235,6 +325,9 @@ export default function App() {
 	// Handle Next Question
 	const handleNext = () => {
 		playButtonPop(soundEnabled);
+		setIsTimedOut(false);
+		setAutoAdvanceCountdown(null);
+		setQuestionTimeRemaining(timerConfig.secondsPerQuestion || 90);
 
 		if (currentIndex + 1 < questions.length) {
 			setCurrentIndex((prev) => prev + 1);
@@ -259,6 +352,9 @@ export default function App() {
 		playButtonPop(soundEnabled);
 		setIsLoadingSheet(true);
 		setAiError(null);
+		setIsTimedOut(false);
+		setAutoAdvanceCountdown(null);
+		setQuestionTimeRemaining(timerConfig.secondsPerQuestion || 90);
 
 		const nextSheetNum = sheetNumber + 1;
 		try {
@@ -315,6 +411,9 @@ export default function App() {
 		setIsNewSheetOpen(false);
 		setIsLoadingSheet(true);
 		setAiError(null);
+		setIsTimedOut(false);
+		setAutoAdvanceCountdown(null);
+		setQuestionTimeRemaining(timerConfig.secondsPerQuestion || 90);
 
 		try {
 			const freshQuestions = await getFreshThinksheetSession(
@@ -365,6 +464,8 @@ export default function App() {
 							setIsNameModalOpen(true);
 						}
 					}}
+					timerConfig={timerConfig}
+					onUpdateTimerConfig={handleUpdateTimerConfig}
 				/>
 				<KidNameModal
 					isOpen={isNameModalOpen}
@@ -387,6 +488,8 @@ export default function App() {
 				history={history}
 				xp={xp}
 				timerSeconds={timerSeconds}
+				timerConfig={timerConfig}
+				questionTimeRemaining={questionTimeRemaining}
 				soundEnabled={soundEnabled}
 				onToggleSound={() => setSoundEnabled((prev) => !prev)}
 				speechEnabled={speechEnabled}
@@ -516,7 +619,7 @@ export default function App() {
 									</div>
 								</div>
 							</div>
-						:	/* Layout when SUBMITTED: Question Card & compact Options on Left, Solution Panel with NEXT button on Right */
+						:	/* Layout when SUBMITTED / TIMED OUT: Question Card on Left, Solution Panel with NEXT button on Right */
 							<div className='grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start'>
 								{/* Left Column: Question Card & compact Options */}
 								<div className='lg:col-span-7 flex flex-col gap-3'>
@@ -544,6 +647,8 @@ export default function App() {
 										isCorrect={
 											selectedOptionId === currentQuestion.correctAnswerId
 										}
+										isTimedOut={isTimedOut}
+										autoAdvanceCountdown={autoAdvanceCountdown}
 										question={currentQuestion}
 										onAskDoubt={() => setIsAskDoubtOpen(true)}
 										soundEnabled={soundEnabled}

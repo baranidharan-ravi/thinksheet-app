@@ -141,6 +141,8 @@ export default function QuestionSummary({
 											<span className='font-bold text-sm sm:text-base'>
 												{userOption ?
 													`${userOption.id}. ${userOption.text}`
+												: userResult.timedOut ?
+													'⏱️ Timed Out (Not Answered)'
 												:	'Not answered'}
 											</span>
 										</div>

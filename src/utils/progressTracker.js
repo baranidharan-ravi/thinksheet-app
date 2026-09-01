@@ -3,6 +3,40 @@
 const PROFILE_KEY = 'thinksheet_kid_profile_v4';
 const KID_NAME_KEY = 'thinksheet_custom_kid_name_v2';
 const KID_AGE_KEY = 'thinksheet_custom_kid_age_v2';
+const TIMER_CONFIG_KEY = 'thinksheet_timer_config_v1';
+
+export const DEFAULT_TIMER_CONFIG = {
+  enabled: false,
+  secondsPerQuestion: 90
+};
+
+export function getStoredTimerConfig() {
+  try {
+    const raw = localStorage.getItem(TIMER_CONFIG_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        enabled: Boolean(parsed.enabled),
+        secondsPerQuestion: Number(parsed.secondsPerQuestion) || 90
+      };
+    }
+  } catch {}
+  return DEFAULT_TIMER_CONFIG;
+}
+
+export function saveStoredTimerConfig(config) {
+  try {
+    localStorage.setItem(
+      TIMER_CONFIG_KEY,
+      JSON.stringify({
+        enabled: Boolean(config.enabled),
+        secondsPerQuestion: Math.max(15, Math.min(600, Number(config.secondsPerQuestion) || 90))
+      })
+    );
+  } catch (err) {
+    console.warn('Could not save timer config', err);
+  }
+}
 
 export const INITIAL_PROFILE = {
   visualSolved: 0,
