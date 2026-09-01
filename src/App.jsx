@@ -43,9 +43,7 @@ export default function App() {
 	// Kid Profile & Name State
 	const [kidName, setKidName] = useState(getStoredKidName);
 	const [kidAge, setKidAge] = useState(getStoredKidAge);
-	const [isNameModalOpen, setIsNameModalOpen] = useState(
-		() => !getStoredKidName(),
-	);
+	const [isNameModalOpen, setIsNameModalOpen] = useState(false);
 
 	// Navigation State
 	const [currentScreen, setCurrentScreen] = useState('dashboard'); // 'dashboard' | 'thinksheet'
@@ -362,6 +360,11 @@ export default function App() {
 					kidName={kidName}
 					kidAge={kidAge}
 					onEditKidName={() => setIsNameModalOpen(true)}
+					onAnimationComplete={() => {
+						if (!getStoredKidName()) {
+							setIsNameModalOpen(true);
+						}
+					}}
 				/>
 				<KidNameModal
 					isOpen={isNameModalOpen}

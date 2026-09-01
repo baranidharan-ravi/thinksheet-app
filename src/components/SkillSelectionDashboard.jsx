@@ -12,6 +12,7 @@ export default function SkillSelectionDashboard({
 	kidName,
 	kidAge = 5,
 	onEditKidName,
+	onAnimationComplete,
 }) {
 	const [infoModalTopic, setInfoModalTopic] = useState(null);
 	const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -27,16 +28,19 @@ export default function SkillSelectionDashboard({
 			setAnimationPhase('shrinking');
 		}, 750);
 
-		// Step 2: Settle into docked position
+		// Step 2: Settle into docked position and notify parent
 		const dockTimer = setTimeout(() => {
 			setAnimationPhase('docked');
+			if (onAnimationComplete) {
+				onAnimationComplete();
+			}
 		}, 1500);
 
 		return () => {
 			clearTimeout(shrinkTimer);
 			clearTimeout(dockTimer);
 		};
-	}, []);
+	}, [onAnimationComplete]);
 
 	const handleKeySaved = (key) => {
 		setHasApiKey(Boolean(key));
