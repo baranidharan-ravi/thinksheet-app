@@ -1,12 +1,4 @@
-import {
-	Clock,
-	Edit2,
-	FastForward,
-	Info,
-	Settings,
-	Sparkles,
-	Timer,
-} from 'lucide-react';
+import { Clock, Edit2, Info, Settings, Sparkles, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getStoredApiKey } from '../services/aiGenerator';
 import { playButtonPop } from '../utils/audioSynthesis';
@@ -289,7 +281,7 @@ export default function SkillSelectionDashboard({
 						{/* Card Footer: Level & Action Button */}
 						<div className='flex items-center justify-between pt-3 border-t border-slate-100'>
 							<span className='text-xs font-black px-3 py-1 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200'>
-								{visualLevel}
+								LV{visualLevel.levelNumber} {visualLevel.levelTitle}
 							</span>
 
 							<button className='px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-extrabold text-xs sm:text-sm shadow-md group-hover:shadow-cyan-400/50 group-hover:scale-105 transition-all'>
@@ -338,7 +330,7 @@ export default function SkillSelectionDashboard({
 						{/* Card Footer: Level & Action Button */}
 						<div className='flex items-center justify-between pt-3 border-t border-slate-100'>
 							<span className='text-xs font-black px-3 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200'>
-								{analyticalLevel}
+								LV{analyticalLevel.levelNumber} {analyticalLevel.levelTitle}
 							</span>
 
 							<button className='px-5 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-extrabold text-xs sm:text-sm shadow-md group-hover:shadow-purple-400/50 group-hover:scale-105 transition-all'>
@@ -363,7 +355,8 @@ export default function SkillSelectionDashboard({
 						<p className='text-sm text-slate-300 font-semibold leading-relaxed mb-4'>
 							{infoModalTopic === 'Visual' ?
 								'Visual Thinksheets train spatial awareness, geometric pattern completion, object counting, grid observation, and symmetry detection.'
-							:	'Analytical Thinking Thinksheets develop logical reasoning, analogy deduction, classification, and everyday cause-and-effect problem solving.'}
+							:	'Analytical Thinking Thinksheets develop logical reasoning, analogy deduction, classification, and everyday cause-and-effect problem solving.'
+							}
 						</p>
 						<button
 							onClick={() => setInfoModalTopic(null)}
