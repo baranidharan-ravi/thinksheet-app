@@ -12,7 +12,8 @@ export default function QuestionCard({
 }) {
 	const handleListenQuestion = () => {
 		playButtonPop(soundEnabled);
-		const textToRead = question.promptAudio || question.question;
+		const textToRead =
+			question.promptAudio || question.question || question.questionText || '';
 		speakText(textToRead);
 	};
 
@@ -76,7 +77,7 @@ export default function QuestionCard({
 				{/* Question Prompt */}
 				<div className='flex items-start gap-3 my-2'>
 					<h2 className='text-base sm:text-xl md:text-2xl font-extrabold text-slate-800 leading-snug'>
-						{question.question}
+						{question.question || question.questionText}
 					</h2>
 
 					{/* Read-Aloud Speaker Button */}

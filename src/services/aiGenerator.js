@@ -231,7 +231,9 @@ function shuffleAndFormatOptions(questionObj, selectedSkill) {
       selectedSkill === 'Visual'
         ? 'Pattern Completion, Counting & Spatial Recognition'
         : 'Logical Deduction, Analogies & Critical Thinking',
+    question: qText,
     questionText: qText,
+    promptAudio: qText,
     diagramType,
     diagramData: synchedData,
     solutionDiagramType: diagramType,

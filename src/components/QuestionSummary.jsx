@@ -96,7 +96,7 @@ export default function QuestionSummary({
 											</span>
 										</div>
 										<p className='text-sm sm:text-base font-bold text-white mt-1 line-clamp-1'>
-											{q.question}
+											{q.question || q.questionText}
 										</p>
 									</div>
 								</div>
@@ -114,7 +114,7 @@ export default function QuestionSummary({
 								<div className='p-5 bg-white text-slate-800 border-t-2 border-slate-200 flex flex-col gap-4 animate-in fade-in duration-200'>
 									{/* Full Question Text */}
 									<div className='font-extrabold text-base sm:text-lg text-slate-900'>
-										{q.question}
+										{q.question || q.questionText}
 									</div>
 
 									{/* Question Visual if any */}
