@@ -24,12 +24,12 @@ export function setStoredApiKey(key) {
   }
 }
 
-// Ordered list of models to try in sequence for maximum reliability and speed
+// Current supported models in Google AI Studio
 const GEMINI_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-2.5-flash-lite'
+  'gemini-3.5-flash-lite',
+  'gemini-3.5-flash',
+  'gemini-3-flash-preview',
+  'gemini-2.5-flash'
 ];
 
 /**
@@ -67,14 +67,15 @@ async function callGeminiApi(payload, apiKey) {
 
       const errMsg = parsedErr?.error?.message || errText;
       lastError = new Error(`Model ${model} (${res.status}): ${errMsg}`);
-      console.warn(`[Gemini API] ${model} failed (${res.status}), trying fallback model...`);
+      console.warn(`[Gemini API] ${model} returned HTTP ${res.status}, trying fallback model...`);
 
       // If it's an explicit key error (400 invalid key / 403 forbidden), stop trying other models
       if (
         res.status === 400 &&
         (errMsg.toLowerCase().includes('api_key') ||
           errMsg.toLowerCase().includes('key not valid') ||
-          errMsg.toLowerCase().includes('invalid api key'))
+          errMsg.toLowerCase().includes('invalid api key') ||
+          errMsg.toLowerCase().includes('api key expired'))
       ) {
         throw new Error('Invalid Gemini API Key. Please verify your key from Google AI Studio.');
       }
@@ -115,8 +116,8 @@ export async function validateGeminiApiKey(apiKey) {
 
   try {
     const payload = {
-      contents: [{ parts: [{ text: 'ping' }] }],
-      generationConfig: { maxOutputTokens: 5 }
+      contents: [{ parts: [{ text: 'Hello' }] }],
+      generationConfig: { maxOutputTokens: 10 }
     };
 
     await callGeminiApi(payload, cleanedKey);
@@ -262,7 +263,13 @@ function parseGeminiJsonResponse(rawText) {
   try {
     const parsed = JSON.parse(cleaned);
     if (Array.isArray(parsed)) return parsed;
-    if (parsed && Array.isArray(parsed.questions)) return parsed.questions;
+    if (parsed && typeof parsed === 'object') {
+      for (const key of Object.keys(parsed)) {
+        if (Array.isArray(parsed[key]) && parsed[key].length > 0) {
+          return parsed[key];
+        }
+      }
+    }
   } catch (err) {
     try {
       const match = cleaned.match(/\[\s*\{[\s\S]*\}\s*\]/);
@@ -373,7 +380,7 @@ Return ONLY the valid JSON array without any markdown preamble.`;
     generationConfig: {
       responseMimeType: 'application/json',
       temperature: 0.7,
-      maxOutputTokens: 2048
+      maxOutputTokens: 8192
     }
   };
 

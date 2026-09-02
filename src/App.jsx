@@ -603,7 +603,8 @@ export default function App() {
 								'All thinksheet challenges are generated live by Google Gemini AI. Please configure your API key to start generating customized questions.'
 							: typeof aiError === 'string' && aiError !== 'API_ERROR' ?
 								aiError
-							:	'Unable to connect to the Gemini AI API. Please check your internet connection or verify your API key in Settings.'}
+							:	'Unable to connect to the Gemini AI API. Please check your internet connection or verify your API key in Settings.'
+							}
 						</p>
 
 						<div className='flex flex-col sm:flex-row gap-3 justify-center'>
