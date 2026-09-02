@@ -3,11 +3,11 @@ import AskDoubtModal from './components/AskDoubtModal';
 import ExitConfirmationModal from './components/ExitConfirmationModal';
 import Header from './components/Header';
 import HintModal from './components/HintModal';
-import KidNameModal from './components/KidNameModal';
 import OptionsGrid from './components/OptionsGrid';
 import QuestionCard from './components/QuestionCard';
 import QuestionSummary from './components/QuestionSummary';
 import ResultOverview from './components/ResultOverview';
+import SettingsScreen from './components/SettingsScreen';
 import SkillSelectionDashboard from './components/SkillSelectionDashboard';
 import SolutionPanel from './components/SolutionPanel';
 import ZoomModal from './components/ZoomModal';
@@ -45,10 +45,9 @@ export default function App() {
 	// Kid Profile & Name State
 	const [kidName, setKidName] = useState(getStoredKidName);
 	const [kidAge, setKidAge] = useState(getStoredKidAge);
-	const [isNameModalOpen, setIsNameModalOpen] = useState(false);
 
 	// Navigation State
-	const [currentScreen, setCurrentScreen] = useState('dashboard'); // 'dashboard' | 'thinksheet'
+	const [currentScreen, setCurrentScreen] = useState('dashboard'); // 'dashboard' | 'settings' | 'thinksheet'
 	const [selectedSkill, setSelectedSkill] = useState('Visual'); // 'Visual' | 'Analytical Thinking'
 	const [profileStats, setProfileStats] = useState(loadProfileStats);
 
@@ -84,7 +83,10 @@ export default function App() {
 	const [isExitModalOpen, setIsExitModalOpen] = useState(false);
 	const [isAskDoubtOpen, setIsAskDoubtOpen] = useState(false);
 
-	// Always start with the skill selection dashboard on load
+	// Pending Skill target to auto-launch after setup
+	const [pendingSkill, setPendingSkill] = useState(null);
+
+	// Always start on dashboard on load
 	useEffect(() => {
 		setCurrentScreen('dashboard');
 	}, []);
@@ -178,19 +180,21 @@ export default function App() {
 		questions,
 	]);
 
-	// Auto-advance 5-second countdown on timeout
+	// Auto-advance countdown on question submission or timeout
 	useEffect(() => {
 		if (
-			!timerConfig.enabled ||
-			!isTimedOut ||
+			!isSubmitted ||
 			autoAdvanceCountdown === null ||
-			isCompleted
+			autoAdvanceCountdown <= 0 ||
+			isCompleted ||
+			currentScreen !== 'thinksheet'
 		) {
 			return;
 		}
 
 		const advanceInterval = setInterval(() => {
 			setAutoAdvanceCountdown((prev) => {
+				if (prev === null) return null;
 				if (prev <= 1) {
 					handleNext();
 					return null;
@@ -201,16 +205,13 @@ export default function App() {
 
 		return () => clearInterval(advanceInterval);
 	}, [
-		timerConfig.enabled,
-		isTimedOut,
+		isSubmitted,
 		autoAdvanceCountdown,
 		isCompleted,
+		currentScreen,
 		currentIndex,
 		questions.length,
 	]);
-
-	// Pending Skill target to auto-launch after setup
-	const [pendingSkill, setPendingSkill] = useState(null);
 
 	// Current Question Object
 	const currentQuestion = questions[currentIndex] || {};
@@ -246,7 +247,7 @@ export default function App() {
 		}
 	};
 
-	// Handle saving kid's profile (name, age, mandatory API key, and timer)
+	// Handle saving kid's profile & settings
 	const handleSaveKidProfile = ({ name, age, timerConfig: newTimerConfig }) => {
 		clearPrefetchCache();
 		saveStoredKidProfile(name, age);
@@ -256,25 +257,19 @@ export default function App() {
 			setTimerConfig(newTimerConfig);
 			setQuestionTimeRemaining(newTimerConfig.secondsPerQuestion || 90);
 		}
-		setIsNameModalOpen(false);
 
 		// Trigger prefetching with newly saved key and age
 		prefetchThinksheetSession('Visual', 1, age);
 		prefetchThinksheetSession('Analytical Thinking', 1, age);
 
-		// If user selected a skill before entering their key, auto-launch that skill immediately!
+		// If user clicked a skill card before entering their key, auto-launch that skill immediately!
 		if (pendingSkill) {
 			const skillToLaunch = pendingSkill;
 			setPendingSkill(null);
 			startSkillSession(skillToLaunch, age);
+		} else {
+			setCurrentScreen('dashboard');
 		}
-	};
-
-	// Handle Updating Timer Configuration
-	const handleUpdateTimerConfig = (newConfig) => {
-		saveStoredTimerConfig(newConfig);
-		setTimerConfig(newConfig);
-		setQuestionTimeRemaining(newConfig.secondsPerQuestion || 90);
 	};
 
 	// Handle Question Timeout (when timer runs out)
@@ -282,13 +277,19 @@ export default function App() {
 		setIsSubmitted(true);
 		setIsTimedOut(true);
 		setSelectedOptionId(null);
-		setAutoAdvanceCountdown(7);
 		playIncorrectSound(soundEnabled);
 
 		if (speechEnabled) {
 			speakText(
-				"Time's up! No answer was selected. Look at the correct solution. The next question will load automatically!",
+				"Time's up! No answer was selected. Look at the correct solution.",
 			);
+		}
+
+		// If auto-advance is enabled, start the configured countdown
+		if (timerConfig.autoAdvanceEnabled) {
+			setAutoAdvanceCountdown(timerConfig.autoAdvanceSeconds || 7);
+		} else {
+			setAutoAdvanceCountdown(null);
 		}
 
 		// Record in history as timed out / un-answered
@@ -307,7 +308,7 @@ export default function App() {
 	const handleSelectSkill = async (skill) => {
 		if (!getStoredApiKey() || !getStoredKidName()) {
 			setPendingSkill(skill);
-			setIsNameModalOpen(true);
+			setCurrentScreen('settings');
 			return;
 		}
 
@@ -346,6 +347,13 @@ export default function App() {
 			}
 		} else {
 			playIncorrectSound(soundEnabled);
+		}
+
+		// If auto-advance is enabled, start the configured countdown
+		if (timerConfig.autoAdvanceEnabled) {
+			setAutoAdvanceCountdown(timerConfig.autoAdvanceSeconds || 7);
+		} else {
+			setAutoAdvanceCountdown(null);
 		}
 
 		// Save to history
@@ -465,34 +473,38 @@ export default function App() {
 			Math.round((correctCount / questions.length) * 100)
 		:	0;
 
+	// Render Dedicated Settings Screen
+	if (currentScreen === 'settings') {
+		return (
+			<SettingsScreen
+				onSaveAndReturn={handleSaveKidProfile}
+				onBack={() => {
+					setPendingSkill(null);
+					setCurrentScreen('dashboard');
+				}}
+				soundEnabled={soundEnabled}
+				pendingSkill={pendingSkill}
+			/>
+		);
+	}
+
 	// Render Skill Selection Dashboard
 	if (currentScreen === 'dashboard') {
 		return (
-			<>
-				<SkillSelectionDashboard
-					profileStats={profileStats}
-					onSelectSkill={handleSelectSkill}
-					soundEnabled={soundEnabled}
-					kidName={kidName}
-					kidAge={kidAge}
-					onEditKidName={() => setIsNameModalOpen(true)}
-					onAnimationComplete={() => {
-						if (!getStoredKidName() || !getStoredApiKey()) {
-							setIsNameModalOpen(true);
-						}
-					}}
-					timerConfig={timerConfig}
-					onUpdateTimerConfig={handleUpdateTimerConfig}
-				/>
-				<KidNameModal
-					isOpen={isNameModalOpen}
-					onSaveProfile={handleSaveKidProfile}
-					onClose={() => setIsNameModalOpen(false)}
-					currentName={kidName}
-					currentAge={kidAge}
-					soundEnabled={soundEnabled}
-				/>
-			</>
+			<SkillSelectionDashboard
+				profileStats={profileStats}
+				onSelectSkill={handleSelectSkill}
+				soundEnabled={soundEnabled}
+				kidName={kidName}
+				kidAge={kidAge}
+				onOpenSettings={() => setCurrentScreen('settings')}
+				onAnimationComplete={() => {
+					if (!getStoredKidName() || !getStoredApiKey()) {
+						setCurrentScreen('settings');
+					}
+				}}
+				timerConfig={timerConfig}
+			/>
 		);
 	}
 
@@ -547,7 +559,7 @@ export default function App() {
 						<p className='text-sm text-slate-300 font-semibold mb-6 leading-relaxed'>
 							{aiError === 'MISSING_KEY' ?
 								'All thinksheet challenges are generated live by Google Gemini AI. Please configure your API key to start generating customized questions.'
-							:	'Unable to connect to the Gemini AI API. Please check your internet connection or verify your API key in AI Setup.'
+							:	'Unable to connect to the Gemini AI API. Please check your internet connection or verify your API key in Settings.'
 							}
 						</p>
 
@@ -555,11 +567,11 @@ export default function App() {
 							<button
 								onClick={() => {
 									playButtonPop(soundEnabled);
-									setIsNameModalOpen(true);
+									setCurrentScreen('settings');
 								}}
 								className='px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-sm sm:text-base shadow-lg flex items-center justify-center gap-2 transform hover:scale-105 transition-all cursor-pointer'>
 								<Sparkles className='w-4 h-4' />
-								<span>Configure Gemini API Key</span>
+								<span>Open Settings & Key ⚙️</span>
 							</button>
 
 							<button
@@ -644,14 +656,7 @@ export default function App() {
 														:	'bg-black/30 text-white/90 border-white/20'
 													}`}
 													title={`Time remaining: ${questionTimeRemaining}s`}>
-													⏱️{' '}
-													{Math.floor(questionTimeRemaining / 60)
-														.toString()
-														.padStart(2, '0')}
-													:
-													{(questionTimeRemaining % 60)
-														.toString()
-														.padStart(2, '0')}
+													⏱️ {Math.floor(questionTimeRemaining / 60).toString().padStart(2, '0')}:{(questionTimeRemaining % 60).toString().padStart(2, '0')}
 												</span>
 											)}
 										</button>
@@ -759,16 +764,6 @@ export default function App() {
 				currentIndex={currentIndex}
 				totalQuestions={questions.length}
 				selectedSkill={selectedSkill}
-				soundEnabled={soundEnabled}
-			/>
-
-			{/* Unified Explorer Profile, Mandatory API Key & Timer Setup Modal */}
-			<KidNameModal
-				isOpen={isNameModalOpen}
-				onSaveProfile={handleSaveKidProfile}
-				onClose={() => setIsNameModalOpen(false)}
-				currentName={kidName}
-				currentAge={kidAge}
 				soundEnabled={soundEnabled}
 			/>
 		</div>

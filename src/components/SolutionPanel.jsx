@@ -25,6 +25,8 @@ export default function SolutionPanel({
 		speakText(question.solutionText);
 	};
 
+	const hasCountdown = autoAdvanceCountdown !== null && autoAdvanceCountdown >= 0;
+
 	return (
 		<div className='flex flex-col gap-3.5 sm:gap-4 animate-in fade-in slide-in-from-right-4 duration-300'>
 			{/* Feedback Banner with Celebratory Animation on Correct or Wrong/Timeout Styling */}
@@ -62,18 +64,21 @@ export default function SolutionPanel({
 								+5 XP ✨
 							</span>
 						)}
-						{isTimedOut && autoAdvanceCountdown !== null && (
-							<span className='px-2.5 py-0.5 rounded-full bg-rose-600 text-white text-xs font-black shadow-sm animate-pulse'>
+						{hasCountdown && (
+							<span
+								className={`px-2.5 py-0.5 rounded-full text-white text-xs font-black shadow-sm animate-pulse ${
+									isCorrect ? 'bg-emerald-600' : 'bg-rose-600'
+								}`}>
 								Next in {autoAdvanceCountdown}s 🚀
 							</span>
 						)}
 					</div>
 					<p className='text-xs sm:text-sm font-semibold opacity-90 mt-0.5'>
 						{isCorrect ?
-							'Great thinking! You got it right.'
+							`Great thinking! You got it right.${hasCountdown ? ` Moving to next in ${autoAdvanceCountdown}s...` : ''}`
 						: isTimedOut ?
-							`No answer was selected. See the correct solution below! Moving to next question in ${autoAdvanceCountdown || 7}s...`
-						:	"Don't worry, See the solution to know why"}
+							`No answer was selected. See the correct solution below!${hasCountdown ? ` Moving to next in ${autoAdvanceCountdown}s...` : ''}`
+						:	`Don't worry, see the solution to know why!${hasCountdown ? ` Moving to next in ${autoAdvanceCountdown}s...` : ''}`}
 					</p>
 				</div>
 			</div>
@@ -89,7 +94,7 @@ export default function SolutionPanel({
 						</div>
 						<button
 							onClick={handleListenSolution}
-							className='p-1 rounded-full text-purple-600 hover:bg-purple-50 transition-all'
+							className='p-1 rounded-full text-purple-600 hover:bg-purple-50 transition-all cursor-pointer'
 							title='Listen to solution'>
 							<Volume2 className='w-4 h-4' />
 						</button>
@@ -119,7 +124,7 @@ export default function SolutionPanel({
 							playButtonPop(soundEnabled);
 							onAskDoubt();
 						}}
-						className='flex items-center gap-1.5 text-xs sm:text-sm font-bold text-pink-500 hover:text-pink-600 transition-colors'>
+						className='flex items-center gap-1.5 text-xs sm:text-sm font-bold text-pink-500 hover:text-pink-600 transition-colors cursor-pointer'>
 						<HelpCircle className='w-4 h-4' />
 						<span>? Ask Doubt</span>
 					</button>
@@ -133,9 +138,9 @@ export default function SolutionPanel({
 						onClick={onNext}
 						className='w-full sm:w-auto px-10 py-3.5 sm:py-4 rounded-full bg-[#FF5B84] hover:bg-[#FF435A] text-white font-black text-sm sm:text-lg tracking-wider uppercase hover:scale-105 active:scale-95 shadow-[0_8px_20px_rgba(255,91,132,0.5)] flex items-center justify-center gap-2 cursor-pointer transition-all animate-bounce-short'>
 						<span>
-							{isTimedOut && autoAdvanceCountdown !== null ?
+							{hasCountdown ?
 								`Next (${autoAdvanceCountdown}s)`
-							:	'Next'}
+							:	'Next Question'}
 						</span>
 						<ArrowRight className='w-5 h-5 stroke-[3]' />
 					</button>

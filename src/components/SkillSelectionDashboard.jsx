@@ -1,4 +1,12 @@
-import { Clock, Edit2, Info, Settings, Sparkles, Timer } from 'lucide-react';
+import {
+	Clock,
+	Edit2,
+	FastForward,
+	Info,
+	Settings,
+	Sparkles,
+	Timer,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getStoredApiKey } from '../services/aiGenerator';
 import { playButtonPop } from '../utils/audioSynthesis';
@@ -10,10 +18,14 @@ export default function SkillSelectionDashboard({
 	soundEnabled,
 	kidName,
 	kidAge = 5,
-	onEditKidName,
+	onOpenSettings,
 	onAnimationComplete,
-	timerConfig = { enabled: false, secondsPerQuestion: 90 },
-	onUpdateTimerConfig,
+	timerConfig = {
+		enabled: false,
+		secondsPerQuestion: 90,
+		autoAdvanceEnabled: true,
+		autoAdvanceSeconds: 7,
+	},
 }) {
 	const [infoModalTopic, setInfoModalTopic] = useState(null);
 	const [hasApiKey, setHasApiKey] = useState(false);
@@ -57,26 +69,32 @@ export default function SkillSelectionDashboard({
 		onSelectSkill(skill);
 	};
 
-	const isIntroActive = animationPhase === 'center';
+	const handleInfoClick = (e, topic) => {
+		e.stopPropagation();
+		playButtonPop(soundEnabled);
+		setInfoModalTopic(topic);
+	};
 
 	return (
-		<div className='min-h-screen bg-gradient-to-b from-[#5646B6] via-[#483B9D] to-[#392E83] text-white flex flex-col justify-between p-4 sm:p-6 select-none relative overflow-x-hidden font-sans'>
-			{/* Top Bar: Left Kid Name Badge + Center Green "Thinksheet" Badge + Right Profile/AI Settings Button */}
-			<header className='w-full max-w-5xl mx-auto flex items-center justify-between pt-2 pb-4 relative min-h-[56px]'>
-				{/* Kid Name & Age Personalization Badge */}
+		<div className='min-h-screen space-background flex flex-col justify-between text-white font-sans overflow-x-hidden select-none p-4 sm:p-6'>
+			{/* Top Header Bar */}
+			<header className='w-full max-w-5xl mx-auto flex items-center justify-between gap-2 relative z-10'>
+				{/* Child Profile Badge */}
 				<button
-					type='button'
 					onClick={() => {
 						playButtonPop(soundEnabled);
-						onEditKidName();
+						onOpenSettings();
 					}}
-					className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-pink-200 transition-all duration-700 cursor-pointer shadow-md transform hover:scale-105 ${
+					className={`flex items-center gap-2 bg-gradient-to-r from-purple-900/60 to-indigo-900/60 border border-purple-500/40 hover:border-purple-400 px-3.5 py-1.5 rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer ${
 						isIntroActive ?
 							'opacity-0 -translate-y-4 pointer-events-none'
 						:	'opacity-100 translate-y-0'
 					}`}
-					title='Edit Profile, Age, API Key & Timer'>
-					<span>
+					title='Open Profile & Settings'>
+					<div className='w-6 h-6 rounded-full bg-pink-500/30 flex items-center justify-center text-xs font-black text-pink-300'>
+						⭐
+					</div>
+					<span className='text-xs font-black text-white tracking-wide'>
 						👋 {kidName || 'Explorer'} (Age {kidAge || 5})
 					</span>
 					<Edit2 className='w-3 h-3 text-pink-300 opacity-80' />
@@ -136,13 +154,13 @@ export default function SkillSelectionDashboard({
 					</div>
 				}
 
-				{/* Unified Setup & Settings Button */}
+				{/* Settings Button */}
 				<button
 					onClick={() => {
 						playButtonPop(soundEnabled);
-						onEditKidName();
+						onOpenSettings();
 					}}
-					className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-lg transition-all duration-700 border ${
+					className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold shadow-lg transition-all duration-700 border cursor-pointer ${
 						hasApiKey ?
 							'bg-amber-400/20 text-amber-300 border-amber-400/40 hover:bg-amber-400/30'
 						:	'bg-rose-500/30 text-rose-200 border-rose-400/50 hover:bg-rose-500/40 animate-pulse'
@@ -151,9 +169,9 @@ export default function SkillSelectionDashboard({
 							'opacity-0 -translate-y-4 pointer-events-none'
 						:	'opacity-100 translate-y-0'
 					}`}
-					title='Setup Profile, Gemini API Key & Timer'>
+					title='Open Profile & Settings'>
 					<Settings className='w-3.5 h-3.5 text-amber-300 animate-spin-slow' />
-					<span>Setup & Key</span>
+					<span>Settings ⚙️</span>
 				</button>
 			</header>
 
@@ -185,32 +203,38 @@ export default function SkillSelectionDashboard({
 						<div>
 							<div className='flex items-center gap-2'>
 								<span className='font-extrabold text-sm sm:text-base text-white'>
-									⏱️ Question Timer Limit
-								</span>
-								<span
-									className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
-										timerConfig.enabled ?
-											'bg-amber-400 text-slate-950 shadow-sm'
-										:	'bg-white/20 text-slate-300'
-									}`}>
-									{timerConfig.enabled ? 'Enabled' : 'Optional'}
+									⏱️ Question Pacing & Timer
 								</span>
 							</div>
-							<p className='text-xs text-slate-300 font-semibold mt-0.5'>
-								{timerConfig.enabled ?
-									`⏱️ ${timerConfig.secondsPerQuestion}s limit per question (auto-reveals answer for 7s on timeout)`
-								:	'Relaxed mode: Unlimited time per question (default)'}
+							<p className='text-xs text-slate-300 font-semibold mt-0.5 flex items-center gap-2 flex-wrap'>
+								<span>
+									Timer:{' '}
+									<strong className='text-amber-300'>
+										{timerConfig.enabled ?
+											`${timerConfig.secondsPerQuestion}s/question`
+										:	'Unlimited'}
+									</strong>
+								</span>
+								<span>•</span>
+								<span>
+									Next Question:{' '}
+									<strong className='text-emerald-300'>
+										{timerConfig.autoAdvanceEnabled ?
+											`Auto in ${timerConfig.autoAdvanceSeconds || 7}s`
+										:	'Manual Next'}
+									</strong>
+								</span>
 							</p>
 						</div>
 					</div>
 
-					{/* Right: Quick Settings Button */}
+					{/* Right: Settings Button */}
 					<button
 						onClick={() => {
 							playButtonPop(soundEnabled);
-							onEditKidName();
+							onOpenSettings();
 						}}
-						className='px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-white font-extrabold text-xs transition-all shadow-md flex items-center gap-1.5'>
+						className='px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-white font-extrabold text-xs transition-all shadow-md flex items-center gap-1.5 cursor-pointer'>
 						<Timer className='w-3.5 h-3.5 text-amber-300' />
 						<span>Configure Settings ⚙️</span>
 					</button>
@@ -228,75 +252,46 @@ export default function SkillSelectionDashboard({
 						onClick={() => handleCardClick('Visual')}
 						className='group bg-white text-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl border-4 border-cyan-400 hover:border-cyan-300 cursor-pointer transform hover:-translate-y-1.5 active:translate-y-0 transition-all duration-200 flex flex-col justify-between min-h-[240px]'>
 						<div>
-							{/* Header Row: Icon, Title & Solved / Open count */}
-							<div className='flex items-start justify-between gap-3 mb-4'>
-								<div className='flex items-center gap-3.5'>
-									{/* Colorful Bar Chart Icon */}
-									<div className='w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-end justify-center p-2 gap-1 shadow-inner'>
-										<div className='w-2 h-4 bg-amber-400 rounded-t-sm' />
-										<div className='w-2 h-7 bg-cyan-400 rounded-t-sm' />
-										<div className='w-2 h-5 bg-blue-500 rounded-t-sm' />
-										<div className='w-2 h-9 bg-rose-500 rounded-t-sm' />
+							{/* Card Header */}
+							<div className='flex items-center justify-between mb-3'>
+								<div className='flex items-center gap-2'>
+									<div className='w-10 h-10 rounded-2xl bg-cyan-100 flex items-center justify-center text-cyan-600 font-black shadow-inner'>
+										👁️
 									</div>
-
 									<div>
-										<div className='flex items-center gap-2'>
-											<h3 className='text-xl sm:text-2xl font-black text-slate-800 group-hover:text-indigo-600 transition-colors'>
-												Visual
-											</h3>
-											<button
-												type='button'
-												onClick={(e) => {
-													e.stopPropagation();
-													playButtonPop(soundEnabled);
-													setInfoModalTopic('Visual');
-												}}
-												className='text-slate-400 hover:text-indigo-600 p-1 rounded-full hover:bg-slate-100 transition-all'
-												title='Skill Information'>
-												<Info className='w-4 h-4' />
-											</button>
-										</div>
-										<p className='text-xs text-slate-400 font-semibold'>
-											Spatial puzzles, patterns & counting
-										</p>
+										<h3 className='text-xl sm:text-2xl font-extrabold text-slate-900 group-hover:text-cyan-600 transition-colors'>
+											Visual
+										</h3>
+										<span className='text-xs font-bold text-cyan-600 uppercase tracking-wider'>
+											Observation & Patterns
+										</span>
 									</div>
 								</div>
 
-								{/* Solved Badge Counter */}
-								<div className='text-right'>
-									<span className='inline-block text-xs sm:text-sm font-extrabold text-indigo-900 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full'>
-										{profileStats.visualSolved || 0} Solved
-									</span>
-								</div>
+								{/* Info Button */}
+								<button
+									onClick={(e) => handleInfoClick(e, 'Visual')}
+									className='p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-cyan-600 transition-colors'
+									title='About Visual Skills'>
+									<Info className='w-5 h-5' />
+								</button>
 							</div>
 
-							{/* Level Progress Indicator */}
-							<div className='my-3'>
-								<div className='flex items-center justify-between text-xs font-black text-slate-500 mb-1.5'>
-									<span className='text-cyan-700 font-extrabold'>
-										{visualLevel.levelName}
-									</span>
-									<span>Level {visualLevel.levelNumber} / 5</span>
-								</div>
-								{/* Level track */}
-								<div className='w-full h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200'>
-									<div
-										className='h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-500 shadow-sm'
-										style={{
-											width: `${visualLevel.progressPercent}%`,
-										}}
-									/>
-								</div>
-							</div>
+							{/* Description */}
+							<p className='text-xs sm:text-sm text-slate-600 font-semibold leading-relaxed mb-4'>
+								Missing grid tiles, pattern completions, object counting,
+								symmetry, and balance puzzles.
+							</p>
 						</div>
 
-						{/* Bottom Row Action Button */}
-						<div className='mt-4 pt-3 border-t border-slate-100 flex items-center justify-between'>
-							<span className='text-xs font-bold text-slate-400'>
-								Age {kidAge || 5} • 10 Challenges
+						{/* Card Footer: Level & Action Button */}
+						<div className='flex items-center justify-between pt-3 border-t border-slate-100'>
+							<span className='text-xs font-black px-3 py-1 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200'>
+								{visualLevel}
 							</span>
-							<button className='px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 group-hover:from-cyan-400 group-hover:to-blue-500 text-white font-extrabold text-xs shadow-md transition-all'>
-								Start Sheet 🚀
+
+							<button className='px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-extrabold text-xs sm:text-sm shadow-md group-hover:shadow-cyan-400/50 group-hover:scale-105 transition-all'>
+								Start Sheet ➔
 							</button>
 						</div>
 					</div>
@@ -306,100 +301,72 @@ export default function SkillSelectionDashboard({
 						onClick={() => handleCardClick('Analytical Thinking')}
 						className='group bg-white text-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl border-4 border-purple-400 hover:border-purple-300 cursor-pointer transform hover:-translate-y-1.5 active:translate-y-0 transition-all duration-200 flex flex-col justify-between min-h-[240px]'>
 						<div>
-							{/* Header Row: Icon, Title & Solved / Open count */}
-							<div className='flex items-start justify-between gap-3 mb-4'>
-								<div className='flex items-center gap-3.5'>
-									{/* Brain & Puzzle Icon container */}
-									<div className='w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center p-2 shadow-inner'>
-										<div className='w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white text-base font-black shadow-sm'>
-											🧩
-										</div>
+							{/* Card Header */}
+							<div className='flex items-center justify-between mb-3'>
+								<div className='flex items-center gap-2'>
+									<div className='w-10 h-10 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600 font-black shadow-inner'>
+										🧠
 									</div>
-
 									<div>
-										<div className='flex items-center gap-2'>
-											<h3 className='text-xl sm:text-2xl font-black text-slate-800 group-hover:text-purple-600 transition-colors'>
-												Analytical Thinking
-											</h3>
-											<button
-												type='button'
-												onClick={(e) => {
-													e.stopPropagation();
-													playButtonPop(soundEnabled);
-													setInfoModalTopic('Analytical Thinking');
-												}}
-												className='text-slate-400 hover:text-purple-600 p-1 rounded-full hover:bg-slate-100 transition-all'
-												title='Skill Information'>
-												<Info className='w-4 h-4' />
-											</button>
-										</div>
-										<p className='text-xs text-slate-400 font-semibold'>
-											Analogies, categories & reasoning
-										</p>
+										<h3 className='text-xl sm:text-2xl font-extrabold text-slate-900 group-hover:text-purple-600 transition-colors'>
+											Analytical Thinking
+										</h3>
+										<span className='text-xs font-bold text-purple-600 uppercase tracking-wider'>
+											Logic & Relationships
+										</span>
 									</div>
 								</div>
 
-								{/* Solved Badge Counter */}
-								<div className='text-right'>
-									<span className='inline-block text-xs sm:text-sm font-extrabold text-purple-900 bg-purple-50 border border-purple-100 px-3 py-1 rounded-full'>
-										{profileStats.analyticalSolved || 0} Solved
-									</span>
-								</div>
+								{/* Info Button */}
+								<button
+									onClick={(e) => handleInfoClick(e, 'Analytical Thinking')}
+									className='p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-purple-600 transition-colors'
+									title='About Analytical Thinking'>
+									<Info className='w-5 h-5' />
+								</button>
 							</div>
 
-							{/* Level Progress Indicator */}
-							<div className='my-3'>
-								<div className='flex items-center justify-between text-xs font-black text-slate-500 mb-1.5'>
-									<span className='text-purple-700 font-extrabold'>
-										{analyticalLevel.levelName}
-									</span>
-									<span>Level {analyticalLevel.levelNumber} / 5</span>
-								</div>
-								{/* Level track */}
-								<div className='w-full h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200'>
-									<div
-										className='h-full rounded-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500 shadow-sm'
-										style={{
-											width: `${analyticalLevel.progressPercent}%`,
-										}}
-									/>
-								</div>
-							</div>
+							{/* Description */}
+							<p className='text-xs sm:text-sm text-slate-600 font-semibold leading-relaxed mb-4'>
+								Analogies, classification, cause-and-effect riddles, and logical
+								deductions tailored to age.
+							</p>
 						</div>
 
-						{/* Bottom Row Action Button */}
-						<div className='mt-4 pt-3 border-t border-slate-100 flex items-center justify-between'>
-							<span className='text-xs font-bold text-slate-400'>
-								Age {kidAge || 5} • 10 Challenges
+						{/* Card Footer: Level & Action Button */}
+						<div className='flex items-center justify-between pt-3 border-t border-slate-100'>
+							<span className='text-xs font-black px-3 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200'>
+								{analyticalLevel}
 							</span>
-							<button className='px-5 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 group-hover:from-purple-400 group-hover:to-pink-500 text-white font-extrabold text-xs shadow-md transition-all'>
-								Start Sheet 🚀
+
+							<button className='px-5 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-extrabold text-xs sm:text-sm shadow-md group-hover:shadow-purple-400/50 group-hover:scale-105 transition-all'>
+								Start Sheet ➔
 							</button>
 						</div>
 					</div>
 				</div>
 			</main>
 
-			{/* Skill Info Modal */}
+			{/* Skill Info Description Modal */}
 			{infoModalTopic && (
-				<div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200'>
-					<div className='bg-[#141846] border-2 border-[#2C3480] text-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative'>
-						<h3 className='text-lg sm:text-xl font-black text-white mb-2 flex items-center gap-2'>
-							<Sparkles className='w-5 h-5 text-amber-400' />
-							<span>{infoModalTopic} Skill Info</span>
+				<div
+					className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in'
+					onClick={() => setInfoModalTopic(null)}>
+					<div
+						className='bg-[#16194E] border-2 border-purple-400 rounded-3xl p-6 max-w-md w-full text-white shadow-2xl'
+						onClick={(e) => e.stopPropagation()}>
+						<h3 className='text-xl font-black mb-2 text-cyan-300'>
+							{infoModalTopic}
 						</h3>
-
-						<p className='text-sm font-semibold text-slate-300 leading-relaxed my-3'>
-							{infoModalTopic === 'Visual' &&
-								'Develop your ability to analyze and/or spot visual information in order to solve a problem.'}
-							{infoModalTopic === 'Analytical Thinking' &&
-								'Develop your ability to plan and breakdown information in order to analyze and solve complex problems.'}
+						<p className='text-sm text-slate-300 font-semibold leading-relaxed mb-4'>
+							{infoModalTopic === 'Visual' ?
+								'Visual Thinksheets train spatial awareness, geometric pattern completion, object counting, grid observation, and symmetry detection.'
+							:	'Analytical Thinking Thinksheets develop logical reasoning, analogy deduction, classification, and everyday cause-and-effect problem solving.'}
 						</p>
-
 						<button
 							onClick={() => setInfoModalTopic(null)}
-							className='w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-sm shadow-lg mt-2'>
-							Got It! 👍
+							className='w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-sm transition-all'>
+							Got It!
 						</button>
 					</div>
 				</div>

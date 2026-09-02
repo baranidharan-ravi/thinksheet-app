@@ -7,7 +7,9 @@ const TIMER_CONFIG_KEY = 'thinksheet_timer_config_v1';
 
 export const DEFAULT_TIMER_CONFIG = {
   enabled: false,
-  secondsPerQuestion: 90
+  secondsPerQuestion: 90,
+  autoAdvanceEnabled: true,
+  autoAdvanceSeconds: 7
 };
 
 export function getStoredTimerConfig() {
@@ -17,7 +19,12 @@ export function getStoredTimerConfig() {
       const parsed = JSON.parse(raw);
       return {
         enabled: Boolean(parsed.enabled),
-        secondsPerQuestion: Number(parsed.secondsPerQuestion) || 90
+        secondsPerQuestion: Number(parsed.secondsPerQuestion) || 90,
+        autoAdvanceEnabled:
+          parsed.autoAdvanceEnabled !== undefined
+            ? Boolean(parsed.autoAdvanceEnabled)
+            : true,
+        autoAdvanceSeconds: Number(parsed.autoAdvanceSeconds) || 7
       };
     }
   } catch {}
@@ -30,7 +37,12 @@ export function saveStoredTimerConfig(config) {
       TIMER_CONFIG_KEY,
       JSON.stringify({
         enabled: Boolean(config.enabled),
-        secondsPerQuestion: Math.max(15, Math.min(600, Number(config.secondsPerQuestion) || 90))
+        secondsPerQuestion: Math.max(15, Math.min(600, Number(config.secondsPerQuestion) || 90)),
+        autoAdvanceEnabled:
+          config.autoAdvanceEnabled !== undefined
+            ? Boolean(config.autoAdvanceEnabled)
+            : true,
+        autoAdvanceSeconds: Math.max(2, Math.min(60, Number(config.autoAdvanceSeconds) || 7))
       })
     );
   } catch (err) {

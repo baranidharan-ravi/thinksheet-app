@@ -1,23 +1,36 @@
 # 🚀 Skill Thinksheet - 100% AI-Powered Cosmic Learning for Early Explorers
 
-An engaging, visual-first React.js educational platform designed for early childhood and young learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time AI question generation via Google Gemini API (Mandatory API Key with Live Validation)**, customizable per-question countdown timers, streamlined exit workflows, and strict age-calibrated difficulty with zero offline/hardcoded questions.
+An engaging, visual-first React.js educational platform designed for early childhood and young learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time AI question generation via Google Gemini API (Mandatory API Key with Live Validation)**, customizable per-question countdown timers, configurable auto-advance learning pacing, streamlined exit workflows, and strict age-calibrated difficulty with zero offline/hardcoded questions.
 
 ---
 
 ## ✨ Key Features & Architecture
 
-### 1. 🪟 Unified Explorer & AI Setup Window (with Live Gemini Key Validation)
-- **All-in-One Configuration Modal**: A single setup window combines all settings on startup:
+### 1. ⚙️ Dedicated Full-Screen Settings & Setup Page (with Live Gemini Key Validation)
+- **Full-Page Experience**: Replaced popup modals with a dedicated full-screen configuration interface:
   1. **Child's Name** *(Required)*: Personalized explorer name.
   2. **Child's Age** *(Required)*: Quick age selector pills (`3`–`8`) + custom stepper supporting ages `2` to `14`.
   3. **Google Gemini API Key** *(Mandatory 🔑 with Live Validation)*: Features an **Eye (`👁️`) visibility toggle** to easily show or mask your API key, with a direct link to get a free key from Google AI Studio.
-  4. **Question Timer Challenge** *(Optional ⏱️)*: Toggle ON/OFF, select preset limits (`45s`, `60s`, `90s`, `2m`, `3m`), or set a custom duration (`15s`–`300s`).
-- **Live Verification on Save**: When clicking **"Launch Thinksheet 🚀"**, the app sends an asynchronous test ping to the Google Gemini API. If the key is invalid or expired, a clear red error is shown and the dialog stays open until a valid key is provided.
-- **Skill Selection Auto-Launch Flow**: If a user clicks a skill card without having entered an API key, the setup dialog automatically opens while remembering the targeted skill. Upon successful validation, it immediately launches the selected skill questions without requiring an extra click.
+  4. **Per-Question Time Limit** *(Optional ⏱️)*: Toggle ON/OFF, select preset limits (`45s`, `60s`, `90s`, `2m`, `3m`), or set a custom duration (`15s`–`300s`).
+  5. **Next Question Auto-Advance Delay** *(Optional ⏩)*: Toggle Auto-Advance ON/OFF, select preset delay (`3s`, `5s`, `7s Default`, `10s`, `15s`), or set a custom delay (`2s`–`30s`).
+- **Live Verification on Save**: When clicking **"Save & Launch 🚀"**, the app sends an asynchronous test ping to the Google Gemini API. If the key is invalid or expired, a clear red error is shown and the settings page remains open until a valid key is provided.
+- **Skill Selection Auto-Launch Flow**: If a user clicks a skill card without having entered an API key, the app transitions directly to the Settings page while remembering the targeted skill. Upon successful validation, it immediately launches the selected skill thinksheet.
 
 ---
 
-### 2. 🤖 100% Real-Time AI Generation (Mandatory Gemini API Key)
+### 2. ⏩ Configurable Next Question Auto-Advance Pacing
+- **Independent Learning Pace Control**: Works whether the per-question timer challenge is enabled or disabled:
+  - **When Auto-Advance is Enabled (Default `7s`)**:
+    - After an answer is submitted or time expires, the solution is displayed for the configured delay duration with a real-time countdown badge (`Next in 7s... 6s... 5s...`).
+    - Automatically advances to the next question when the countdown reaches zero.
+    - Includes an immediate `Next (7s) ➔` button to skip waiting anytime.
+  - **When Auto-Advance is Disabled (Manual Next Mode)**:
+    - The solution and visual diagram remain on screen indefinitely.
+    - The student or parent clicks the `Next Question ➔` button when ready to proceed.
+
+---
+
+### 3. 🤖 100% Real-Time AI Generation (Mandatory Gemini API Key)
 - **Zero Offline / Hardcoded Questions**: Every question, analogy, pattern sequence, and visual puzzle is synthesized live on demand via the **Google Gemini REST API** (`gemini-3.5-flash-lite`).
 - **High-Throughput Parallel Batching**: Fetches 10 questions in parallel batches in ~2 seconds for near-instant loading.
 - **Mathematical & Diagram Synchronization**: Automated validation ensures SVG visual puzzles (apple counting, pattern shapes, grid tiles, scale balance) match the exact numeric count and sequence of the correct answer.
@@ -34,7 +47,7 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 3. 📐 Symmetrical Layout & Live Timer on Submit Button
+### 4. 📐 Symmetrical Layout & Live Timer on Submit Button
 - **Equal-Height Cards**: The left Question Card and right Options Section share identical vertical heights (`items-stretch` & `h-full`), keeping prompts and visual diagrams neatly centered.
 - **Expanding Options Grid**: Option buttons dynamically expand (`flex-1 h-full`) to fill available vertical space.
 - **Bottom-Anchored Submit Button with Live Countdown**: The Submit button and Hint power-up are anchored to the bottom of the card/page (`mt-auto border-t border-white/10`).
@@ -45,7 +58,7 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 4. 🚪 Exit Confirmation Workflow
+### 5. 🚪 Exit Confirmation Workflow
 - **Distraction-Free Header**: Clean top bar featuring live XP, timer, voice/sound toggles, fullscreen, and an **`Exit` button**.
 - **Interactive Exit Options**: Clicking **Exit** opens a dialog with three choices:
   1. **📥 End Sheet & Download**: Saves the session progress JSON report and returns to the Skill Selection Hub.
@@ -54,22 +67,10 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 5. ⏱️ Optional & Customizable Question Timer Limit
-- **Configurable in Setup Window & Hub**: Turn Timer Challenge **ON** or **OFF** (default is `OFF` for relaxed, untimed learning).
-- **Quick Presets**: `45s`, `60s`, **`90s (Default)`**, `2m`, `3m`, plus `Custom ✍️` stepper (`15s`–`300s`).
-- **Live Countdown & Urgency Visuals**: Real-time timer in the header (`⏱️ 01:30`) and on the Submit button.
-- **7-Second Solution Reveal & Auto-Advance**: If the timer runs out on a question:
-  - The question is marked as **Timed Out (Not Answered)** with red wrong-answer styling.
-  - The **Solution Panel immediately opens and highlights the correct answer for 7 seconds** (`Next in 7s... 6s... 5s...`).
-  - Voice narration announces that time expired and the next question will load automatically.
-  - Includes an immediate `Next ➔` button to skip waiting.
-
----
-
 ### 6. 🎬 ThinkSheet Intro Animation
 - **Center Stage Splash**: On opening the dashboard, the green **ThinkSheet** banner starts in the center of the viewport with a huge, glowing bold font (`text-4xl` to `text-7xl`) and cosmic space sparkles (`✨` & `🚀`).
 - **Smooth Shrink-to-Top Glide**: Scales down smoothly and glides into its docked position in the top header using an organic spring transition (`cubic-bezier(0.34, 1.3, 0.64, 1)`).
-- **Deferred Welcome Prompt**: The Unified Setup Modal pops up smoothly right after the header animation finishes docking.
+- **Deferred Welcome Prompt**: Transitions smoothly to the Settings page right after the header animation finishes docking if unconfigured.
 
 ---
 
@@ -107,11 +108,12 @@ A Gemini API key is mandatory for generating questions in real time. Follow thes
 
 You can configure your API key using either of the following two methods:
 
-### Option A: Enter in the App Setup Window (Easiest & Validated Live)
+### Option A: Enter in the App Settings Page (Easiest & Validated Live)
 1. Launch the app (`npm run dev`) and open `http://localhost:3000`.
-2. Enter your child's Name, Age, and paste your Gemini API Key in the **Explorer & AI Setup** window.
-3. Click **"Launch Thinksheet 🚀"**.
-4. The key is verified live with Google Gemini API and securely saved in your browser's local storage for all subsequent sessions.
+2. Navigate to **Settings ⚙️** (or click any skill card).
+3. Enter your child's Name, Age, and paste your Gemini API Key.
+4. Click **"Save Settings 🚀"**.
+5. The key is verified live with Google Gemini API and securely saved in your browser's local storage for all subsequent sessions.
 
 ### Option B: Configure via `.env` File
 1. In the root directory of the project, create a `.env` file:
