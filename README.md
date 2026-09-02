@@ -1,39 +1,43 @@
-# 🚀 Skill Thinksheet - 100% AI-Powered Cosmic Learning for Early Explorers
+# 🚀 Skill Thinksheet - 100% Live AI-Powered Cosmic Learning for Early Explorers
 
-An engaging, visual-first React.js educational platform designed for early childhood and young learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time AI question generation via Google Gemini API (Mandatory API Key with Live Validation)**, customizable per-question countdown timers, configurable auto-advance learning pacing, streamlined exit workflows, and strict age-calibrated difficulty with zero offline/hardcoded questions.
+An engaging, visual-first React.js educational platform designed for early childhood and young learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time direct AI question generation via Google Gemini API (Mandatory API Key with Live Validation)**, configurable auto-advance question pacing, customizable per-question countdown timers, streamlined exit workflows, and strict age-calibrated difficulty with zero offline/cached questions.
 
 ---
 
 ## ✨ Key Features & Architecture
 
-### 1. ⚙️ Dedicated Full-Screen Settings & Setup Page (with Live Gemini Key Validation)
-- **Full-Page Experience**: Replaced popup modals with a dedicated full-screen configuration interface:
+### 1. ⚙️ Dedicated Full-Screen Settings & Preferences Page
+- **Full-Page Configuration Experience**: Replaced popup modals with a dedicated full-screen configuration interface:
   1. **Child's Name** *(Required)*: Personalized explorer name.
   2. **Child's Age** *(Required)*: Quick age selector pills (`3`–`8`) + custom stepper supporting ages `2` to `14`.
   3. **Google Gemini API Key** *(Mandatory 🔑 with Live Validation)*: Features an **Eye (`👁️`) visibility toggle** to easily show or mask your API key, with a direct link to get a free key from Google AI Studio.
   4. **Per-Question Time Limit** *(Optional ⏱️)*: Toggle ON/OFF, select preset limits (`45s`, `60s`, `90s`, `2m`, `3m`), or set a custom duration (`15s`–`300s`).
   5. **Next Question Auto-Advance Delay** *(Optional ⏩)*: Toggle Auto-Advance ON/OFF, select preset delay (`3s`, `5s`, `7s Default`, `10s`, `15s`), or set a custom delay (`2s`–`30s`).
-- **Live Verification on Save**: When clicking **"Save & Launch 🚀"**, the app sends an asynchronous test ping to the Google Gemini API. If the key is invalid or expired, a clear red error is shown and the settings page remains open until a valid key is provided.
+- **Live Verification on Save**: When clicking **"Save & Launch 🚀"**, the app sends an asynchronous test ping to Google Gemini API. If the key is invalid or expired, a clear red error is shown and the settings page remains open until a valid key is provided.
 - **Skill Selection Auto-Launch Flow**: If a user clicks a skill card without having entered an API key, the app transitions directly to the Settings page while remembering the targeted skill. Upon successful validation, it immediately launches the selected skill thinksheet.
 
 ---
 
-### 2. ⏩ Configurable Next Question Auto-Advance Pacing
-- **Independent Learning Pace Control**: Works whether the per-question timer challenge is enabled or disabled:
-  - **When Auto-Advance is Enabled (Default `7s`)**:
-    - After an answer is submitted or time expires, the solution is displayed for the configured delay duration with a real-time countdown badge (`Next in 7s... 6s... 5s...`).
-    - Automatically advances to the next question when the countdown reaches zero.
-    - Includes an immediate `Next (7s) ➔` button to skip waiting anytime.
-  - **When Auto-Advance is Disabled (Manual Next Mode)**:
-    - The solution and visual diagram remain on screen indefinitely.
-    - The student or parent clicks the `Next Question ➔` button when ready to proceed.
+### 2. ⚡ 100% Direct Live Generation (Zero In-Memory Caching)
+- **Fresh Generation on Every Request**: Questions are never cached into memory; every time a child starts a new sheet or advances to the next sheet, fresh questions are synthesized live from the Google Gemini API.
+- **Skillset-Injected AI Prompts**:
+  - The AI prompt explicitly injects the **Selected Skillset Name**, **Detailed Pedagogical Description**, and **Core Learning Objective**:
+    - **Visual**: *Visual observation, recognizing geometric & color pattern progressions (AB, AAB, ABC), spatial rotations, object counting, missing grid tiles, isometric 3D block projections, and balance scale weight logic.*
+    - **Analytical Thinking**: *Logical deduction, relational analogies (A : B :: C : D), everyday cause-and-effect science & nature riddles, categorical classification (odd-one-out), deductive logic riddles, and multi-step critical thinking.*
+  - Questions in Batch 1 (Q1–Q5) and Batch 2 (Q6–Q10) are assigned distinct sub-topic domains to guarantee high cognitive variety.
+- **Strict Non-Repetition & De-duplication**:
+  - Normalized string matching (`normalizeText`) ensures all 10 questions in a thinksheet are 100% distinct with zero duplicates in concept, wording, or numbers.
+  - Seen question signatures are tracked in browser storage across consecutive sessions to prevent repetition.
 
 ---
 
-### 3. 🤖 100% Real-Time AI Generation (Mandatory Gemini API Key)
-- **Zero Offline / Hardcoded Questions**: Every question, analogy, pattern sequence, and visual puzzle is synthesized live on demand via the **Google Gemini REST API** (`gemini-3.5-flash-lite`).
-- **High-Throughput Parallel Batching**: Fetches 10 questions in parallel batches in ~2 seconds for near-instant loading.
-- **Mathematical & Diagram Synchronization**: Automated validation ensures SVG visual puzzles (apple counting, pattern shapes, grid tiles, scale balance) match the exact numeric count and sequence of the correct answer.
+### 3. 🤖 Active Google Gemini Models Support & Resilient Multi-Model Fallback
+- **Active Model Chain**:
+  1. `gemini-3.5-flash-lite` *(Primary, ultra-fast endpoint recommended by Google)*
+  2. `gemini-3.5-flash`
+  3. `gemini-3-flash-preview`
+  4. `gemini-2.5-flash`
+- **Automatic JSON Sanitizer & Repair**: Automatically cleans parenthesized tuple-style syntax, Python constants (`True`/`False`/`None`), and trailing commas from LLM output.
 
 #### 🧠 Strict 4-Tier Age-Calibrated Pedagogy (Ages 2 to 14)
 The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity based on the child's exact age:
@@ -47,7 +51,19 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 4. 📐 Symmetrical Layout & Live Timer on Submit Button
+### 4. ⏩ Configurable Next Question Auto-Advance Pacing
+- **Independent Learning Pace Control**: Works whether the per-question timer challenge is enabled or disabled:
+  - **When Auto-Advance is Enabled (Default `7s`)**:
+    - After an answer is submitted or time expires, the solution is displayed for the configured delay duration with a real-time countdown badge (`Next in 7s... 6s... 5s...`).
+    - Automatically advances to the next question when the countdown reaches zero.
+    - Includes an immediate `Next (7s) ➔` button to skip waiting anytime.
+  - **When Auto-Advance is Disabled (Manual Next Mode)**:
+    - The solution and visual diagram remain on screen indefinitely.
+    - The student or parent clicks the `Next Question ➔` button when ready to proceed.
+
+---
+
+### 5. 📐 Symmetrical Layout & Live Timer on Submit Button
 - **Equal-Height Cards**: The left Question Card and right Options Section share identical vertical heights (`items-stretch` & `h-full`), keeping prompts and visual diagrams neatly centered.
 - **Expanding Options Grid**: Option buttons dynamically expand (`flex-1 h-full`) to fill available vertical space.
 - **Bottom-Anchored Submit Button with Live Countdown**: The Submit button and Hint power-up are anchored to the bottom of the card/page (`mt-auto border-t border-white/10`).
@@ -58,7 +74,7 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 5. 🚪 Exit Confirmation Workflow
+### 6. 🚪 Exit Confirmation Workflow
 - **Distraction-Free Header**: Clean top bar featuring live XP, timer, voice/sound toggles, fullscreen, and an **`Exit` button**.
 - **Interactive Exit Options**: Clicking **Exit** opens a dialog with three choices:
   1. **📥 End Sheet & Download**: Saves the session progress JSON report and returns to the Skill Selection Hub.
@@ -67,25 +83,23 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 6. 🎬 ThinkSheet Intro Animation
-- **Center Stage Splash**: On opening the dashboard, the green **ThinkSheet** banner starts in the center of the viewport with a huge, glowing bold font (`text-4xl` to `text-7xl`) and cosmic space sparkles (`✨` & `🚀`).
+### 7. 🎬 ThinkSheet Intro Animation & Clean Dashboard
+- **Center Stage Splash**: On opening the dashboard, the green **ThinkSheet** banner starts in the center of the viewport with a glowing bold font and cosmic sparkles (`✨` & `🚀`).
 - **Smooth Shrink-to-Top Glide**: Scales down smoothly and glides into its docked position in the top header using an organic spring transition (`cubic-bezier(0.34, 1.3, 0.64, 1)`).
-- **Deferred Welcome Prompt**: Transitions smoothly to the Settings page right after the header animation finishes docking if unconfigured.
+- **Streamlined Skill Cards**: Clean, focused action cards (`Start Visual Sheet ➔` & `Start Analytical Sheet ➔`) without cluttered level badges.
 
 ---
 
-### 7. 🗣️ Smart Emoji-Aware Voice Narration (Web Speech API)
+### 8. 🗣️ Smart Emoji-Aware Voice Narration (Web Speech API)
 - **No Duplicate Reading**: Intelligently strips emoji characters from sentences when reading text aloud, preventing speech synthesis from redundantly repeating the word and emoji name (e.g. *"How many shiny red apples are in the basket?"* instead of *"shiny red apples red apple"*).
 - **Emoji-Only Sequences**: For pattern puzzles composed of emojis (e.g. `🍎 🍌 🍎 🍌`), each emoji is translated into a clean child-friendly word (*"apple banana apple banana"*).
 - **On-Demand Only**: Questions and solutions are read aloud only when clicking the speaker button (`🔊`).
 
 ---
 
-### 8. 🏆 Space Cadet Leaderboard & Results System
+### 9. 🏆 Space Cadet Leaderboard & Results System
 - **Celebratory Feedback**: 3D `COMPLETED` ribbon banner, glowing star ratings (1 to 3 stars), and confetti particle bursts.
-- **Space Cadet League**: Dynamic leaderboard featuring the child as `[Name] (You)` with accumulated XP.
 - **Question Summary Breakdown**: Detailed accordion review comparing the child's selected answers against correct solutions, with clear `⏱️ Timed Out` indicators for unanswered questions.
-- **Skill Progress Tracking**: Tracks solved sheets and dynamic proficiency levels (`LV1 Beginner` to `LV5 Master`).
 
 ---
 
@@ -110,7 +124,7 @@ You can configure your API key using either of the following two methods:
 
 ### Option A: Enter in the App Settings Page (Easiest & Validated Live)
 1. Launch the app (`npm run dev`) and open `http://localhost:3000`.
-2. Navigate to **Settings ⚙️** (or click any skill card).
+2. Navigate to **Settings** (or click any skill card).
 3. Enter your child's Name, Age, and paste your Gemini API Key.
 4. Click **"Save Settings 🚀"**.
 5. The key is verified live with Google Gemini API and securely saved in your browser's local storage for all subsequent sessions.
@@ -149,7 +163,7 @@ npm run deploy
 ## 🛠️ Tech Stack
 
 - **React 18** (Modern functional components & hooks)
-- **Google Gemini API** (`gemini-3.5-flash-lite` via browser-native REST API with live key validation)
+- **Google Gemini API** (`gemini-3.5-flash-lite`, `gemini-3.5-flash`, `gemini-3-flash-preview`, `gemini-2.5-flash` via browser-native REST API with live key validation)
 - **Vite 6** (Blazing fast HMR and build tool)
 - **Tailwind CSS 3** (Custom space theme palette, animations, and responsive design)
 - **Lucide Icons** (Clean, child-friendly iconography)
