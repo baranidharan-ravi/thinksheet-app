@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import AskDoubtModal from './components/AskDoubtModal';
+import ExitConfirmationModal from './components/ExitConfirmationModal';
 import Header from './components/Header';
 import HintModal from './components/HintModal';
 import KidNameModal from './components/KidNameModal';
-import ExitConfirmationModal from './components/ExitConfirmationModal';
 import OptionsGrid from './components/OptionsGrid';
 import QuestionCard from './components/QuestionCard';
 import QuestionSummary from './components/QuestionSummary';
@@ -213,11 +213,7 @@ export default function App() {
 	const currentQuestion = questions[currentIndex] || {};
 
 	// Handle saving kid's profile (name, age, mandatory API key, and timer)
-	const handleSaveKidProfile = ({
-		name,
-		age,
-		timerConfig: newTimerConfig,
-	}) => {
+	const handleSaveKidProfile = ({ name, age, timerConfig: newTimerConfig }) => {
 		clearPrefetchCache();
 		saveStoredKidProfile(name, age);
 		setKidName(name);
@@ -245,7 +241,7 @@ export default function App() {
 		setIsSubmitted(true);
 		setIsTimedOut(true);
 		setSelectedOptionId(null);
-		setAutoAdvanceCountdown(5);
+		setAutoAdvanceCountdown(7);
 		playIncorrectSound(soundEnabled);
 
 		if (speechEnabled) {
@@ -616,12 +612,25 @@ export default function App() {
 										<button
 											disabled={!selectedOptionId}
 											onClick={handleSubmit}
-											className={`px-8 sm:px-14 py-3.5 sm:py-4 rounded-full font-black text-sm sm:text-lg tracking-wider uppercase transition-all shadow-xl ${
+											className={`px-8 sm:px-12 py-3.5 sm:py-4 rounded-full font-black text-sm sm:text-lg tracking-wider uppercase transition-all shadow-xl flex items-center justify-center gap-2.5 ${
 												selectedOptionId ?
 													'bg-[#FF5B84] hover:bg-[#FF435A] text-white hover:scale-105 active:scale-95 shadow-[0_8px_20px_rgba(255,91,132,0.4)] cursor-pointer'
 												:	'bg-slate-700 text-slate-400 cursor-not-allowed opacity-60'
 											}`}>
-											Submit
+											<span>Submit</span>
+											{timerConfig?.enabled && (
+												<span
+													className={`px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-mono font-black border transition-all ${
+														questionTimeRemaining <= 5 ?
+															'bg-rose-950 text-rose-300 border-rose-500 animate-bounce'
+														: questionTimeRemaining <= 15 ?
+															'bg-amber-950/80 text-amber-300 border-amber-400 animate-pulse'
+														:	'bg-black/30 text-white/90 border-white/20'
+													}`}
+													title={`Time remaining: ${questionTimeRemaining}s`}>
+													⏱️ {Math.floor(questionTimeRemaining / 60).toString().padStart(2, '0')}:{(questionTimeRemaining % 60).toString().padStart(2, '0')}
+												</span>
+											)}
 										</button>
 									</div>
 								</div>

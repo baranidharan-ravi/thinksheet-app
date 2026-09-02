@@ -198,7 +198,7 @@ export default function SkillSelectionDashboard({
 							</div>
 							<p className='text-xs text-slate-300 font-semibold mt-0.5'>
 								{timerConfig.enabled ?
-									`⏱️ ${timerConfig.secondsPerQuestion}s limit per question (auto-reveals answer for 5s on timeout)`
+									`⏱️ ${timerConfig.secondsPerQuestion}s limit per question (auto-reveals answer for 7s on timeout)`
 								:	'Relaxed mode: Unlimited time per question (default)'}
 							</p>
 						</div>

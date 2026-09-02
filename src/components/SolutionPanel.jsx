@@ -72,7 +72,7 @@ export default function SolutionPanel({
 						{isCorrect ?
 							'Great thinking! You got it right.'
 						: isTimedOut ?
-							`No answer was selected. See the correct solution below! Moving to next question in ${autoAdvanceCountdown || 5}s...`
+							`No answer was selected. See the correct solution below! Moving to next question in ${autoAdvanceCountdown || 7}s...`
 						:	"Don't worry, See the solution to know why"}
 					</p>
 				</div>

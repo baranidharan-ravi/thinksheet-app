@@ -17,13 +17,13 @@ An engaging, visual-first React.js educational platform designed for early child
 ### 2. 🤖 100% Real-Time AI Generation (Mandatory Gemini API Key)
 - **Zero Offline / Hardcoded Questions**: The app synthesizes every single question, analogy, and visual puzzle live on demand via the **Google Gemini REST API** (`gemini-3.5-flash-lite`).
 - **High-Throughput Parallel Batching**: Fetches 10 questions in parallel batches in ~2 seconds for near-instant loading.
+- **Strict Age-Tiered Pedagogy**: AI prompts are dynamically calibrated across 4 distinct cognitive tiers (Preschool 2–4, Early Elementary 5–7, Upper Elementary 8–10, and Teen 11–14).
 - **Mathematical & Diagram Synchronization**: Automated validation ensures SVG visual puzzles (apple counting, pattern shapes, grid tiles, scale balance) match the exact numeric count and sequence of the correct answer.
-- **Mandatory Enforcement**: Ensures every child receives fresh, dynamic, non-repeating questions customized to their exact age.
 
-### 3. 📐 Symmetrical Layout & Bottom-Anchored Submit Button
+### 3. 📐 Symmetrical Layout & Live Timer on Submit Button
 - **Equal-Height Cards**: The left Question Card and right Options Section share identical vertical heights (`items-stretch` & `h-full`), keeping prompts and visual diagrams neatly centered.
 - **Expanding Options Grid**: Option buttons dynamically expand (`flex-1 h-full`) to fill available vertical space.
-- **Bottom-Anchored Submit Button**: The Submit button and Hint power-up are anchored to the bottom of the card/page (`mt-auto border-t border-white/10`) for consistent, intuitive interaction.
+- **Bottom-Anchored Submit Button with Live Countdown**: The Submit button and Hint power-up are anchored to the bottom of the card/page (`mt-auto border-t border-white/10`). When the timer challenge is active, the Submit button displays the real-time remaining countdown badge (e.g. `Submit ⏱️ 01:30`) with animated color urgency alerts.
 
 ### 4. 🚪 Exit Confirmation Workflow
 - **Distraction-Free Header**: Clean top bar featuring live XP, timer, voice/sound toggles, fullscreen, and an **`Exit` button**.
@@ -35,10 +35,10 @@ An engaging, visual-first React.js educational platform designed for early child
 ### 5. ⏱️ Optional & Customizable Question Timer Limit
 - **Configurable in Setup Window & Hub**: Turn Timer Challenge **ON** or **OFF** (default is `OFF` for relaxed, untimed learning).
 - **Quick Presets**: `45s`, `60s`, **`90s (Default)`**, `2m`, `3m`, plus `Custom ✍️` stepper (`15s`–`300s`).
-- **Live Countdown & Urgency Visuals**: Real-time timer in the header (`⏱️ 01:30`) with cyan, pulsating amber (<= 15s), and bouncing red (<= 5s) urgency states.
-- **5-Second Solution Reveal & Auto-Advance**: If the timer runs out on a question:
+- **Live Countdown & Urgency Visuals**: Real-time timer in the header (`⏱️ 01:30`) and on the Submit button with cyan, pulsating amber (<= 15s), and bouncing red (<= 5s) urgency states.
+- **7-Second Solution Reveal & Auto-Advance**: If the timer runs out on a question:
   - The question is marked as **Timed Out (Not Answered)** with red wrong-answer styling.
-  - The **Solution Panel immediately opens and highlights the correct answer for 5 seconds** (`Next in 5s... 4s... 3s...`).
+  - The **Solution Panel immediately opens and highlights the correct answer for 7 seconds** (`Next in 7s... 6s... 5s...`).
   - Voice narration announces that time expired and the next question will load automatically.
   - Includes an immediate `Next ➔` button to skip waiting.
 

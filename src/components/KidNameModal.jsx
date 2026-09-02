@@ -407,7 +407,7 @@ export default function KidNameModal({
                   </div>
                 )}
                 <span className="text-[10px] text-slate-400 block font-semibold">
-                  If time expires without selecting an answer, the solution is shown for 5 seconds before moving to the next question automatically.
+                  If time expires without selecting an answer, the solution is shown for 7 seconds before moving to the next question automatically.
                 </span>
               </div>
             ) : (
