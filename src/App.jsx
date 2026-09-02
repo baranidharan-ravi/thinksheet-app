@@ -15,11 +15,7 @@ import ZoomModal from './components/ZoomModal';
 import confetti from 'canvas-confetti';
 import { ArrowLeft, Key, RefreshCw, Sparkles, Zap } from 'lucide-react';
 import { getStoredApiKey } from './services/aiGenerator';
-import {
-	clearPrefetchCache,
-	getFreshThinksheetSession,
-	prefetchThinksheetSession,
-} from './services/questionService';
+import { getFreshThinksheetSession } from './services/questionService';
 import {
 	playButtonPop,
 	playCorrectSound,
@@ -89,14 +85,6 @@ export default function App() {
 	useEffect(() => {
 		setCurrentScreen('dashboard');
 	}, []);
-
-	// Background pre-fetch sessions when on dashboard for instant opening (0ms wait)
-	useEffect(() => {
-		if (currentScreen === 'dashboard' && getStoredApiKey() && kidName) {
-			prefetchThinksheetSession('Visual', 1, kidAge);
-			prefetchThinksheetSession('Analytical Thinking', 1, kidAge);
-		}
-	}, [currentScreen, kidAge, kidName]);
 
 	// Save session state to localStorage
 	useEffect(() => {
@@ -291,7 +279,6 @@ export default function App() {
 
 	// Handle saving kid's profile & settings
 	const handleSaveKidProfile = ({ name, age, timerConfig: newTimerConfig }) => {
-		clearPrefetchCache();
 		saveStoredKidProfile(name, age);
 		setKidName(name);
 		setKidAge(age);
@@ -299,10 +286,6 @@ export default function App() {
 			setTimerConfig(newTimerConfig);
 			setQuestionTimeRemaining(newTimerConfig.secondsPerQuestion || 90);
 		}
-
-		// Trigger prefetching with newly saved key and age
-		prefetchThinksheetSession('Visual', 1, age);
-		prefetchThinksheetSession('Analytical Thinking', 1, age);
 
 		// If user clicked a skill card before entering their key, auto-launch that skill immediately!
 		if (pendingSkill) {

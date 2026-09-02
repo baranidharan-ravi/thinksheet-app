@@ -1,7 +1,8 @@
 // High-Quality, Sensible 100% AI Question Generator with Strict Age Calibration (Ages 2 to 14)
-// Guarantees logical consistency, exact age-appropriate difficulty, diagram synchronization, and multi-model fallbacks
+// Guarantees skillset-aligned prompts, domain separation across batches, and non-repetitive live generation
 
 const AI_KEY_STORAGE = 'thinksheet_gemini_api_key';
+const SEEN_QUESTIONS_KEY = 'thinksheet_seen_question_signatures_v9';
 
 export function getStoredApiKey() {
 	let key =
@@ -24,6 +25,24 @@ export function setStoredApiKey(key) {
 	}
 }
 
+function getSeenSignatures() {
+	try {
+		const raw = localStorage.getItem(SEEN_QUESTIONS_KEY);
+		return raw ? new Set(JSON.parse(raw)) : new Set();
+	} catch {
+		return new Set();
+	}
+}
+
+function saveSeenSignatures(seenSet) {
+	try {
+		const arr = Array.from(seenSet).slice(-600);
+		localStorage.setItem(SEEN_QUESTIONS_KEY, JSON.stringify(arr));
+	} catch (err) {
+		console.warn('Could not save seen signatures', err);
+	}
+}
+
 // Current supported models in Google AI Studio
 const GEMINI_MODELS = [
 	'gemini-3.5-flash-lite',
@@ -31,6 +50,34 @@ const GEMINI_MODELS = [
 	'gemini-3-flash-preview',
 	'gemini-2.5-flash',
 ];
+
+/**
+ * Explicit Skillset Definitions, Pedagogical Descriptions, and Distinct Batch Domains
+ */
+export const SKILL_DEFINITIONS = {
+	Visual: {
+		title: 'Visual Observation & Spatial Reasoning',
+		description:
+			'Visual observation, recognizing geometric and color pattern progressions, spatial rotations, object counting and arithmetic groupings, missing grid tiles, 3D isometric block projections, and balance scale weight logic.',
+		coreObjective:
+			'The student must observe, count, compare, or deduce patterns and spatial relationships from visual descriptions or diagram representations.',
+		batch1Domain:
+			'Batch 1 Focus: (1) Shape & color pattern progressions (e.g. AB, AAB, ABC sequences or number progressions), (2) Missing grid tile matrix deduction, (3) Balance scale weight logic.',
+		batch2Domain:
+			'Batch 2 Focus: (1) Object counting & arithmetic grouping puzzles, (2) 3D isometric block tower heights & volumes, (3) Spatial reflections, symmetry, or rotations.',
+	},
+	'Analytical Thinking': {
+		title: 'Analytical Thinking & Logical Deduction',
+		description:
+			'Logical deduction, relational analogies (A : B :: C : D), everyday cause-and-effect science & nature riddles, categorical classification (odd-one-out), deductive logic clues, syllogisms, and multi-step critical thinking.',
+		coreObjective:
+			'The student must analyze relationships, deduce outcomes from logical rules, connect concepts through analogies, or classify items based on defined properties.',
+		batch1Domain:
+			'Batch 1 Focus: (1) Relational & functional analogies (A : B :: C : D), (2) Everyday cause-and-effect science & nature riddles.',
+		batch2Domain:
+			'Batch 2 Focus: (1) Multi-step deductive logic clues & riddles, (2) Categorical classification (odd-one-out), (3) Sequence rules and conditional reasoning.',
+	},
+};
 
 /**
  * Universal Gemini API Caller with automatic multi-model fallback
@@ -273,7 +320,12 @@ function shuffleAndFormatOptions(questionObj, selectedSkill) {
 	const rawDiagramData = questionObj.diagramData || questionObj.dd || {};
 	const synchedData =
 		diagramType ?
-			synchronizeDiagramData(diagramType, rawDiagramData, qText, correctText)
+			synchronizeDiagramData(
+				diagramType,
+				rawDiagramData,
+				qText,
+				correctText,
+			)
 		:	{};
 
 	return {
@@ -452,30 +504,41 @@ function getAgeSpecificPedagogy(age, selectedSkill) {
 }
 
 /**
- * Fetch a high-quality batch with age-calibrated pedagogy rules
+ * Fetch a high-quality batch with skillset description, domain focus, and strict non-repetition rules
  */
 async function fetchBatch(selectedSkill, count, kidAge, batchId, apiKey) {
 	const isVisual = selectedSkill === 'Visual';
+	const skillInfo =
+		SKILL_DEFINITIONS[selectedSkill] || SKILL_DEFINITIONS.Visual;
 	const pedagogy = getAgeSpecificPedagogy(kidAge, selectedSkill);
 
-	const prompt = `You are an expert ${pedagogy.persona} (Batch ${batchId}).
-Generate ${count} engaging, non-repeating questions STRICTLY CALIBRATED FOR A ${kidAge}-YEAR-OLD.
+	const domainFocus =
+		batchId === 1 ? skillInfo.batch1Domain : skillInfo.batch2Domain;
+
+	const prompt = `You are an expert educator and puzzle creator.
+TARGET SKILLSET: "${skillInfo.title}"
+SKILLSET DESCRIPTION: "${skillInfo.description}"
+CORE LEARNING OBJECTIVE: "${skillInfo.coreObjective}"
+TARGET STUDENT AGE: Strictly calibrated for a ${kidAge}-year-old child (Grade/Cognitive level appropriate).
+
+CURRENT BATCH DOMAIN (Batch ${batchId}):
+${domainFocus}
 
 AGE PEDAGOGY GUIDELINES (Age ${kidAge}):
 ${pedagogy.guidelines}
 
 ${pedagogy.examples}
 
-CRITICAL RULES:
-1. The complexity, vocabulary, and concepts MUST match the cognitive level of a ${kidAge}-year-old.
-2. Every question must have 4 clear, plausible multiple-choice options with exactly 1 correct answer.
+CRITICAL RULES (100% Non-Repetitive & Accurate):
+1. Every single question in this batch must be 100% UNIQUE in concept, wording, and numerical values. Do NOT repeat or rephrase questions within the batch.
+2. Every question must have 4 distinct, plausible multiple-choice options with exactly 1 unambiguous correct answer.
 3. All multiple-choice options in the "options" array MUST be standard JSON strings e.g. ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]. Do NOT use tuples or parentheses around items like [("...")].
-4. For ${kidAge >= 11 ? 'Teenagers (Age 11-14)' : `${kidAge}-year-olds`}, ensure the questions are genuinely engaging, mature, and intellectually stimulating.
+4. The complexity and vocabulary MUST strictly fit a ${kidAge}-year-old student.
 
 Output a valid JSON Array of ${count} items. Format:
 [
   {
-    "question": "Age-appropriate question text",
+    "question": "Age-appropriate question text matching ${skillInfo.title}",
     "diagramType": ${
 			isVisual ?
 				kidAge >= 8 ?
@@ -502,7 +565,7 @@ Return ONLY the valid JSON array without any markdown preamble.`;
 		contents: [{ parts: [{ text: prompt }] }],
 		generationConfig: {
 			responseMimeType: 'application/json',
-			temperature: 0.7,
+			temperature: 0.75,
 			maxOutputTokens: 8192,
 		},
 	};
@@ -520,7 +583,7 @@ Return ONLY the valid JSON array without any markdown preamble.`;
 }
 
 /**
- * Generate 10 sensible, high-quality AI questions in parallel calibrated to kidAge
+ * Generate 10 sensible, high-quality, non-repeating AI questions in parallel calibrated to kidAge and skillset
  */
 export async function generateAIQuestions(
 	selectedSkill = 'Visual',
@@ -533,7 +596,16 @@ export async function generateAIQuestions(
 		throw new Error('MISSING_API_KEY');
 	}
 
-	let parallelError = null;
+	const seenSignatures = getSeenSignatures();
+
+	const normalizeText = (text) =>
+		String(text || '')
+			.toLowerCase()
+			.replace(/[^\w\s]/g, '')
+			.replace(/\s+/g, ' ')
+			.trim();
+
+	let combined = [];
 
 	try {
 		const [batch1, batch2] = await Promise.all([
@@ -541,46 +613,58 @@ export async function generateAIQuestions(
 			fetchBatch(selectedSkill, 5, kidAge, 2, apiKey),
 		]);
 
-		const combined = [...batch1, ...batch2];
-
-		if (combined.length >= 6) {
-			return combined.slice(0, 10).map((q, idx) => {
-				const formatted = shuffleAndFormatOptions(q, selectedSkill);
-				return {
-					...formatted,
-					id: `ai_${kidAge}yo_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`,
-				};
-			});
-		}
+		combined = [...batch1, ...batch2];
 	} catch (err) {
-		parallelError = err;
 		console.warn(
 			'Parallel batch issue, falling back to single batch:',
 			err.message,
 		);
 	}
 
-	// Fallback single batch of 10
-	try {
-		const singleBatch = await fetchBatch(selectedSkill, 10, kidAge, 1, apiKey);
-		if (singleBatch.length >= 6) {
-			return singleBatch.slice(0, 10).map((q, idx) => {
-				const formatted = shuffleAndFormatOptions(q, selectedSkill);
-				return {
-					...formatted,
-					id: `ai_${kidAge}yo_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`,
-				};
-			});
+	// Fallback single batch of 10 if needed
+	if (combined.length < 6) {
+		try {
+			const singleBatch = await fetchBatch(selectedSkill, 10, kidAge, 1, apiKey);
+			combined = [...singleBatch];
+		} catch (err) {
+			console.error('Single batch fallback failed:', err);
+			throw err;
 		}
-	} catch (err) {
-		console.error('Single batch fallback failed:', err);
-		throw err;
 	}
 
-	throw (
-		parallelError ||
-		new Error(
-			'API_ERROR: Unable to generate questions from Gemini API. Please check your key.',
-		)
-	);
+	if (combined.length < 6) {
+		throw new Error(
+			'API_ERROR: Unable to generate enough distinct questions from Gemini API.',
+		);
+	}
+
+	// Deduplicate within the batch and format
+	const uniqueQuestions = [];
+	const localSeen = new Set();
+
+	for (const rawQ of combined) {
+		if (!rawQ || !rawQ.question) continue;
+		const norm = normalizeText(rawQ.question);
+		if (localSeen.has(norm)) continue;
+		localSeen.add(norm);
+
+		const formatted = shuffleAndFormatOptions(rawQ, selectedSkill);
+		if (formatted) {
+			uniqueQuestions.push({
+				...formatted,
+				id: `ai_${selectedSkill.toLowerCase().replace(/\s+/g, '_')}_${kidAge}yo_${Date.now()}_${uniqueQuestions.length}_${Math.random().toString(36).substr(2, 4)}`,
+			});
+			seenSignatures.add(norm);
+		}
+
+		if (uniqueQuestions.length === 10) break;
+	}
+
+	saveSeenSignatures(seenSignatures);
+
+	if (uniqueQuestions.length >= 6) {
+		return uniqueQuestions;
+	}
+
+	throw new Error('API_ERROR: Unable to generate 10 unique questions.');
 }
