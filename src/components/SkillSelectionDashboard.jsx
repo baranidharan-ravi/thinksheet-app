@@ -13,7 +13,7 @@ import { playButtonPop } from '../utils/audioSynthesis';
 import { calculateSkillLevel } from '../utils/progressTracker';
 
 export default function SkillSelectionDashboard({
-	profileStats,
+	profileStats = {},
 	onSelectSkill,
 	soundEnabled,
 	kidName,
@@ -30,6 +30,8 @@ export default function SkillSelectionDashboard({
 	const [infoModalTopic, setInfoModalTopic] = useState(null);
 	const [hasApiKey, setHasApiKey] = useState(false);
 	const [animationPhase, setAnimationPhase] = useState('center'); // 'center' | 'shrinking' | 'docked'
+
+	const isIntroActive = animationPhase !== 'docked';
 
 	useEffect(() => {
 		const key = getStoredApiKey();
