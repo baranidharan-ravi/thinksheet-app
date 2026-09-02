@@ -1,5 +1,8 @@
-// High-Quality, Sensible 100% AI Question Generator with Strict Age Calibration (Ages 2 to 14)
-// Guarantees skillset-aligned prompts, selectable Gemini models, domain separation, rich visual representations, and non-repetitive live generation
+import {
+	extractShapeSequenceTerms,
+	parseRotationSequence,
+	parseStepShapeCountSequence,
+} from '../utils/shapeGenerator';
 
 const AI_KEY_STORAGE = 'thinksheet_gemini_api_key';
 const SELECTED_MODEL_KEY = 'thinksheet_selected_gemini_model_v1';
@@ -267,63 +270,154 @@ function synchronizeDiagramData(
 	let type = diagramType;
 	const data = { ...rawData };
 
-	// Auto-detect best diagram type if not specifically set or generic
-	if (!type || type === 'null' || type === 'none') {
-		const lower = questionText.toLowerCase();
-		if (
-			lower.includes('is to') ||
-			questionText.includes('::') ||
-			questionText.includes(':')
-		) {
-			type = 'analogy-map';
-		} else if (
-			lower.includes('sequence') ||
-			lower.includes('pattern') ||
-			lower.includes('next number') ||
-			/\d+,\s*\d+,\s*\d+/.test(questionText)
-		) {
-			type = 'sequence-ladder';
-		} else if (
-			lower.includes('happen') ||
-			lower.includes('because') ||
-			lower.includes('cause') ||
-			lower.includes('if you')
-		) {
-			type = 'cause-effect';
-		} else if (lower.includes('how many') || lower.includes('count')) {
-			type = 'apple-counting';
-		} else if (
-			lower.includes('block') ||
-			lower.includes('cube') ||
-			lower.includes('tower')
-		) {
-			type = 'block-tower';
-		} else if (
-			lower.includes('balance') ||
-			lower.includes('scale') ||
-			lower.includes('heavier') ||
-			lower.includes('lighter')
-		) {
-			type = 'scale-balance';
-		} else if (lower.includes('grid') || lower.includes('tile')) {
-			type = 'grid-tiles';
-		} else if (selectedSkill === 'Visual') {
-			type = 'pattern-shapes';
-		} else {
-			type = 'analogy-map';
-		}
+	const lower = questionText.toLowerCase();
+
+	const parsedShapeCountSequence = parseStepShapeCountSequence(
+		questionText,
+		correctText,
+	);
+
+	const parsedRotation = parseRotationSequence(questionText, correctText);
+
+	// 1. Auto-detect diagram type based on deep question analysis
+	if (parsedRotation) {
+		type = 'shape-rotation';
+		Object.assign(data, parsedRotation);
+	} else if (parsedShapeCountSequence) {
+		type = 'shape-pattern-grid';
+		data.steps = parsedShapeCountSequence.steps;
+		data.targetStep = parsedShapeCountSequence.targetStep;
+		data.targetCount = parsedShapeCountSequence.targetCount;
+		data.shape = parsedShapeCountSequence.shape;
+		data.isShaded = parsedShapeCountSequence.isShaded;
+		data.color = parsedShapeCountSequence.color;
+	} else if (
+		lower.includes('prism') ||
+		lower.includes('refraction') ||
+		lower.includes('white light') ||
+		lower.includes('rainbow') ||
+		lower.includes('dispersion') ||
+		lower.includes('bending effect') ||
+		(lower.includes('light') && lower.includes('bend'))
+	) {
+		type = 'optics-prism';
+	} else if (
+		lower.includes('isometric') ||
+		lower.includes('unit cube') ||
+		lower.includes('block structure') ||
+		lower.includes('3d tower') ||
+		lower.includes('stacking') ||
+		lower.includes('volume')
+	) {
+		type = 'block-tower';
+	} else if (
+		(lower.includes('3x3') &&
+			(lower.includes('grid') || lower.includes('matrix'))) ||
+		lower.includes('matrix')
+	) {
+		type = 'matrix-grid';
+	} else if (
+		lower.includes('is to') ||
+		questionText.includes('::') ||
+		/\b[A-Za-z0-9]+\s*:\s*[A-Za-z0-9]+\s*::/.test(questionText)
+	) {
+		type = 'analogy-map';
+	} else if (
+		lower.includes('sequence') ||
+		lower.includes('pattern') ||
+		lower.includes('next number') ||
+		/\d+,\s*\d+,\s*\d+/.test(questionText)
+	) {
+		type = 'shape-sequence';
+	} else if (
+		lower.includes('happen') ||
+		lower.includes('because') ||
+		lower.includes('cause') ||
+		lower.includes('if you') ||
+		lower.includes('when') ||
+		selectedSkill === 'Analytical Thinking'
+	) {
+		type = 'cause-effect';
+	} else if (lower.includes('how many') || lower.includes('count')) {
+		type = 'apple-counting';
+	} else if (
+		lower.includes('balance') ||
+		lower.includes('scale') ||
+		lower.includes('heavier') ||
+		lower.includes('lighter')
+	) {
+		type = 'scale-balance';
+	} else if (lower.includes('grid') || lower.includes('tile')) {
+		type = 'grid-tiles';
+	} else if (selectedSkill === 'Visual') {
+		type = 'pattern-shapes';
+	} else {
+		type = 'cause-effect';
 	}
 
 	const numMatch =
 		String(correctText).match(/\d+/) || String(questionText).match(/\d+/);
 	const parsedNum = numMatch ? parseInt(numMatch[0], 10) : null;
 
-	if (type === 'analogy-map') {
+	// 2. Exact mathematical parameter extraction per diagram type
+	if (type === 'block-tower' || type === 'isometric-tower') {
+		// Analyze 3D stepped pyramid / cube layers
+		if (
+			(lower.includes('3x3') ||
+				lower.includes('9 cubes') ||
+				lower.includes('9')) &&
+			(lower.includes('2x2') ||
+				lower.includes('4 cubes') ||
+				lower.includes('4')) &&
+			(lower.includes('top') ||
+				lower.includes('1 single cube') ||
+				lower.includes('1'))
+		) {
+			data.layers = [
+				{ size: 3, count: 9, color: 'blue', label: 'Base Layer (3x3)' },
+				{ size: 2, count: 4, color: 'amber', label: 'Middle Layer (2x2)' },
+				{ size: 1, count: 1, color: 'pink', label: 'Top Layer (1x1)' },
+			];
+			data.totalCubes = 14;
+		} else if (
+			(lower.includes('2x2') || lower.includes('4 cubes')) &&
+			(lower.includes('1 cube') || lower.includes('top'))
+		) {
+			data.layers = [
+				{ size: 2, count: 4, color: 'blue', label: 'Base Layer (2x2)' },
+				{ size: 1, count: 1, color: 'pink', label: 'Top Layer (1x1)' },
+			];
+			data.totalCubes = 5;
+		} else if (parsedNum && parsedNum === 14) {
+			data.layers = [
+				{ size: 3, count: 9, color: 'blue', label: 'Base Layer (3x3)' },
+				{ size: 2, count: 4, color: 'amber', label: 'Middle Layer (2x2)' },
+				{ size: 1, count: 1, color: 'pink', label: 'Top Layer (1x1)' },
+			];
+			data.totalCubes = 14;
+		} else {
+			data.layers = [
+				{ size: 3, count: 9, color: 'blue', label: 'Base Layer (3x3)' },
+				{ size: 2, count: 4, color: 'amber', label: 'Middle Layer (2x2)' },
+				{ size: 1, count: 1, color: 'pink', label: 'Top Layer (1x1)' },
+			];
+			data.totalCubes = parsedNum || 14;
+		}
+	} else if (type === 'matrix-grid') {
+		data.grid = data.grid || [
+			['Square (Gray)', 'Circle (White)', 'Triangle (White)'],
+			['Square (White)', 'Circle (Gray)', 'Triangle (White)'],
+			['Square (Gray)', 'Circle (White)', '?'],
+		];
+		data.answer = correctText.trim() || 'Triangle (Gray)';
+	} else if (type === 'analogy-map') {
 		const cleanQ = questionText.replace(/\?|\.{2,}/g, '').trim();
 		const isToMatch = cleanQ.match(
 			/(.+?)\s+is to\s+(.+?)(?:,\s*as|\s+as)\s+(.+?)\s+is to\s*(.*)/i,
 		);
-		const colonMatch = cleanQ.match(/(.+?)\s*:\s*(.+?)\s*::\s*(.+?)\s*:\s*(.*)/);
+		const colonMatch = cleanQ.match(
+			/(.+?)\s*:\s*(.+?)\s*::\s*(.+?)\s*:\s*(.*)/,
+		);
 
 		if (isToMatch) {
 			data.itemA = data.itemA || isToMatch[1].trim();
@@ -341,12 +435,32 @@ function synchronizeDiagramData(
 			data.itemC = data.itemC || 'Concept C';
 			data.itemD = data.itemD || correctText.trim();
 		}
-	} else if (type === 'sequence-ladder') {
-		const numbersInQ = questionText.match(/-?\d+(?:\.\d+)?/g);
-		if (numbersInQ && numbersInQ.length >= 2) {
-			data.steps = data.steps || numbersInQ.map((n) => n.trim());
+	} else if (type === 'sequence-ladder' || type === 'shape-sequence') {
+		const bracketMatches = questionText.match(/\[[^\]]+\]/g);
+		const shapeTerms = extractShapeSequenceTerms(questionText);
+
+		if (shapeTerms && shapeTerms.length >= 2) {
+			data.sequence = shapeTerms;
+			type = 'shape-sequence';
+		} else if (bracketMatches && bracketMatches.length >= 2) {
+			data.steps =
+				data.steps && data.steps.length > 0 ?
+					data.steps
+				:	bracketMatches.map((s) => s.trim());
+			type = 'shape-sequence';
 		} else {
-			data.steps = data.steps || ['1st', '2nd', '3rd', '4th'];
+			const numbersInQ = questionText.match(/-?\d+(?:\.\d+)?/g);
+			if (numbersInQ && numbersInQ.length >= 2) {
+				data.steps =
+					data.steps && data.steps.length > 0 ?
+						data.steps
+					:	numbersInQ.map((n) => n.trim());
+			} else {
+				data.steps =
+					data.steps && data.steps.length > 0 ?
+						data.steps
+					:	['1st', '2nd', '3rd', '4th'];
+			}
 		}
 		data.nextVal = data.nextVal || correctText.trim();
 	} else if (type === 'cause-effect') {
@@ -366,19 +480,26 @@ function synchronizeDiagramData(
 			/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u,
 		);
 		data.emoji = data.emoji || (emojiMatch ? emojiMatch[0] : '🍎');
-	} else if (type === 'pattern-shapes') {
-		if (
+	} else if (type === 'pattern-shapes' || type === 'shape-sequence') {
+		const extracted = extractShapeSequenceTerms(questionText);
+		if (extracted && extracted.length >= 2) {
+			data.sequence =
+				data.sequence && data.sequence.length >= 2 ? data.sequence : extracted;
+		} else if (
 			!data.sequence ||
 			!Array.isArray(data.sequence) ||
-			data.sequence.length < 3
+			data.sequence.length < 2
 		) {
 			const emojis = questionText.match(
 				/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,
 			);
 			data.sequence =
-				emojis && emojis.length >= 3 ? emojis : ['🔴', '🔵', '🔴', '🔵'];
+				emojis && emojis.length >= 2 ?
+					emojis
+				:	['Triangle (3 sides, white)', 'Square (4 sides, shaded)'];
 		}
-		data.nextItem = data.nextItem || correctText.trim() || data.sequence[0];
+		data.nextItem =
+			data.nextItem || data.nextVal || correctText.trim() || data.sequence[0];
 	} else if (type === 'grid-tiles') {
 		const count = parsedNum && parsedNum > 0 ? parsedNum : data.count || 4;
 		data.count = count;
@@ -388,21 +509,6 @@ function synchronizeDiagramData(
 		data.cols = Math.max(5, data.holeW + 2);
 		data.holeRow = 1;
 		data.holeCol = 1;
-	} else if (type === 'block-tower') {
-		const total = parsedNum && parsedNum > 0 ? parsedNum : 6;
-		if (total <= 4) {
-			data.bottom = 2;
-			data.middle = 1;
-			data.top = 0;
-		} else if (total <= 7) {
-			data.bottom = 3;
-			data.middle = 2;
-			data.top = Math.max(1, total - 5);
-		} else {
-			data.bottom = 4;
-			data.middle = 3;
-			data.top = Math.max(1, total - 7);
-		}
 	}
 
 	return { type, data };
@@ -667,7 +773,14 @@ function getAgeSpecificPedagogy(age, selectedSkill) {
 /**
  * Fetch a high-quality batch with skillset description, domain focus, and strict non-repetition rules
  */
-async function fetchBatch(selectedSkill, count, kidAge, batchId, apiKey, preferredModel = null) {
+async function fetchBatch(
+	selectedSkill,
+	count,
+	kidAge,
+	batchId,
+	apiKey,
+	preferredModel = null,
+) {
 	const isVisual = selectedSkill === 'Visual';
 	const skillInfo =
 		SKILL_DEFINITIONS[selectedSkill] || SKILL_DEFINITIONS.Visual;
@@ -692,9 +805,14 @@ ${pedagogy.examples}
 
 CRITICAL RULES (100% Non-Repetitive, Visually-Enriched & Accurate):
 1. Every single question in this batch must be 100% UNIQUE in concept, wording, and numerical values. Do NOT repeat or rephrase questions within the batch.
-2. ALWAYS provide an engaging visual diagram structure in "diagramType" and "diagramData":
-   - For Visual questions: use "pattern-shapes", "grid-tiles", "apple-counting", "block-tower", "scale-balance", or "sequence-ladder".
-   - For Analytical questions: use "analogy-map", "cause-effect", "sequence-ladder", or "classification-venn".
+2. ALWAYS provide an accurate, matching visual diagram structure in "diagramType" and "diagramData":
+   - For Spatial Rotation / 90° Turn questions: use "diagramType": "shape-rotation", "diagramData": {"angle": 90, "direction": "CW", "steps": [{"step": 1, "quadrant": "top-right", "deg": 0}, {"step": 2, "quadrant": "bottom-right", "deg": 90}, {"step": 3, "quadrant": "bottom-left", "deg": 180}], "target": {"step": 4, "quadrant": "top-left", "deg": 270}}
+   - For Optics / Light / Prism / Refraction questions: use "diagramType": "optics-prism", "diagramData": {}
+   - For Science & Nature Process / Cause & Effect: use "diagramType": "cause-effect", "diagramData": {"cause": "...", "action": "...", "effect": "..."}
+   - For 4-term Analogies (A : B :: C : D): use "diagramType": "analogy-map", "diagramData": {"itemA": "...", "itemB": "...", "itemC": "...", "itemD": "..."}
+   - For 3D Isometric Cube Pyramids: use "diagramType": "block-tower", "diagramData": {"layers": [{"size": 3, "count": 9}, {"size": 2, "count": 4}, {"size": 1, "count": 1}], "totalCubes": 14}
+   - For Geometric Shape Progressions: use "diagramType": "pattern-shapes" or "shape-sequence", "diagramData": {"sequence": ["Triangle (white)", "Square (shaded)"], "nextItem": "Pentagon (white)"}
+   - For Number Progressions: use "diagramType": "sequence-ladder", "diagramData": {"steps": ["2", "4", "8"], "nextVal": "16", "rule": "x2"}
 3. Every question must have 4 distinct, plausible multiple-choice options with exactly 1 unambiguous correct answer.
 4. All multiple-choice options in the "options" array MUST be standard JSON strings e.g. ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]. Do NOT use tuples or parentheses around items like [("...")].
 5. The complexity and vocabulary MUST strictly fit a ${kidAge}-year-old student.
@@ -703,8 +821,23 @@ Output a valid JSON Array of ${count} items. Format:
 [
   {
     "question": "Age-appropriate question text matching ${skillInfo.title}",
-    "diagramType": ${isVisual ? (kidAge >= 8 ? '"block-tower"' : '"apple-counting"') : '"analogy-map"'},
-    "diagramData": ${isVisual ? (kidAge >= 8 ? '{"count": 6}' : '{"count": 4, "emoji": "🍎"}') : '{"itemA": "Puppy 🐶", "itemB": "Dog 🐕", "itemC": "Kitten 🐱", "itemD": "Cat 🐈"}'},
+    "diagramType": ${
+			isVisual ?
+				kidAge >= 8 ?
+					'"block-tower"'
+				:	'"apple-counting"'
+			: kidAge >= 8 ? '"cause-effect"'
+			: '"analogy-map"'
+		},
+    "diagramData": ${
+			isVisual ?
+				kidAge >= 8 ?
+					'{"totalCubes": 14}'
+				:	'{"count": 4, "emoji": "🍎"}'
+			: kidAge >= 8 ?
+				'{"cause": "White light entering glass prism", "action": "bends and splits", "effect": "Refraction"}'
+			:	'{"itemA": "Puppy 🐶", "itemB": "Dog 🐕", "itemC": "Kitten 🐱", "itemD": "Cat 🐈"}'
+		},
     "options": ["Choice 1", "Choice 2", "Choice 3", "Choice 4"],
     "correctAnswer": "Choice 1",
     "solution": "1-2 sentences explaining why this is the correct logical answer.",

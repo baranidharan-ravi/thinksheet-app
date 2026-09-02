@@ -1,0 +1,1068 @@
+/**
+ * Checks if a string contains any shape, color, or visual geometry keywords
+ */
+export function hasShapeOrVisualConcept(text) {
+	if (!text) return false;
+	const lower = String(text).toLowerCase();
+	return (
+		lower.includes('triangle') ||
+		lower.includes('square') ||
+		lower.includes('circle') ||
+		lower.includes('pentagon') ||
+		lower.includes('hexagon') ||
+		lower.includes('heptagon') ||
+		lower.includes('octagon') ||
+		lower.includes('nonagon') ||
+		lower.includes('decagon') ||
+		lower.includes('star') ||
+		lower.includes('diamond') ||
+		lower.includes('rhombus') ||
+		lower.includes('sides') ||
+		lower.includes('white') ||
+		lower.includes('shaded') ||
+		lower.includes('gray') ||
+		lower.includes('grey') ||
+		lower.includes('blue') ||
+		lower.includes('green') ||
+		lower.includes('red') ||
+		lower.includes('cyan') ||
+		lower.includes('yellow') ||
+		lower.includes('orange') ||
+		lower.includes('purple') ||
+		lower.includes('pink') ||
+		lower.includes('[') ||
+		/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(
+			text,
+		)
+	);
+}
+
+/**
+ * Computes exact regular polygon points for any N-sided regular polygon (N >= 3)
+ */
+export function getRegularPolygonPoints(sides, cx = 36, cy = 36, r = 28) {
+	const points = [];
+	const startAngle = -Math.PI / 2; // Point top vertex up
+	for (let i = 0; i < sides; i++) {
+		const angle = startAngle + (i * 2 * Math.PI) / sides;
+		const x = (cx + r * Math.cos(angle)).toFixed(1);
+		const y = (cy + r * Math.sin(angle)).toFixed(1);
+		points.push(`${x},${y}`);
+	}
+	return points.join(' ');
+}
+
+/**
+ * Parses any raw text descriptor, emoji, or bracketed term into a complete visual shape specification.
+ * Handles:
+ * - Geometric shapes: Triangle (3), Square (4), Pentagon (5), Hexagon (6), Heptagon (7), Octagon (8), Nonagon (9), Decagon (10), Circle (0), Star, Diamond, Heart
+ * - Colors: Blue, Green, Red, Cyan, Yellow, Orange, Purple, Pink, Gold, Teal, Navy, etc.
+ * - Shading / Fill: White (empty/outline), Shaded (diagonal hatch / dark slate fill), Solid color
+ * - Numbers and side counts: (3 sides), (4 sides), or numerical values
+ */
+export function parseDynamicShape(rawInput) {
+	if (!rawInput) {
+		return {
+			shape: 'circle',
+			sides: 0,
+			color: '#3B82F6',
+			colorName: 'Blue',
+			isWhite: false,
+			isShaded: false,
+			number: null,
+			sidesCount: null,
+			shapeName: 'Circle',
+			styleTag: '',
+			raw: '',
+		};
+	}
+
+	const text = String(rawInput)
+		.replace(/^\[|\]$/g, '')
+		.replace(/^\((.+)\)$/, '$1')
+		.trim();
+
+	const lower = text.toLowerCase();
+
+	// Check if this is an emoji or unicode shape
+	if (text.includes('🔴'))
+		return {
+			shape: 'circle',
+			sides: 0,
+			color: '#EF4444',
+			colorName: 'Red',
+			shapeName: 'Circle',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Red',
+			raw: text,
+		};
+	if (text.includes('🔵'))
+		return {
+			shape: 'circle',
+			sides: 0,
+			color: '#3B82F6',
+			colorName: 'Blue',
+			shapeName: 'Circle',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Blue',
+			raw: text,
+		};
+	if (text.includes('🟡'))
+		return {
+			shape: 'circle',
+			sides: 0,
+			color: '#F59E0B',
+			colorName: 'Yellow',
+			shapeName: 'Circle',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Yellow',
+			raw: text,
+		};
+	if (text.includes('🟢'))
+		return {
+			shape: 'circle',
+			sides: 0,
+			color: '#10B981',
+			colorName: 'Green',
+			shapeName: 'Circle',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Green',
+			raw: text,
+		};
+	if (text.includes('▲'))
+		return {
+			shape: 'triangle',
+			sides: 3,
+			color: '#6366F1',
+			colorName: 'Indigo',
+			shapeName: 'Triangle',
+			isWhite: false,
+			isShaded: false,
+			styleTag: '3 sides',
+			raw: text,
+		};
+	if (text.includes('■'))
+		return {
+			shape: 'square',
+			sides: 4,
+			color: '#6366F1',
+			colorName: 'Indigo',
+			shapeName: 'Square',
+			isWhite: false,
+			isShaded: false,
+			styleTag: '4 sides',
+			raw: text,
+		};
+	if (text.includes('●'))
+		return {
+			shape: 'circle',
+			sides: 0,
+			color: '#6366F1',
+			colorName: 'Indigo',
+			shapeName: 'Circle',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Circle',
+			raw: text,
+		};
+	if (text.includes('🔷'))
+		return {
+			shape: 'diamond',
+			sides: 4,
+			color: '#3B82F6',
+			colorName: 'Blue',
+			shapeName: 'Diamond',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Diamond',
+			raw: text,
+		};
+	if (text.includes('⭐'))
+		return {
+			shape: 'star',
+			sides: 5,
+			color: '#F59E0B',
+			colorName: 'Gold',
+			shapeName: 'Star',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Star',
+			raw: text,
+		};
+
+	// 1. Determine Shape and Side Count
+	let shape = 'circle';
+	let sides = 0;
+	let shapeName = 'Circle';
+
+	if (
+		lower.includes('triangle') ||
+		lower.includes('3 sides') ||
+		lower.includes('3-sided')
+	) {
+		shape = 'triangle';
+		sides = 3;
+		shapeName = 'Triangle';
+	} else if (
+		lower.includes('square') ||
+		lower.includes('4 sides') ||
+		lower.includes('4-sided') ||
+		lower.includes('quadrilateral') ||
+		lower.includes('rect')
+	) {
+		shape = 'square';
+		sides = 4;
+		shapeName = 'Square';
+	} else if (
+		lower.includes('pentagon') ||
+		lower.includes('5 sides') ||
+		lower.includes('5-sided')
+	) {
+		shape = 'pentagon';
+		sides = 5;
+		shapeName = 'Pentagon';
+	} else if (
+		lower.includes('hexagon') ||
+		lower.includes('6 sides') ||
+		lower.includes('6-sided')
+	) {
+		shape = 'hexagon';
+		sides = 6;
+		shapeName = 'Hexagon';
+	} else if (
+		lower.includes('heptagon') ||
+		lower.includes('7 sides') ||
+		lower.includes('7-sided')
+	) {
+		shape = 'heptagon';
+		sides = 7;
+		shapeName = 'Heptagon';
+	} else if (
+		lower.includes('octagon') ||
+		lower.includes('8 sides') ||
+		lower.includes('8-sided')
+	) {
+		shape = 'octagon';
+		sides = 8;
+		shapeName = 'Octagon';
+	} else if (
+		lower.includes('nonagon') ||
+		lower.includes('enneagon') ||
+		lower.includes('9 sides')
+	) {
+		shape = 'nonagon';
+		sides = 9;
+		shapeName = 'Nonagon';
+	} else if (lower.includes('decagon') || lower.includes('10 sides')) {
+		shape = 'decagon';
+		sides = 10;
+		shapeName = 'Decagon';
+	} else if (lower.includes('star')) {
+		shape = 'star';
+		sides = 5;
+		shapeName = 'Star';
+	} else if (lower.includes('diamond') || lower.includes('rhombus')) {
+		shape = 'diamond';
+		sides = 4;
+		shapeName = 'Diamond';
+	} else if (lower.includes('circle') || lower.includes('round')) {
+		shape = 'circle';
+		sides = 0;
+		shapeName = 'Circle';
+	}
+
+	// 2. Check for explicit sides in parentheses e.g. "(3 sides)" or "(6 sides)"
+	const sidesMatch = text.match(/(\d+)\s*sides?/i);
+	const sidesCount =
+		sidesMatch ? parseInt(sidesMatch[1], 10)
+		: sides > 0 ? sides
+		: null;
+
+	if (sidesCount && sidesCount >= 3 && shape === 'circle') {
+		sides = sidesCount;
+		if (sides === 3) shape = 'triangle';
+		else if (sides === 4) shape = 'square';
+		else if (sides === 5) shape = 'pentagon';
+		else if (sides === 6) shape = 'hexagon';
+		else if (sides === 7) shape = 'heptagon';
+		else if (sides === 8) shape = 'octagon';
+	}
+
+	// 3. Determine Fill Style (White, Shaded, or Specific Color)
+	const isWhite =
+		lower.includes('white') ||
+		lower.includes('unshaded') ||
+		lower.includes('blank') ||
+		lower.includes('empty') ||
+		lower.includes('hollow') ||
+		lower.includes('clear');
+
+	const isShaded =
+		lower.includes('shaded') ||
+		lower.includes('dark') ||
+		lower.includes('filled') ||
+		lower.includes('solid') ||
+		lower.includes('grey') ||
+		lower.includes('gray') ||
+		lower.includes('black');
+
+	let color = '#6366F1'; // Default primary indigo
+	let colorName = 'Indigo';
+
+	if (isWhite) {
+		color = '#FFFFFF';
+		colorName = 'White';
+	} else if (isShaded) {
+		color = '#334155'; // Dark slate shaded
+		colorName = 'Shaded';
+	} else if (lower.includes('blue') || lower.includes('navy')) {
+		color = '#3B82F6';
+		colorName = 'Blue';
+	} else if (
+		lower.includes('green') ||
+		lower.includes('emerald') ||
+		lower.includes('lime')
+	) {
+		color = '#10B981';
+		colorName = 'Green';
+	} else if (
+		lower.includes('red') ||
+		lower.includes('crimson') ||
+		lower.includes('rose')
+	) {
+		color = '#EF4444';
+		colorName = 'Red';
+	} else if (
+		lower.includes('cyan') ||
+		lower.includes('teal') ||
+		lower.includes('sky') ||
+		lower.includes('turquoise')
+	) {
+		color = '#06B6D4';
+		colorName = 'Cyan';
+	} else if (
+		lower.includes('yellow') ||
+		lower.includes('gold') ||
+		lower.includes('amber')
+	) {
+		color = '#F59E0B';
+		colorName = 'Yellow';
+	} else if (lower.includes('orange')) {
+		color = '#F97316';
+		colorName = 'Orange';
+	} else if (lower.includes('purple') || lower.includes('violet')) {
+		color = '#8B5CF6';
+		colorName = 'Purple';
+	} else if (lower.includes('pink') || lower.includes('magenta')) {
+		color = '#EC4899';
+		colorName = 'Pink';
+	}
+
+	// 4. Extract quadrant position if present (e.g. top-left, top-right, bottom-left, bottom-right)
+	const isQuadrant =
+		lower.includes('top-left') ||
+		lower.includes('top left') ||
+		lower.includes('top-right') ||
+		lower.includes('top right') ||
+		lower.includes('bottom-left') ||
+		lower.includes('bottom left') ||
+		lower.includes('bottom-right') ||
+		lower.includes('bottom right') ||
+		lower.includes('quadrant');
+
+	let quadrant = 'top-right';
+	if (lower.includes('top-left') || lower.includes('top left'))
+		quadrant = 'top-left';
+	else if (lower.includes('top-right') || lower.includes('top right'))
+		quadrant = 'top-right';
+	else if (lower.includes('bottom-left') || lower.includes('bottom left'))
+		quadrant = 'bottom-left';
+	else if (lower.includes('bottom-right') || lower.includes('bottom right'))
+		quadrant = 'bottom-right';
+
+	// 5. Extract standalone progression number (if not the side count)
+	let number = null;
+	const allNumbers = text.match(/-?\d+(?:\.\d+)?/g);
+	if (allNumbers && allNumbers.length > 0) {
+		if (sidesMatch) {
+			const sideVal = sidesMatch[1];
+			const remaining = allNumbers.filter((n) => n !== sideVal);
+			if (remaining.length > 0) number = remaining[0];
+		} else {
+			number = allNumbers[0];
+		}
+	}
+
+	let styleTag = '';
+	if (isWhite) styleTag = 'White';
+	else if (isShaded) styleTag = 'Shaded';
+	else if (colorName !== 'Indigo') styleTag = colorName;
+	else if (sidesCount) styleTag = `${sidesCount} sides`;
+
+	return {
+		raw: text,
+		shape: isQuadrant ? 'quadrant-square' : shape,
+		sides,
+		sidesCount,
+		color,
+		colorName,
+		isWhite,
+		isShaded,
+		number,
+		shapeName: isQuadrant ? 'Quadrant Square' : shapeName,
+		styleTag,
+		isQuadrant,
+		quadrant,
+	};
+}
+
+/**
+ * Renders an exact SVG geometric shape with filled color, diagonal hatch shading, quadrant division, and bold contrast borders
+ */
+export function DynamicSvgShape({
+	parsed,
+	size = 72,
+	patternId = 'hatch',
+	rotation = 0,
+}) {
+	const cx = size / 2;
+	const cy = size / 2;
+	const r = size * 0.4;
+	const {
+		shape,
+		sides,
+		color,
+		isWhite,
+		isShaded,
+		number,
+		isQuadrant,
+		quadrant,
+	} = parsed || {};
+
+	const strokeColor = '#0F172A';
+	const strokeWidth = 2.8;
+
+	let shapeFill = color || '#3B82F6';
+	if (isShaded || parsed?.isShaded) {
+		shapeFill = `url(#${patternId})`;
+	} else if (isWhite || parsed?.isWhite) {
+		shapeFill = '#FFFFFF';
+	}
+
+	let shapeElement = null;
+
+	if (isQuadrant || shape === 'quadrant-square') {
+		const quad = quadrant || 'top-right';
+		const s = r * 1.6;
+		const half = s / 2;
+		const left = cx - half;
+		const top = cy - half;
+
+		shapeElement = (
+			<g>
+				{/* Top-Left Quadrant */}
+				<rect
+					x={left}
+					y={top}
+					width={half}
+					height={half}
+					fill={quad === 'top-left' ? shapeFill : '#FFFFFF'}
+					stroke={strokeColor}
+					strokeWidth={strokeWidth / 1.6}
+				/>
+				{/* Top-Right Quadrant */}
+				<rect
+					x={cx}
+					y={top}
+					width={half}
+					height={half}
+					fill={quad === 'top-right' ? shapeFill : '#FFFFFF'}
+					stroke={strokeColor}
+					strokeWidth={strokeWidth / 1.6}
+				/>
+				{/* Bottom-Right Quadrant */}
+				<rect
+					x={cx}
+					y={cy}
+					width={half}
+					height={half}
+					fill={quad === 'bottom-right' ? shapeFill : '#FFFFFF'}
+					stroke={strokeColor}
+					strokeWidth={strokeWidth / 1.6}
+				/>
+				{/* Bottom-Left Quadrant */}
+				<rect
+					x={left}
+					y={cy}
+					width={half}
+					height={half}
+					fill={quad === 'bottom-left' ? shapeFill : '#FFFFFF'}
+					stroke={strokeColor}
+					strokeWidth={strokeWidth / 1.6}
+				/>
+				{/* Outer Quadrant Border */}
+				<rect
+					x={left}
+					y={top}
+					width={s}
+					height={s}
+					rx='4'
+					fill='none'
+					stroke={strokeColor}
+					strokeWidth={strokeWidth}
+				/>
+			</g>
+		);
+	} else if (shape === 'circle' || sides === 0) {
+		shapeElement = (
+			<circle
+				cx={cx}
+				cy={cy}
+				r={r}
+				fill={shapeFill}
+				stroke={strokeColor}
+				strokeWidth={strokeWidth}
+			/>
+		);
+	} else if (shape === 'square' && sides === 4) {
+		const s = r * 1.5;
+		shapeElement = (
+			<rect
+				x={cx - s / 2}
+				y={cy - s / 2}
+				width={s}
+				height={s}
+				rx='5'
+				fill={shapeFill}
+				stroke={strokeColor}
+				strokeWidth={strokeWidth}
+			/>
+		);
+	} else if (shape === 'diamond') {
+		const points = `${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}`;
+		shapeElement = (
+			<polygon
+				points={points}
+				fill={shapeFill}
+				stroke={strokeColor}
+				strokeWidth={strokeWidth}
+			/>
+		);
+	} else if (shape === 'star') {
+		const points = `${cx},${cy - r} ${cx + r * 0.3},${cy - r * 0.3} ${cx + r},${cy - r * 0.3} ${cx + r * 0.45},${cy + r * 0.15} ${cx + r * 0.7},${cy + r * 0.8} ${cx},${cy + r * 0.35} ${cx - r * 0.7},${cy + r * 0.8} ${cx - r * 0.45},${cy + r * 0.15} ${cx - r},${cy - r * 0.3} ${cx - r * 0.3},${cy - r * 0.3}`;
+		shapeElement = (
+			<polygon
+				points={points}
+				fill={shapeFill}
+				stroke={strokeColor}
+				strokeWidth={strokeWidth}
+			/>
+		);
+	} else {
+		// Regular polygon for triangle (3), pentagon (5), hexagon (6), heptagon (7), octagon (8), etc.
+		const numSides = sides || 3;
+		const points = getRegularPolygonPoints(numSides, cx, cy, r);
+		shapeElement = (
+			<polygon
+				points={points}
+				fill={shapeFill}
+				stroke={strokeColor}
+				strokeWidth={strokeWidth}
+			/>
+		);
+	}
+
+	// Only show overlay text if there is an explicit numeric progression value (e.g. [Blue Circle, 3])
+	const overlayText = number !== null ? number : null;
+
+	return (
+		<svg
+			viewBox={`0 0 ${size} ${size}`}
+			className='w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 drop-shadow-md'>
+			<defs>
+				{/* Diagonal Hatch Shading Pattern */}
+				<pattern
+					id={patternId}
+					width='8'
+					height='8'
+					patternTransform='rotate(45 0 0)'
+					patternUnits='userSpaceOnUse'>
+					<rect
+						width='8'
+						height='8'
+						fill='#E2E8F0'
+					/>
+					<line
+						x1='0'
+						y1='0'
+						x2='0'
+						y2='8'
+						stroke='#1E293B'
+						strokeWidth='3.5'
+					/>
+				</pattern>
+			</defs>
+
+			{shapeElement}
+
+			{overlayText !== null && (
+				<g>
+					<circle
+						cx={cx}
+						cy={cy}
+						r='11'
+						fill={
+							isShaded ? '#0F172A'
+							: isWhite ?
+								'#0F172A'
+							:	'#FFFFFF'
+						}
+						opacity='0.9'
+					/>
+					<text
+						x={cx}
+						y={cy + 1}
+						fill={isShaded || isWhite ? '#FFFFFF' : '#0F172A'}
+						fontSize='12'
+						fontWeight='900'
+						textAnchor='middle'
+						dominantBaseline='middle'>
+						{overlayText}
+					</text>
+				</g>
+			)}
+		</svg>
+	);
+}
+
+/**
+ * Clean Card container for dynamic shape sequence items (without side-count or shading text clutter)
+ */
+export function DynamicShapeCard({
+	item,
+	index = 0,
+	isTarget = false,
+	isSolution = false,
+}) {
+	const parsed = parseDynamicShape(item);
+	const uniquePatternId = `diag-hatch-${index}-${Math.random().toString(36).substr(2, 4)}`;
+
+	if (isTarget && !isSolution) {
+		return (
+			<div className='flex flex-col items-center justify-center p-3 rounded-2xl bg-white border-2 border-dashed border-indigo-400 min-w-[80px] sm:min-w-[95px] shadow-sm animate-pulse'>
+				<div className='w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-2xl shadow-inner'>
+					❓
+				</div>
+				<div className='flex flex-col items-center mt-1.5 text-center'>
+					<span className='text-[10px] font-black uppercase text-indigo-600 tracking-wider'>
+						Next Shape?
+					</span>
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div
+			className={`flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border-2 transition-transform hover:scale-105 min-w-[80px] sm:min-w-[95px] ${
+				isSolution ?
+					'bg-gradient-to-tr from-emerald-50 to-teal-50 border-emerald-400 ring-2 ring-emerald-300 shadow-lg animate-bounce-short'
+				:	'bg-white border-slate-200 shadow-md'
+			}`}>
+			<DynamicSvgShape
+				parsed={parsed}
+				size={64}
+				patternId={uniquePatternId}
+			/>
+
+			<div className='flex flex-col items-center mt-1.5 text-center w-full'>
+				<h5 className='text-xs sm:text-sm font-black text-slate-900 leading-tight'>
+					{parsed.shapeName}
+				</h5>
+			</div>
+		</div>
+	);
+}
+
+/**
+ * Splits any sequence text or question string into distinct shape terms
+ */
+export function extractShapeSequenceTerms(questionText, defaultTerms = []) {
+	if (!questionText) return defaultTerms;
+
+	// 1. Check for bracketed items: e.g. [Blue Circle, 3], [Green Square, 6]
+	const bracketMatches = questionText.match(/\[[^\]]+\]/g);
+	if (bracketMatches && bracketMatches.length >= 2) {
+		return bracketMatches.map((s) => s.trim());
+	}
+
+	// 2. Check for parenthesized terms: e.g. Triangle (3 sides, white), Square (4 sides, shaded)
+	const parenPattern = /([A-Za-z]+)\s*\(([^)]+)\)/g;
+	const parenMatches = [];
+	let match;
+	while ((match = parenPattern.exec(questionText)) !== null) {
+		parenMatches.push(`${match[1]} (${match[2]})`);
+	}
+	if (parenMatches.length >= 2) {
+		return parenMatches;
+	}
+
+	// 3. Split by colon after sequence prompt e.g. "progression: A, B, C, D, ?"
+	const colonSplit = questionText.split(/:\s*/);
+	if (colonSplit.length > 1) {
+		const rawList = colonSplit[1].split(/\s*\?\s*$/)[0];
+		const items = rawList
+			.split(/,\s*(?![^()]*\))/)
+			.map((s) => s.trim())
+			.filter((s) => s.length > 0 && s !== '?');
+		if (items.length >= 2) {
+			return items;
+		}
+	}
+
+	return defaultTerms;
+}
+
+/**
+ * Parses multi-step growing shape count progressions e.g.
+ * "Step 1 has 1 shaded square, Step 2 has 3 shaded squares, Step 3 has 6 shaded squares, Step 4 has 10 shaded squares..."
+ */
+export function parseStepShapeCountSequence(questionText, correctText = '') {
+	if (!questionText) return null;
+
+	const stepRegex =
+		/(?:Step|Figure|Stage)\s*(\d+)\s*(?:has|contains|shows|is|=|:)\s*(\d+)\s*([^,.]+)/gi;
+	const steps = [];
+	let match;
+
+	while ((match = stepRegex.exec(questionText)) !== null) {
+		const stepNum = parseInt(match[1], 10);
+		const count = parseInt(match[2], 10);
+		const rawDesc = match[3].trim();
+		const parsed = parseDynamicShape(rawDesc);
+
+		steps.push({
+			step: stepNum,
+			count,
+			shape: parsed.shape || 'square',
+			shapeName: parsed.shapeName || 'Square',
+			isShaded: parsed.isShaded ?? true,
+			isWhite: parsed.isWhite ?? false,
+			color: parsed.color || '#3B82F6',
+			rawDesc,
+		});
+	}
+
+	if (steps.length < 2) return null;
+
+	// Extract target step e.g. "how many shaded squares are in Step 6?"
+	const targetStepMatch = questionText.match(
+		/(?:in|at|for)\s*(?:Step|Figure|Stage)\s*(\d+)/i,
+	);
+	const targetStep =
+		targetStepMatch ?
+			parseInt(targetStepMatch[1], 10)
+		:	steps[steps.length - 1].step + 2;
+
+	const numInCorrect = String(correctText).match(/\d+/);
+	const targetCount =
+		numInCorrect ?
+			parseInt(numInCorrect[0], 10)
+		:	(targetStep * (targetStep + 1)) / 2;
+
+	return {
+		steps,
+		targetStep,
+		targetCount,
+		shape: steps[0].shape,
+		isShaded: steps[0].isShaded,
+		color: steps[0].color,
+	};
+}
+
+/**
+ * Renders an exact cluster of N shapes (e.g. 1 square, 3 squares, 6 squares, 10 squares)
+ */
+export function ShapeClusterCard({
+	step,
+	count = 1,
+	shape = 'square',
+	isShaded = true,
+	isWhite = false,
+	color = '#3B82F6',
+	isTarget = false,
+	isSolution = false,
+	patternId = 'cluster-hatch',
+}) {
+	if (isTarget && !isSolution) {
+		return (
+			<div className='flex flex-col items-center justify-center p-3 rounded-2xl bg-white border-2 border-dashed border-indigo-400 min-w-[90px] sm:min-w-[105px] shadow-sm animate-pulse'>
+				<span className='text-[10px] font-black uppercase text-indigo-500 mb-1.5 tracking-wider'>
+					Step {step}
+				</span>
+				<div className='w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-2xl shadow-inner'>
+					❓
+				</div>
+				<span className='text-[10px] font-extrabold text-indigo-600 mt-2 bg-indigo-50 px-2 py-0.5 rounded'>
+					How many?
+				</span>
+			</div>
+		);
+	}
+
+	// Layout grid/triangular stack points for count 1, 3, 6, 10, 15, 21
+	const renderMiniShapes = () => {
+		const sz =
+			count <= 1 ? 30
+			: count <= 3 ? 20
+			: count <= 6 ? 15
+			: count <= 10 ? 12
+			: 10;
+		const fill =
+			isShaded ? `url(#${patternId})`
+			: isWhite ? '#FFFFFF'
+			: color;
+
+		// Arrangement rows for triangular numbers (1 -> [1], 3 -> [1, 2], 6 -> [1, 2, 3], 10 -> [1, 2, 3, 4], 15 -> [1, 2, 3, 4, 5])
+		let rows = [];
+		if (count === 1) rows = [1];
+		else if (count === 2) rows = [2];
+		else if (count === 3) rows = [1, 2];
+		else if (count === 4) rows = [2, 2];
+		else if (count === 5) rows = [2, 3];
+		else if (count === 6) rows = [1, 2, 3];
+		else if (count === 8) rows = [2, 3, 3];
+		else if (count === 9) rows = [3, 3, 3];
+		else if (count === 10) rows = [1, 2, 3, 4];
+		else if (count <= 15) rows = [1, 2, 3, 4, 5];
+		else if (count <= 21) rows = [1, 2, 3, 4, 5, 6];
+		else rows = [4, 4, 4]; // fallback grid
+
+		return (
+			<svg
+				viewBox='0 0 100 80'
+				className='w-16 h-14 sm:w-20 sm:h-16'>
+				<defs>
+					<pattern
+						id={patternId}
+						width='6'
+						height='6'
+						patternTransform='rotate(45 0 0)'
+						patternUnits='userSpaceOnUse'>
+						<rect
+							width='6'
+							height='6'
+							fill='#CBD5E1'
+						/>
+						<line
+							x1='0'
+							y1='0'
+							x2='0'
+							y2='6'
+							stroke='#1E293B'
+							strokeWidth='2.2'
+						/>
+					</pattern>
+				</defs>
+
+				{rows.map((rowItems, rowIdx) => {
+					const totalRows = rows.length;
+					const rowY = 40 - (totalRows * (sz + 2)) / 2 + rowIdx * (sz + 2);
+
+					return Array.from({ length: rowItems }).map((_, colIdx) => {
+						const rowX = 50 - (rowItems * (sz + 2)) / 2 + colIdx * (sz + 2);
+
+						if (shape === 'circle') {
+							return (
+								<circle
+									key={`${rowIdx}-${colIdx}`}
+									cx={rowX + sz / 2}
+									cy={rowY + sz / 2}
+									r={sz / 2 - 1}
+									fill={fill}
+									stroke='#0F172A'
+									strokeWidth='1.5'
+								/>
+							);
+						}
+						if (shape === 'triangle') {
+							const pts = `${rowX + sz / 2},${rowY} ${rowX + sz},${rowY + sz} ${rowX},${rowY + sz}`;
+							return (
+								<polygon
+									key={`${rowIdx}-${colIdx}`}
+									points={pts}
+									fill={fill}
+									stroke='#0F172A'
+									strokeWidth='1.5'
+								/>
+							);
+						}
+
+						// Default Square
+						return (
+							<rect
+								key={`${rowIdx}-${colIdx}`}
+								x={rowX}
+								y={rowY}
+								width={sz}
+								height={sz}
+								rx='2'
+								fill={fill}
+								stroke='#0F172A'
+								strokeWidth='1.5'
+							/>
+						);
+					});
+				})}
+			</svg>
+		);
+	};
+
+	return (
+		<div
+			className={`flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border-2 transition-transform hover:scale-105 min-w-[90px] sm:min-w-[105px] ${
+				isSolution ?
+					'bg-gradient-to-tr from-emerald-50 to-teal-50 border-emerald-400 ring-2 ring-emerald-300 shadow-lg animate-bounce-short'
+				:	'bg-white border-slate-200 shadow-md'
+			}`}>
+			<span className='text-[10px] font-black uppercase text-indigo-700 mb-1 tracking-wider bg-indigo-50 px-2 py-0.2 rounded'>
+				Step {step}
+			</span>
+
+			<div className='flex items-center justify-center my-0.5'>
+				{renderMiniShapes()}
+			</div>
+
+			<span
+				className={`text-[11px] font-black px-2 py-0.5 rounded-full mt-1.5 shadow-xs ${
+					isSolution ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-white'
+				}`}>
+				{count} {count === 1 ? 'square' : 'squares'}
+			</span>
+		</div>
+	);
+}
+
+/**
+ * Parses spatial rotation questions and quadrant progressions e.g.
+ * "A square is rotated 90 degrees clockwise and its shaded quadrant shifts from the top-right to the bottom-right, then to the bottom-left. What position will the shaded quadrant occupy after the next 90-degree clockwise rotation?"
+ */
+export function parseRotationSequence(questionText, correctText = '') {
+	if (!questionText) return null;
+	const lower = questionText.toLowerCase();
+
+	const hasRotation =
+		lower.includes('rotat') ||
+		lower.includes('degree') ||
+		lower.includes('clockwise') ||
+		lower.includes('quadrant');
+
+	if (!hasRotation) return null;
+
+	// Extract angle
+	const angleMatch = questionText.match(/(\d+)\s*(?:deg|degree)/i);
+	const angle = angleMatch ? parseInt(angleMatch[1], 10) : 90;
+
+	// Extract direction
+	const isCCW =
+		lower.includes('counter-clockwise') ||
+		lower.includes('counterclockwise') ||
+		lower.includes('ccw') ||
+		lower.includes('anti-clockwise') ||
+		lower.includes('anticlockwise');
+	const direction = isCCW ? 'CCW' : 'CW';
+
+	// Quadrant cycle: Top-Right (0) -> Bottom-Right (1) -> Bottom-Left (2) -> Top-Left (3)
+	const quadCycle = ['top-right', 'bottom-right', 'bottom-left', 'top-left'];
+
+	// Match positions in order of appearance in the question
+	const foundPositions = [];
+	const posLookups = [
+		{
+			id: 'top-right',
+			idx:
+				lower.indexOf('top-right') !== -1 ?
+					lower.indexOf('top-right')
+				:	lower.indexOf('top right'),
+		},
+		{
+			id: 'bottom-right',
+			idx:
+				lower.indexOf('bottom-right') !== -1 ?
+					lower.indexOf('bottom-right')
+				:	lower.indexOf('bottom right'),
+		},
+		{
+			id: 'bottom-left',
+			idx:
+				lower.indexOf('bottom-left') !== -1 ?
+					lower.indexOf('bottom-left')
+				:	lower.indexOf('bottom left'),
+		},
+		{
+			id: 'top-left',
+			idx:
+				lower.indexOf('top-left') !== -1 ?
+					lower.indexOf('top-left')
+				:	lower.indexOf('top left'),
+		},
+	];
+
+	const sortedLookups = posLookups
+		.filter((p) => p.idx !== -1)
+		.sort((a, b) => a.idx - b.idx);
+
+	if (sortedLookups.length >= 2) {
+		const steps = sortedLookups.map((p, idx) => ({
+			step: idx + 1,
+			quadrant: p.id,
+			shape: 'quadrant-square',
+			isQuadrant: true,
+			isShaded: true,
+			deg: idx * angle * (isCCW ? -1 : 1),
+		}));
+
+		const lastQuad = sortedLookups[sortedLookups.length - 1].id;
+		const lastCycleIdx = quadCycle.indexOf(lastQuad);
+		const targetCycleIdx =
+			isCCW ? (lastCycleIdx - 1 + 4) % 4 : (lastCycleIdx + 1) % 4;
+		const targetQuad = quadCycle[targetCycleIdx];
+
+		return {
+			isQuadrant: true,
+			angle,
+			direction,
+			steps,
+			target: {
+				step: steps.length + 1,
+				quadrant: targetQuad,
+				shape: 'quadrant-square',
+				isQuadrant: true,
+				isShaded: true,
+				deg: steps.length * angle * (isCCW ? -1 : 1),
+			},
+		};
+	}
+
+	// General angle rotation fallback
+	return {
+		isQuadrant: false,
+		angle,
+		direction,
+		steps: [
+			{ step: 1, deg: 0, shape: 'square', isShaded: true },
+			{ step: 2, deg: angle, shape: 'square', isShaded: true },
+			{ step: 3, deg: angle * 2, shape: 'square', isShaded: true },
+		],
+		target: {
+			step: 4,
+			deg: angle * 3,
+			shape: 'square',
+			isShaded: true,
+		},
+	};
+}

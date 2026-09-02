@@ -1,6 +1,6 @@
 # 🚀 Skill Thinksheet - 100% Live AI-Powered Cosmic Learning for Early Explorers
 
-An engaging, visual-first React.js educational platform designed for early childhood and young learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time direct AI question generation via Google Gemini API (Mandatory API Key with Live Validation)**, configurable auto-advance question pacing, customizable per-question countdown timers, streamlined exit workflows, and strict age-calibrated difficulty with zero offline/cached questions.
+An engaging, visual-first React.js educational platform designed for early childhood and young learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time direct AI question generation via Google Gemini API (Mandatory API Key with Live Validation)**, configurable auto-advance question pacing, customizable per-question countdown timers, streamlined exit workflows, dynamic mathematical SVG shape generation, and strict age-calibrated difficulty with zero offline/cached questions.
 
 ---
 
@@ -56,17 +56,52 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 4. 🎨 Rich Visual Representations & Lazy-Loaded Diagram System
+### 4. 🎨 Dynamic SVG Shape Generator & Rich Visual Diagram System
 
-- **Comprehensive Visual Support for All Questions**: Every question is accompanied by an intuitive visual representation to enhance comprehension:
-  - **Analogy Maps (`analogy-map`)**: Interactive relation cards (`Item A ➔ Item B :: Item C ➔ ?`).
-  - **Cause-and-Effect Flow (`cause-effect`)**: Process chains visualizing actions and their results.
-  - **Sequence Ladders (`sequence-ladder`)**: Number lines and progression steps with interval rules.
-  - **Grid Tiles (`grid-tiles`)**: Missing tile matrices with numbered solution overlays.
-  - **Block Towers (`block-tower`)**: 3D isometric block towers and volume stacks.
-  - **Pattern Shapes (`pattern-shapes`)**: Sequence cards for shapes, colors, and emoji progressions.
-  - **Object Counting (`apple-counting`)**: High-contrast, friendly countable item arrays.
-  - **Scale Balance (`scale-balance`)**: Physics lever scales showing heavier/lighter weights.
+- **Mathematical Geometric Shape Engine (`shapeGenerator.jsx`)**:
+  - **Dynamic Polygon Coordinate Math (`getRegularPolygonPoints`)**: Calculates vertex angles and Cartesian points for any regular polygon ($N \ge 3$):
+    - `Triangle` (3 sides), `Square` (4 sides), `Pentagon` (5 sides), `Hexagon` (6 sides), `Heptagon` (7 sides), `Octagon` (8 sides), `Nonagon` (9 sides), `Decagon` (10 sides), `Circle` (0 sides), `Star`, `Diamond`.
+  - **Color & Shading Styles**:
+    - **White / Outline**: Clean `#FFFFFF` fill with high-contrast `#0F172A` borders.
+    - **Shaded / Hatching**: Crisp SVG vector diagonal hatch pattern (`<pattern id="hatch">`) with dark borders.
+    - **Vibrant Colors**: _Blue_, _Green_, _Red_, _Cyan_, _Yellow_, _Orange_, _Purple_, _Pink_.
+  - **Clean & Uncluttered Visual Cards (`DynamicShapeCard`)**:
+    - Renders the exact geometric shape cleanly without redundant side-count numbers or shading text badges.
+- **Dynamic SVG Shapes & Concept Icons in Answer Option Cards (`OptionsGrid.jsx`)**:
+  - Each answer option card (A, B, C, D) renders the exact mathematical SVG shape or concept visual icon alongside the answer text.
+  - **Automatic Contrast Pedestals**:
+    - **White Shapes on White Cards**: Placed inside a soft slate contrast pedestal (`bg-slate-100 border border-slate-300`) so white/outline shapes are 100% visible against white card backgrounds.
+    - **Selected Option Highlight**: Selected cards switch the shape container to a crisp white pedestal (`bg-white/95 border-2 border-white shadow-md`) providing maximum contrast against the selected orange gradient.
+    - **Shaded / Hatched Shapes**: Rendered with SVG diagonal hatch patterns with clear outlines.
+  - **Distinct Selection Spacing & Outer Ring**:
+    - Option grid spaced with generous padding (`gap-3.5 sm:gap-4.5 p-1`).
+    - The selected answer card receives a dark offset outer ring (`ring-4 ring-orange-400/80 ring-offset-2 ring-offset-[#0d1033] shadow-2xl scale-[1.02]`), making the active selection immediately clear against adjacent options.
+- **Intelligent Concept Visual Mapping (`getConceptVisual`)**:
+  - Automatically pairs educational and STEM concepts with large, colorful graphic badges (e.g. _Photosynthesis_ ➔ `☀️🍃`, _Plant_ ➔ `🌱`, _Cellular Respiration_ ➔ `⚡🫁`, _Animal_ ➔ `🐾`, _Microscope_ ➔ `🔬`, _Galaxy_ ➔ `🌌`, _Author_ ➔ `📖`, _Architect_ ➔ `📐`, _Statue_ ➔ `🗿`, etc.).
+- **Spatial Geometry: Shape Rotation & 90° Quadrant Turns (`shape-rotation`)**:
+  - Automatically activates for questions on 2D shape rotation, angular turns ($90^\circ$, $180^\circ$, $270^\circ$, $45^\circ$), and clockwise/counter-clockwise shifts.
+  - Draws 4-quadrant squares with physical SVG rotation and shaded active quadrants.
+  - Connects each step with circular directional arrows (`⟳ RotateCw` / `⟲ RotateCcw`) and turn magnitude badges (`+90° CW` / `+90° CCW`).
+  - Answer option cards render the exact 4-quadrant square corresponding to each position (Top-Left, Top-Right, Bottom-Left, Bottom-Right).
+- **Physics & Optics: Light Dispersion Prism Diagram (`optics-prism`)**:
+  - Automatically activates for questions on light, prisms, refraction, dispersion, and rainbows.
+  - Draws a crystalline glass prism with an incident white light beam entering, bending inside the glass medium, and emerging as a vibrant 7-band rainbow spectrum (Red, Orange, Yellow, Green, Cyan, Blue, Violet).
+  - Includes a step-by-step physics breakdown (`Incident Ray` ➔ `Light Bends (Refraction)` ➔ `Rainbow Colors Split`) and solution confirmation.
+- **Rich Relational Analogy Boards (`analogy-map`)**:
+  - Activated strictly for genuine 4-term analogies (`A : B :: C : D`), eliminating generic dummy placeholder fallbacks.
+- **Cause & Effect Flow (`cause-effect`)**: Process chains visualizing scientific actions, experiments, and resulting phenomena.
+- **Growing Shape Count Progressions & Triangular Clusters (`shape-pattern-grid`)**:
+  - Automatically parses multi-step shape count progressions (e.g. Step 1 has 1 square, Step 2 has 3 squares, Step 3 has 6 squares, Step 4 has 10 squares).
+  - Renders true visual clusters of $N$ geometric shapes (e.g. 1 square, a triangular cluster of 3 squares, a triangular cluster of 6 squares, a triangular cluster of 10 squares) rather than a single shape.
+  - Step 6 target card (`❓ Step 6: How many?`) reveals 21 shaded squares in Solution mode with step and count badges.
+- **Sequence Ladders (`sequence-ladder`)**: Number lines and progression steps with interval rules.
+- **3D Isometric Block Pyramids & Cube Towers (`block-tower` / `isometric-tower`)**:
+  - Automatically parses layer dimensions from question text (e.g. $3\times3$ base with 9 cubes, $2\times2$ middle with 4 cubes, $1\times1$ top with 1 cube = 14 unit cubes).
+  - Renders genuine 3D isometric cubes with light, medium, and dark shaded faces, depth-sorted from back-to-front.
+  - Displays individual layer volume breakdown badges and total volume calculation in solution mode.
+- **3x3 Matrix Grid Shape Progression (`matrix-grid`)**: Full $3\times3$ geometric matrix with dynamic SVG shapes and missing target solution reveals.
+- **Object Counting (`apple-counting`)**: High-contrast, friendly countable item arrays.
+- **Scale Balance (`scale-balance`)**: Physics lever scales showing heavier/lighter weights.
 - **Lazy Image Loading (`loading="lazy"`)**:
   - Direct image diagrams load asynchronously using native browser lazy loading (`loading="lazy"` and `decoding="async"`).
   - Features an animated skeleton shimmer placeholder and smooth fade-in transitions on load for optimal rendering performance and zero layout shift.
@@ -86,7 +121,7 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 5. 📐 Symmetrical Layout & Live Timer on Submit Button
+### 6. 📐 Symmetrical Layout & Live Timer on Submit Button
 
 - **Equal-Height Cards**: The left Question Card and right Options Section share identical vertical heights (`items-stretch` & `h-full`), keeping prompts and visual diagrams neatly centered.
 - **Expanding Options Grid**: Option buttons dynamically expand (`flex-1 h-full`) to fill available vertical space.
@@ -98,7 +133,7 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 6. 🚪 Exit Confirmation Workflow
+### 7. 🚪 Exit Confirmation Workflow
 
 - **Distraction-Free Header**: Clean top bar featuring live XP, timer, voice/sound toggles, fullscreen, and an **`Exit` button**.
 - **Interactive Exit Options**: Clicking **Exit** opens a dialog with three choices:
@@ -108,7 +143,7 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 7. 🎬 ThinkSheet Intro Animation & Clean Dashboard
+### 8. 🎬 ThinkSheet Intro Animation & Clean Dashboard
 
 - **Center Stage Splash**: On opening the dashboard, the green **ThinkSheet** banner starts in the center of the viewport with a glowing bold font and cosmic sparkles (`✨` & `🚀`).
 - **Smooth Shrink-to-Top Glide**: Scales down smoothly and glides into its docked position in the top header using an organic spring transition (`cubic-bezier(0.34, 1.3, 0.64, 1)`).
@@ -116,15 +151,17 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 8. 🗣️ Smart Emoji-Aware Voice Narration (Web Speech API)
+### 9. 🗣️ Smart Voice Narration & Chromium State Recovery (Web Speech API)
 
+- **Persistent Utterance Reference**: Maintains a module-level reference preventing V8 garbage collection mid-speech.
+- **Chromium Synthesizer Queue Fix**: Resilient against browser paused states with automatic `speechSynthesis.resume()` and resolution ticks.
 - **No Duplicate Reading**: Intelligently strips emoji characters from sentences when reading text aloud, preventing speech synthesis from redundantly repeating the word and emoji name (e.g. _"How many shiny red apples are in the basket?"_ instead of _"shiny red apples red apple"_).
-- **Emoji-Only Sequences**: For pattern puzzles composed of emojis (e.g. `🍎 🍌 🍎 🍌`), each emoji is translated into a clean child-friendly word (_"apple banana apple banana"_).
-- **On-Demand Only**: Questions and solutions are read aloud only when clicking the speaker button (`🔊`).
+- **Natural Analogy Pronunciation**: Translates colon analogy syntax (`::` ➔ `" as "`, `:` ➔ `" is to "`) into smooth speech.
+- **Active Visual Feedback**: Speaker button pulses with an active ring indicator while speaking.
 
 ---
 
-### 9. 🏆 Space Cadet Leaderboard & Results System
+### 10. 🏆 Space Cadet Leaderboard & Results System
 
 - **Celebratory Feedback**: 3D `COMPLETED` ribbon banner, glowing star ratings (1 to 3 stars), and confetti particle bursts.
 - **Question Summary Breakdown**: Detailed accordion review comparing the child's selected answers against correct solutions, with clear `⏱️ Timed Out` indicators for unanswered questions.

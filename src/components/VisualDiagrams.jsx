@@ -1,8 +1,215 @@
-import React, { useState } from 'react';
-import { Sparkles, Image as ImageIcon } from 'lucide-react';
+import {
+	ArrowRight,
+	Box,
+	Image as ImageIcon,
+	Link2,
+	RotateCcw,
+	RotateCw,
+	Shapes,
+	Sparkles,
+	Zap,
+} from 'lucide-react';
+import { useState } from 'react';
+import {
+	DynamicShapeCard,
+	DynamicSvgShape,
+	extractShapeSequenceTerms,
+	ShapeClusterCard,
+} from '../utils/shapeGenerator';
 
 /**
- * Lazy-loaded visual image component with skeleton placeholder and smooth transitions
+ * Intelligent Concept Visual Mapper for STEM & Analogy Words
+ */
+export function getConceptVisual(text) {
+	if (!text) return { icon: '💡', label: '' };
+	const str = String(text).trim();
+
+	// Extract existing emoji if present
+	const existingEmoji = str.match(
+		/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u,
+	);
+
+	const cleanLabel = str
+		.replace(
+			/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,
+			'',
+		)
+		.replace(/^\((.+)\)$/, '$1')
+		.trim();
+
+	const lower = cleanLabel.toLowerCase();
+
+	if (existingEmoji) {
+		return { icon: existingEmoji[0], label: cleanLabel };
+	}
+
+	// Comprehensive Concept Visual Dictionary
+	if (lower.includes('photosynthesis'))
+		return { icon: '☀️🍃', label: cleanLabel };
+	if (lower.includes('respiration')) return { icon: '⚡🫁', label: cleanLabel };
+	if (
+		lower.includes('plant') ||
+		lower.includes('flora') ||
+		lower.includes('tree') ||
+		lower.includes('leaf')
+	)
+		return { icon: '🌱', label: cleanLabel };
+	if (
+		lower.includes('animal') ||
+		lower.includes('cell') ||
+		lower.includes('fauna') ||
+		lower.includes('organism')
+	)
+		return { icon: '🐾', label: cleanLabel };
+	if (
+		lower.includes('sun') ||
+		lower.includes('solar') ||
+		lower.includes('light') ||
+		lower.includes('prism') ||
+		lower.includes('refract') ||
+		lower.includes('rainbow')
+	)
+		return { icon: '☀️🌈', label: cleanLabel };
+	if (
+		lower.includes('ice') ||
+		lower.includes('cold') ||
+		lower.includes('freeze')
+	)
+		return { icon: '🧊', label: cleanLabel };
+	if (
+		lower.includes('water') ||
+		lower.includes('liquid') ||
+		lower.includes('melt') ||
+		lower.includes('rain')
+	)
+		return { icon: '💧', label: cleanLabel };
+	if (lower.includes('microscope')) return { icon: '🔬', label: cleanLabel };
+	if (lower.includes('telescope')) return { icon: '🔭', label: cleanLabel };
+	if (
+		lower.includes('galaxy') ||
+		lower.includes('star') ||
+		lower.includes('space') ||
+		lower.includes('planet')
+	)
+		return { icon: '🌌', label: cleanLabel };
+	if (
+		lower.includes('microorganism') ||
+		lower.includes('bacteria') ||
+		lower.includes('microbe') ||
+		lower.includes('virus')
+	)
+		return { icon: '🦠', label: cleanLabel };
+	if (
+		lower.includes('author') ||
+		lower.includes('writer') ||
+		lower.includes('novel') ||
+		lower.includes('book')
+	)
+		return { icon: '📖', label: cleanLabel };
+	if (lower.includes('architect') || lower.includes('blueprint'))
+		return { icon: '📐', label: cleanLabel };
+	if (
+		lower.includes('building') ||
+		lower.includes('house') ||
+		lower.includes('monument')
+	)
+		return { icon: '🏛️', label: cleanLabel };
+	if (
+		lower.includes('sculptor') ||
+		lower.includes('statue') ||
+		lower.includes('art')
+	)
+		return { icon: '🗿', label: cleanLabel };
+	if (
+		lower.includes('thermometer') ||
+		lower.includes('temperature') ||
+		lower.includes('heat')
+	)
+		return { icon: '🌡️', label: cleanLabel };
+	if (
+		lower.includes('speedometer') ||
+		lower.includes('speed') ||
+		lower.includes('fast')
+	)
+		return { icon: '🏎️', label: cleanLabel };
+	if (
+		lower.includes('catalyst') ||
+		lower.includes('chemical') ||
+		lower.includes('reaction')
+	)
+		return { icon: '🧪', label: cleanLabel };
+	if (
+		lower.includes('mentor') ||
+		lower.includes('teacher') ||
+		lower.includes('coach')
+	)
+		return { icon: '🧑‍🏫', label: cleanLabel };
+	if (
+		lower.includes('growth') ||
+		lower.includes('develop') ||
+		lower.includes('learn')
+	)
+		return { icon: '🚀', label: cleanLabel };
+	if (lower.includes('bird') || lower.includes('fly'))
+		return { icon: '🐦', label: cleanLabel };
+	if (lower.includes('nest')) return { icon: '🪺', label: cleanLabel };
+	if (lower.includes('bee')) return { icon: '🐝', label: cleanLabel };
+	if (lower.includes('hive') || lower.includes('honey'))
+		return { icon: '🍯', label: cleanLabel };
+	if (lower.includes('dog') || lower.includes('puppy'))
+		return { icon: '🐶', label: cleanLabel };
+	if (lower.includes('cat') || lower.includes('kitten'))
+		return { icon: '🐱', label: cleanLabel };
+	if (
+		lower.includes('fish') ||
+		lower.includes('swim') ||
+		lower.includes('ocean')
+	)
+		return { icon: '🐟', label: cleanLabel };
+	if (lower.includes('cloud') || lower.includes('sky'))
+		return { icon: '☁️', label: cleanLabel };
+	if (lower.includes('rock') || lower.includes('stone'))
+		return { icon: '🪨', label: cleanLabel };
+	if (lower.includes('glass') || lower.includes('window'))
+		return { icon: '🪟', label: cleanLabel };
+	if (lower.includes('battery') || lower.includes('power'))
+		return { icon: '🔋', label: cleanLabel };
+	if (
+		lower.includes('bulb') ||
+		lower.includes('lamp') ||
+		lower.includes('glow')
+	)
+		return { icon: '💡', label: cleanLabel };
+	if (
+		lower.includes('car') ||
+		lower.includes('vehicle') ||
+		lower.includes('wheel')
+	)
+		return { icon: '🚗', label: cleanLabel };
+	if (
+		lower.includes('heart') ||
+		lower.includes('blood') ||
+		lower.includes('pulse')
+	)
+		return { icon: '❤️', label: cleanLabel };
+	if (lower.includes('caterpillar') || lower.includes('cocoon'))
+		return { icon: '🐛', label: cleanLabel };
+	if (lower.includes('butterfly')) return { icon: '🦋', label: cleanLabel };
+	if (lower.includes('tadpole')) return { icon: '🫧', label: cleanLabel };
+	if (lower.includes('frog')) return { icon: '🐸', label: cleanLabel };
+	if (lower.includes('seed')) return { icon: '🌰', label: cleanLabel };
+	if (lower.includes('flower')) return { icon: '🌸', label: cleanLabel };
+	if (lower.includes('apple')) return { icon: '🍎', label: cleanLabel };
+	if (lower.includes('banana')) return { icon: '🍌', label: cleanLabel };
+	if (lower.includes('circle')) return { icon: '🔴', label: cleanLabel };
+	if (lower.includes('triangle')) return { icon: '🔺', label: cleanLabel };
+	if (lower.includes('square')) return { icon: '🟦', label: cleanLabel };
+
+	return { icon: '💡', label: cleanLabel };
+}
+
+/**
+ * Lazy-loaded visual image component with skeleton placeholder
  */
 export function LazyVisualImage({ src, alt, caption = '' }) {
 	const [loaded, setLoaded] = useState(false);
@@ -19,7 +226,6 @@ export function LazyVisualImage({ src, alt, caption = '' }) {
 
 	return (
 		<div className='relative flex flex-col items-center justify-center my-2 max-w-md w-full'>
-			{/* Skeleton Shimmer while loading */}
 			{!loaded && (
 				<div className='w-full h-40 sm:h-48 bg-slate-100 rounded-2xl animate-pulse flex items-center justify-center border border-slate-200'>
 					<div className='flex items-center gap-2 text-slate-400 text-xs font-bold'>
@@ -49,11 +255,72 @@ export function LazyVisualImage({ src, alt, caption = '' }) {
 }
 
 /**
- * Renders custom SVG graphical puzzles, analogy cards, sequence ladders, and lazy images.
- * Supports both static presets and dynamic procedural puzzle data.
+ * Renders a single 3D Isometric Cube in SVG with light, medium, and dark shaded faces
+ */
+function render3DIsoCube({ gx, gy, gz, size = 20, color = 'blue', key = '' }) {
+	const originX = 140;
+	const originY = 145;
+
+	const dx = size * 0.866;
+	const dy = size * 0.5;
+	const h = size * 0.95;
+
+	const isoX = originX + (gx - gy) * dx;
+	const isoY = originY + (gx + gy) * dy - gz * h;
+
+	// Top Face
+	const topPts = `${isoX},${isoY - h} ${isoX + dx},${isoY - h + dy} ${isoX},${isoY - h + 2 * dy} ${isoX - dx},${isoY - h + dy}`;
+	// Left Face
+	const leftPts = `${isoX - dx},${isoY - h + dy} ${isoX},${isoY - h + 2 * dy} ${isoX},${isoY + 2 * dy} ${isoX - dx},${isoY + dy}`;
+	// Right Face
+	const rightPts = `${isoX},${isoY - h + 2 * dy} ${isoX + dx},${isoY - h + dy} ${isoX + dx},${isoY + dy} ${isoX},${isoY + 2 * dy}`;
+
+	let topFill = '#93C5FD';
+	let leftFill = '#3B82F6';
+	let rightFill = '#1D4ED8';
+
+	if (color === 'amber') {
+		topFill = '#FDE68A';
+		leftFill = '#F59E0B';
+		rightFill = '#B45309';
+	} else if (color === 'pink') {
+		topFill = '#FBCFE8';
+		leftFill = '#EC4899';
+		rightFill = '#BE185D';
+	} else if (color === 'emerald') {
+		topFill = '#A7F3D0';
+		leftFill = '#10B981';
+		rightFill = '#047857';
+	}
+
+	return (
+		<g key={key}>
+			<polygon
+				points={topPts}
+				fill={topFill}
+				stroke='#0F172A'
+				strokeWidth='1.2'
+			/>
+			<polygon
+				points={leftPts}
+				fill={leftFill}
+				stroke='#0F172A'
+				strokeWidth='1.2'
+			/>
+			<polygon
+				points={rightPts}
+				fill={rightFill}
+				stroke='#0F172A'
+				strokeWidth='1.2'
+			/>
+		</g>
+	);
+}
+
+/**
+ * Renders custom SVG graphical puzzles, rich analogy cards, optics light dispersion, 3D isometric block pyramids, and sequence ladders.
  */
 export default function VisualDiagram({ type, data = {}, isSolution = false }) {
-	// If direct image URL is passed, render lazy visual image
 	if (type === 'image' || data?.imageUrl || data?.src) {
 		const imgSrc = data?.imageUrl || data?.src || '';
 		return (
@@ -65,48 +332,585 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 		);
 	}
 
+	// 1. Dedicated Physics & Optics: Light Dispersion through Glass Prism
+	if (type === 'optics-prism') {
+		return (
+			<div className='flex flex-col items-center justify-center p-3.5 sm:p-4 my-2 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl border-2 border-indigo-400/50 shadow-xl max-w-xl w-full animate-in fade-in duration-300'>
+				<div className='flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase text-cyan-300 tracking-wider mb-2 bg-cyan-950/80 px-3 py-0.5 rounded-full border border-cyan-500/40'>
+					<Sparkles className='w-3.5 h-3.5 text-cyan-400' />
+					<span>Optics: Light Dispersion & Refraction</span>
+				</div>
+
+				{/* SVG Optics Prism Diagram */}
+				<div className='relative w-full flex items-center justify-center p-2'>
+					<svg
+						viewBox='0 0 340 160'
+						className='w-full max-w-[340px] h-36'>
+						<defs>
+							{/* Glass Prism Gradient */}
+							<linearGradient
+								id='prismGrad'
+								x1='0%'
+								y1='0%'
+								x2='100%'
+								y2='100%'>
+								<stop
+									offset='0%'
+									stopColor='#38BDF8'
+									stopOpacity='0.45'
+								/>
+								<stop
+									offset='50%'
+									stopColor='#E0F2FE'
+									stopOpacity='0.25'
+								/>
+								<stop
+									offset='100%'
+									stopColor='#818CF8'
+									stopOpacity='0.45'
+								/>
+							</linearGradient>
+							{/* White Incident Beam Gradient */}
+							<linearGradient
+								id='whiteBeam'
+								x1='0%'
+								y1='0%'
+								x2='100%'
+								y2='0%'>
+								<stop
+									offset='0%'
+									stopColor='#FFFFFF'
+									stopOpacity='0.2'
+								/>
+								<stop
+									offset='100%'
+									stopColor='#FFFFFF'
+									stopOpacity='0.95'
+								/>
+							</linearGradient>
+						</defs>
+
+						{/* Glass Prism Triangle */}
+						<polygon
+							points='170,25 90,135 250,135'
+							fill='url(#prismGrad)'
+							stroke='#7DD3FC'
+							strokeWidth='2.5'
+						/>
+						{/* Glass Internal Reflection Lines */}
+						<line
+							x1='170'
+							y1='25'
+							x2='170'
+							y2='135'
+							stroke='#BAE6FD'
+							strokeWidth='0.8'
+							strokeDasharray='2 2'
+						/>
+
+						{/* 1. Incident White Light Beam */}
+						<polygon
+							points='20,80 20,86 118,92 118,88'
+							fill='url(#whiteBeam)'
+						/>
+						<line
+							x1='20'
+							y1='83'
+							x2='120'
+							y2='90'
+							stroke='#FFFFFF'
+							strokeWidth='3.5'
+							strokeLinecap='round'
+						/>
+						<text
+							x='55'
+							y='68'
+							fill='#F8FAFC'
+							fontSize='10'
+							fontWeight='900'
+							textAnchor='middle'>
+							White Light Beam ☀️
+						</text>
+
+						{/* 2. Refracted Beams Inside Prism */}
+						<line
+							x1='120'
+							y1='90'
+							x2='188'
+							y2='88'
+							stroke='#FDA4AF'
+							strokeWidth='2'
+						/>
+						<line
+							x1='120'
+							y1='90'
+							x2='192'
+							y2='96'
+							stroke='#86EFAC'
+							strokeWidth='2'
+						/>
+						<line
+							x1='120'
+							y1='90'
+							x2='196'
+							y2='104'
+							stroke='#93C5FD'
+							strokeWidth='2'
+						/>
+
+						{/* 3. Dispersed Rainbow Spectrum Emerging */}
+						{/* Red */}
+						<line
+							x1='188'
+							y1='88'
+							x2='310'
+							y2='65'
+							stroke='#EF4444'
+							strokeWidth='3.5'
+							strokeLinecap='round'
+						/>
+						{/* Orange */}
+						<line
+							x1='190'
+							y1='92'
+							x2='312'
+							y2='74'
+							stroke='#F97316'
+							strokeWidth='3'
+							strokeLinecap='round'
+						/>
+						{/* Yellow */}
+						<line
+							x1='192'
+							y1='96'
+							x2='314'
+							y2='83'
+							stroke='#FBBF24'
+							strokeWidth='3'
+							strokeLinecap='round'
+						/>
+						{/* Green */}
+						<line
+							x1='194'
+							y1='100'
+							x2='316'
+							y2='92'
+							stroke='#10B981'
+							strokeWidth='3'
+							strokeLinecap='round'
+						/>
+						{/* Cyan */}
+						<line
+							x1='195'
+							y1='103'
+							x2='318'
+							y2='101'
+							stroke='#06B6D4'
+							strokeWidth='3'
+							strokeLinecap='round'
+						/>
+						{/* Blue */}
+						<line
+							x1='196'
+							y1='106'
+							x2='320'
+							y2='110'
+							stroke='#3B82F6'
+							strokeWidth='3'
+							strokeLinecap='round'
+						/>
+						{/* Violet */}
+						<line
+							x1='197'
+							y1='109'
+							x2='322'
+							y2='119'
+							stroke='#8B5CF6'
+							strokeWidth='3.5'
+							strokeLinecap='round'
+						/>
+
+						{/* Label for Spectrum */}
+						<text
+							x='275'
+							y='48'
+							fill='#F472B6'
+							fontSize='10'
+							fontWeight='900'
+							textAnchor='middle'>
+							Rainbow Spectrum 🌈
+						</text>
+					</svg>
+				</div>
+
+				{/* Scientific Explanation Clue */}
+				<div className='flex items-center justify-between gap-2 w-full mt-1 text-[10px] sm:text-[11px] font-bold flex-wrap sm:flex-nowrap'>
+					<div className='bg-white/10 px-2.5 py-1 rounded-lg border border-white/20 text-cyan-200'>
+						1. Incident Ray enters glass
+					</div>
+					<span className='text-indigo-300 font-extrabold hidden sm:inline'>
+						➔
+					</span>
+					<div className='bg-white/10 px-2.5 py-1 rounded-lg border border-white/20 text-indigo-200'>
+						2. Light Bends (Refraction)
+					</div>
+					<span className='text-indigo-300 font-extrabold hidden sm:inline'>
+						➔
+					</span>
+					<div className='bg-white/10 px-2.5 py-1 rounded-lg border border-white/20 text-pink-200'>
+						3. Rainbow Colors Split
+					</div>
+				</div>
+
+				{/* Solution Banner */}
+				{isSolution && (
+					<div className='mt-2.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-xs font-black shadow-lg animate-bounce-short flex items-center gap-2'>
+						<span>✨ Scientific Phenomenon:</span>
+						<span className='underline decoration-wavy'>
+							Refraction & Dispersion of Light
+						</span>
+					</div>
+				)}
+			</div>
+		);
+	}
+
+	// 2. Growing Multi-Shape Cluster / Triangular Number Progression (e.g. Step 1 has 1 square, Step 2 has 3 squares...)
+	if (
+		type === 'shape-pattern-grid' ||
+		data.isShapeCluster ||
+		(Array.isArray(data.steps) && data.steps[0]?.count !== undefined)
+	) {
+		const steps = data.steps || [
+			{ step: 1, count: 1, shape: 'square', isShaded: true },
+			{ step: 2, count: 3, shape: 'square', isShaded: true },
+			{ step: 3, count: 6, shape: 'square', isShaded: true },
+			{ step: 4, count: 10, shape: 'square', isShaded: true },
+		];
+		const targetStep =
+			data.targetStep ||
+			(steps.length > 0 ? steps[steps.length - 1].step + 2 : 6);
+		const targetCount = data.targetCount || 21;
+		const shape = data.shape || steps[0]?.shape || 'square';
+		const isShaded = data.isShaded !== undefined ? data.isShaded : true;
+		const color = data.color || '#3B82F6';
+
+		return (
+			<div className='flex flex-col items-center justify-center p-3 sm:p-4 my-2 bg-gradient-to-br from-indigo-50/90 via-sky-50/80 to-purple-50/90 rounded-2xl border-2 border-indigo-200 shadow-sm max-w-xl w-full animate-in fade-in duration-300'>
+				<div className='flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase text-indigo-800 tracking-wider mb-2.5 bg-indigo-100 px-3 py-0.5 rounded-full border border-indigo-300'>
+					<Shapes className='w-3.5 h-3.5 text-indigo-600' />
+					<span>Growing Shape Count Progression</span>
+				</div>
+
+				<div className='flex items-center justify-center flex-wrap gap-2 sm:gap-2.5 w-full'>
+					{steps.map((st, idx) => (
+						<div
+							key={idx}
+							className='flex items-center gap-1 sm:gap-1.5'>
+							<ShapeClusterCard
+								step={st.step}
+								count={st.count}
+								shape={st.shape || shape}
+								isShaded={st.isShaded !== undefined ? st.isShaded : isShaded}
+								color={st.color || color}
+								patternId={`cluster-pat-${idx}`}
+							/>
+							{idx < steps.length - 1 && (
+								<span className='text-xs font-black text-indigo-400'>➔</span>
+							)}
+						</div>
+					))}
+
+					<span className='text-xs font-black text-indigo-400'>➔</span>
+
+					{/* Target Step Card */}
+					<ShapeClusterCard
+						step={targetStep}
+						count={targetCount}
+						shape={shape}
+						isShaded={isShaded}
+						color={color}
+						isTarget={true}
+						isSolution={isSolution}
+						patternId={`cluster-pat-sol`}
+					/>
+				</div>
+
+				{/* Solution Calculation Banner */}
+				{isSolution && (
+					<div className='mt-2.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-xs font-black shadow-lg animate-bounce-short flex items-center gap-2'>
+						<span>✨ Step {targetStep} Target Count:</span>
+						<span>{targetCount} Shaded Squares</span>
+					</div>
+				)}
+			</div>
+		);
+	}
+
+	// 3. Spatial Rotation & Quadrant Progression (e.g. 90° Clockwise Rotation with Quadrants or Shapes)
+		const layers = data.layers || [
+			{ size: 3, count: 9, color: 'blue', label: 'Layer 1 (Base 3x3)' },
+			{ size: 2, count: 4, color: 'amber', label: 'Layer 2 (Middle 2x2)' },
+			{ size: 1, count: 1, color: 'pink', label: 'Layer 3 (Top 1x1)' },
+		];
+
+		const totalCubes =
+			data.totalCubes ||
+			layers.reduce((acc, l) => acc + (l.count || l.size * l.size), 0);
+
+		// Build and depth-sort 3D cubes from back to front
+		const cubesToRender = [];
+		layers.forEach((layer, layerIdx) => {
+			const sz = layer.size || 1;
+			const col =
+				layer.color ||
+				(layerIdx === 0 ? 'blue'
+				: layerIdx === 1 ? 'amber'
+				: 'pink');
+			const offset = (3 - sz) / 2; // Center smaller layers on top
+
+			for (let x = 0; x < sz; x++) {
+				for (let y = 0; y < sz; y++) {
+					cubesToRender.push({
+						gx: offset + x,
+						gy: offset + y,
+						gz: layerIdx,
+						color: col,
+						key: `cube-${layerIdx}-${x}-${y}`,
+						depth: layerIdx * 100 + (offset + x + (offset + y)),
+					});
+				}
+			}
+		});
+
+		// Back to front render order
+		cubesToRender.sort((a, b) => a.depth - b.depth);
+
+		return (
+			<div className='flex flex-col items-center justify-center p-3 sm:p-4 my-2 bg-gradient-to-br from-indigo-50/90 via-sky-50/80 to-purple-50/90 rounded-2xl border-2 border-indigo-200 shadow-sm max-w-xl w-full animate-in fade-in duration-300'>
+				<div className='flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase text-indigo-800 tracking-wider mb-2 bg-indigo-100 px-3 py-0.5 rounded-full border border-indigo-300'>
+					<Box className='w-3.5 h-3.5 text-indigo-600' />
+					<span>3D Isometric Cube Tower Structure</span>
+				</div>
+
+				{/* 3D Isometric Viewport */}
+				<div className='bg-white rounded-2xl p-2 border-2 border-indigo-100 shadow-inner flex items-center justify-center'>
+					<svg
+						viewBox='0 0 280 200'
+						className='w-56 h-40 sm:w-64 sm:h-48 drop-shadow-lg'>
+						{cubesToRender.map((c) =>
+							render3DIsoCube({
+								gx: c.gx,
+								gy: c.gy,
+								gz: c.gz,
+								size: 20,
+								color: c.color,
+								key: c.key,
+							}),
+						)}
+					</svg>
+				</div>
+
+				{/* Layer Volume Breakdown */}
+				<div className='flex items-center justify-center gap-2 sm:gap-3 flex-wrap mt-3 w-full'>
+					{layers.map((l, idx) => (
+						<div
+							key={idx}
+							className='flex items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-2.5 py-1 shadow-xs'>
+							<div
+								className={`w-3 h-3 rounded-full ${
+									l.color === 'blue' || idx === 0 ? 'bg-blue-500'
+									: l.color === 'amber' || idx === 1 ? 'bg-amber-500'
+									: 'bg-pink-500'
+								}`}
+							/>
+							<span className='text-[10px] sm:text-[11px] font-bold text-slate-800'>
+								{l.label || `L${idx + 1}`}:{' '}
+								<b className='text-indigo-600'>{l.count || l.size * l.size}</b>{' '}
+								cubes
+							</span>
+						</div>
+					))}
+				</div>
+
+				{/* Total Calculation Banner in Solution Mode */}
+				{isSolution && (
+					<div className='mt-2.5 px-3.5 py-1 bg-emerald-500 text-white rounded-xl text-xs font-black shadow-md animate-bounce-short flex items-center gap-1.5'>
+						<span>✨ Total Volume:</span>
+						<span>
+							{layers.map((l) => l.count || l.size * l.size).join(' + ')} ={' '}
+							{totalCubes} Unit Cubes
+						</span>
+					</div>
+				)}
+			</div>
+		);
+	}
+
+	// 3. Shape & Color Sequence Progressions
+	if (type === 'shape-sequence' || type === 'pattern-shapes') {
+		let items =
+			Array.isArray(data.sequence) ? data.sequence
+			: Array.isArray(data.steps) ? data.steps
+			: [];
+
+		if (items.length === 0 && data.raw) {
+			items = extractShapeSequenceTerms(data.raw);
+		}
+
+		if (items.length === 0) {
+			items = ['Triangle (3 sides, white)', 'Square (4 sides, shaded)'];
+		}
+
+		const nextItem = data.nextItem || data.nextVal || '?';
+
+		return (
+			<div className='flex flex-col items-center justify-center p-3 sm:p-4 my-2 bg-gradient-to-br from-indigo-50/90 via-sky-50/80 to-purple-50/90 rounded-2xl border-2 border-indigo-200 shadow-sm max-w-xl w-full animate-in fade-in duration-300'>
+				<div className='flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase text-indigo-800 tracking-wider mb-2.5 bg-indigo-100 px-3 py-0.5 rounded-full border border-indigo-300'>
+					<Shapes className='w-3.5 h-3.5 text-indigo-600' />
+					<span>Geometric Shape & Color Progression</span>
+				</div>
+
+				{/* Geometric Shape Cards Row */}
+				<div className='flex items-center justify-center flex-wrap gap-2 sm:gap-2.5 w-full'>
+					{items.map((item, idx) => (
+						<div
+							key={idx}
+							className='flex items-center gap-1 sm:gap-1.5'>
+							<DynamicShapeCard
+								item={item}
+								index={idx}
+							/>
+							{idx < items.length - 1 && (
+								<span className='text-xs font-black text-indigo-400'>➔</span>
+							)}
+						</div>
+					))}
+
+					<span className='text-xs font-black text-indigo-400'>➔</span>
+
+					{/* Target Next Term Card */}
+					<DynamicShapeCard
+						item={nextItem}
+						index={items.length}
+						isTarget={true}
+						isSolution={isSolution}
+					/>
+				</div>
+			</div>
+		);
+	}
+
 	switch (type) {
 		case 'analogy-map': {
-			const itemA = data.itemA || 'Item A';
-			const itemB = data.itemB || 'Item B';
-			const itemC = data.itemC || 'Item C';
-			const itemD = data.itemD || data.target || '?';
+			const visA = getConceptVisual(data.itemA || 'Concept A');
+			const visB = getConceptVisual(data.itemB || 'Concept B');
+			const visC = getConceptVisual(data.itemC || 'Concept C');
+			const visD = getConceptVisual(data.itemD || data.target || '?');
 
 			return (
-				<div className='flex flex-col items-center justify-center p-3.5 my-2 bg-gradient-to-br from-indigo-50/90 via-purple-50/70 to-pink-50/90 rounded-2xl border-2 border-indigo-100 shadow-sm max-w-lg w-full animate-in fade-in duration-300'>
-					{/* Top pair: A -> B */}
-					<div className='flex items-center justify-center gap-2 sm:gap-3 w-full mb-1.5'>
-						<div className='px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white border border-indigo-200 text-indigo-950 font-extrabold text-xs sm:text-sm shadow-sm text-center max-w-[140px] truncate'>
-							{itemA}
+				<div className='flex flex-col items-center justify-center p-3 sm:p-4 my-2 bg-gradient-to-br from-[#1A1D54]/10 via-[#312B63]/10 to-[#141846]/10 rounded-2xl border-2 border-indigo-200/90 shadow-sm max-w-xl w-full animate-in fade-in duration-300'>
+					<div className='flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase text-indigo-700 tracking-wider mb-2.5 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200/80'>
+						<Link2 className='w-3.5 h-3.5 text-indigo-600' />
+						<span>Concept Relationship Analogy</span>
+					</div>
+
+					{/* Pair 1 (Given Relationship) */}
+					<div className='w-full grid grid-cols-11 items-center gap-1.5 sm:gap-2 mb-2'>
+						<div className='col-span-5 bg-white border-2 border-indigo-300/80 rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5 sm:gap-3 transition-transform hover:scale-[1.02]'>
+							<div className='w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-xl sm:text-2xl shadow-inner flex-shrink-0'>
+								{visA.icon}
+							</div>
+							<div className='flex-1 min-w-0'>
+								<span className='text-[10px] font-bold text-indigo-500 uppercase block tracking-wider'>
+									Source
+								</span>
+								<h4 className='text-xs sm:text-sm font-black text-slate-900 leading-snug break-words'>
+									{visA.label || 'Concept A'}
+								</h4>
+							</div>
 						</div>
-						<div className='flex items-center text-indigo-600 font-black text-sm'>
-							➔
+
+						<div className='col-span-1 flex items-center justify-center'>
+							<div className='w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm'>
+								<ArrowRight className='w-3.5 h-3.5 stroke-[3]' />
+							</div>
 						</div>
-						<div className='px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-indigo-600 text-white font-extrabold text-xs sm:text-sm shadow-sm text-center max-w-[140px] truncate'>
-							{itemB}
+
+						<div className='col-span-5 bg-gradient-to-tr from-indigo-600 to-purple-700 border-2 border-indigo-400 text-white rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5 sm:gap-3 transition-transform hover:scale-[1.02]'>
+							<div className='w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl sm:text-2xl shadow-inner flex-shrink-0'>
+								{visB.icon}
+							</div>
+							<div className='flex-1 min-w-0'>
+								<span className='text-[10px] font-bold text-indigo-200 uppercase block tracking-wider'>
+									Relates to
+								</span>
+								<h4 className='text-xs sm:text-sm font-black text-white leading-snug break-words'>
+									{visB.label || 'Concept B'}
+								</h4>
+							</div>
 						</div>
 					</div>
 
-					{/* Linking text */}
-					<div className='flex items-center gap-2 text-[10px] font-black uppercase text-purple-600 tracking-widest my-1'>
-						<span>:: as ::</span>
+					{/* Center Parallel Divider */}
+					<div className='flex items-center gap-3 w-full my-1'>
+						<div className='flex-1 h-[2px] bg-gradient-to-r from-transparent via-purple-300 to-transparent' />
+						<span className='text-[10px] font-black uppercase text-purple-700 bg-purple-100/90 px-3 py-0.5 rounded-full border border-purple-300/80 tracking-widest shadow-xs'>
+							✨ in the same way as ✨
+						</span>
+						<div className='flex-1 h-[2px] bg-gradient-to-r from-transparent via-purple-300 to-transparent' />
 					</div>
 
-					{/* Bottom pair: C -> ? (or Solution) */}
-					<div className='flex items-center justify-center gap-2 sm:gap-3 w-full mt-1.5'>
-						<div className='px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white border border-pink-200 text-pink-950 font-extrabold text-xs sm:text-sm shadow-sm text-center max-w-[140px] truncate'>
-							{itemC}
+					{/* Pair 2 (Target Relationship) */}
+					<div className='w-full grid grid-cols-11 items-center gap-1.5 sm:gap-2 mt-2'>
+						<div className='col-span-5 bg-white border-2 border-pink-300/80 rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5 sm:gap-3 transition-transform hover:scale-[1.02]'>
+							<div className='w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-500 flex items-center justify-center text-xl sm:text-2xl shadow-inner flex-shrink-0'>
+								{visC.icon}
+							</div>
+							<div className='flex-1 min-w-0'>
+								<span className='text-[10px] font-bold text-pink-500 uppercase block tracking-wider'>
+									Target
+								</span>
+								<h4 className='text-xs sm:text-sm font-black text-slate-900 leading-snug break-words'>
+									{visC.label || 'Concept C'}
+								</h4>
+							</div>
 						</div>
-						<div className='flex items-center text-pink-600 font-black text-sm'>
-							➔
+
+						<div className='col-span-1 flex items-center justify-center'>
+							<div className='w-6 h-6 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 shadow-sm'>
+								<ArrowRight className='w-3.5 h-3.5 stroke-[3]' />
+							</div>
 						</div>
+
 						<div
-							className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl font-extrabold text-xs sm:text-sm shadow-md transition-all text-center max-w-[140px] truncate ${
+							className={`col-span-5 rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5 sm:gap-3 transition-all ${
 								isSolution ?
-									'bg-emerald-500 text-white ring-2 ring-emerald-300 animate-bounce'
-								:	'bg-white border-2 border-dashed border-purple-400 text-purple-600'
+									'bg-gradient-to-tr from-emerald-600 to-teal-600 border-2 border-emerald-400 text-white ring-2 ring-emerald-300 animate-bounce-short'
+								:	'bg-gradient-to-tr from-pink-50 to-purple-50 border-2 border-dashed border-pink-400 text-pink-900'
 							}`}>
-							{isSolution ? itemD : '?'}
+							<div
+								className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl shadow-inner flex-shrink-0 ${
+									isSolution ? 'bg-white/20' : 'bg-pink-200 text-pink-700'
+								}`}>
+								{isSolution ? visD.icon : '❓'}
+							</div>
+							<div className='flex-1 min-w-0'>
+								<span
+									className={`text-[10px] font-bold uppercase block tracking-wider ${
+										isSolution ? 'text-emerald-100' : 'text-pink-500'
+									}`}>
+									{isSolution ? 'Correct Solution' : 'What belongs here?'}
+								</span>
+								<h4
+									className={`text-xs sm:text-sm font-black leading-snug break-words ${
+										isSolution ? 'text-white' : 'text-pink-800'
+									}`}>
+									{isSolution ?
+										visD.label || 'Answer'
+									:	'Choose option on right ➔'}
+								</h4>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -114,122 +918,147 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 		}
 
 		case 'cause-effect': {
-			const cause = data.cause || 'Cause / Action';
+			const visCause = getConceptVisual(data.cause || 'Initial Event');
+			const visEffect = getConceptVisual(data.effect || 'Outcome');
 			const action = data.action || 'leads to';
-			const effect = data.effect || '?';
 
 			return (
-				<div className='flex items-center justify-center flex-wrap gap-2 sm:gap-3 p-3.5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-200 shadow-sm my-2 max-w-lg w-full animate-in fade-in duration-300'>
-					<div className='px-3.5 py-2.5 rounded-xl bg-white border border-amber-300 text-amber-950 font-extrabold text-xs sm:text-sm shadow-sm max-w-[150px] text-center truncate'>
-						{cause}
+				<div className='flex flex-col items-center justify-center p-3.5 sm:p-4 my-2 bg-gradient-to-r from-amber-50/90 via-orange-50/80 to-yellow-50/90 rounded-2xl border-2 border-amber-200 shadow-sm max-w-xl w-full animate-in fade-in duration-300'>
+					<div className='flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase text-amber-800 tracking-wider mb-2.5 bg-amber-100 px-3 py-0.5 rounded-full border border-amber-300'>
+						<Zap className='w-3.5 h-3.5 text-amber-600' />
+						<span>Process & Cause-and-Effect Chain</span>
 					</div>
-					<div className='flex items-center gap-1 text-orange-500 font-black text-xs'>
-						<span>➔ {action} ➔</span>
-					</div>
-					<div
-						className={`px-3.5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm shadow-md transition-all max-w-[150px] text-center truncate ${
-							isSolution ?
-								'bg-emerald-500 text-white ring-2 ring-emerald-300 animate-bounce'
-							:	'bg-white border-2 border-dashed border-orange-400 text-orange-600'
-						}`}>
-						{isSolution ? effect : '?'}
+
+					<div className='w-full flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3'>
+						<div className='flex-1 w-full bg-white border-2 border-amber-300 rounded-2xl p-3 shadow-md flex items-center gap-3'>
+							<div className='w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-2xl shadow-inner flex-shrink-0'>
+								{visCause.icon}
+							</div>
+							<div className='flex-1 min-w-0'>
+								<span className='text-[10px] font-bold text-amber-600 uppercase block tracking-wider'>
+									Initial Action / Setup
+								</span>
+								<h4 className='text-xs sm:text-sm font-black text-slate-900 break-words'>
+									{visCause.label || 'Setup'}
+								</h4>
+							</div>
+						</div>
+
+						<div className='flex items-center gap-1 px-3 py-1 rounded-xl bg-amber-100 border border-amber-300 text-amber-900 font-extrabold text-[11px] shadow-sm flex-shrink-0'>
+							<span>➔ {action} ➔</span>
+						</div>
+
+						<div
+							className={`flex-1 w-full rounded-2xl p-3 shadow-md flex items-center gap-3 transition-all ${
+								isSolution ?
+									'bg-gradient-to-tr from-emerald-600 to-teal-600 border-2 border-emerald-400 text-white ring-2 ring-emerald-300 animate-bounce-short'
+								:	'bg-white border-2 border-dashed border-orange-400 text-orange-950'
+							}`}>
+							<div
+								className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl shadow-inner flex-shrink-0 ${
+									isSolution ? 'bg-white/20' : 'bg-orange-100 text-orange-600'
+								}`}>
+								{isSolution ? visEffect.icon : '❓'}
+							</div>
+							<div className='flex-1 min-w-0'>
+								<span
+									className={`text-[10px] font-bold uppercase block tracking-wider ${
+										isSolution ? 'text-emerald-100' : 'text-orange-500'
+									}`}>
+									{isSolution ? 'Resulting Phenomenon' : 'Result / Phenomenon'}
+								</span>
+								<h4
+									className={`text-xs sm:text-sm font-black break-words ${
+										isSolution ? 'text-white' : 'text-orange-900'
+									}`}>
+									{isSolution ? visEffect.label || 'Outcome' : 'What happens?'}
+								</h4>
+							</div>
+						</div>
 					</div>
 				</div>
 			);
 		}
 
 		case 'sequence-ladder': {
-			const steps = Array.isArray(data.steps) ? data.steps : [2, 4, 6, 8];
+			const rawSteps = Array.isArray(data.steps) ? data.steps : [];
 			const nextVal = data.nextVal || '?';
 			const rule = data.rule || '';
 
 			return (
-				<div className='flex flex-col items-center justify-center p-3.5 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-2xl border-2 border-cyan-200 shadow-sm my-2 max-w-lg w-full animate-in fade-in duration-300'>
-					<div className='flex items-center justify-center flex-wrap gap-1.5 sm:gap-2'>
-						{steps.map((step, idx) => (
-							<div key={idx} className='flex items-center gap-1 sm:gap-1.5'>
-								<div className='w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-cyan-600 text-white font-black text-xs sm:text-sm flex items-center justify-center shadow-md'>
+				<div className='flex flex-col items-center justify-center p-3.5 bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50 rounded-2xl border-2 border-cyan-200 shadow-sm my-2 max-w-xl w-full animate-in fade-in duration-300'>
+					<div className='text-[10px] sm:text-xs font-black uppercase text-cyan-800 tracking-wider mb-2.5 bg-cyan-100 px-3 py-0.5 rounded-full border border-cyan-300'>
+						🔢 Number & Sequence Rule Progression
+					</div>
+
+					<div className='flex items-center justify-center flex-wrap gap-2 sm:gap-2.5 w-full'>
+						{rawSteps.map((step, idx) => (
+							<div
+								key={idx}
+								className='flex items-center gap-1.5'>
+								<div className='min-w-[48px] px-3.5 py-2 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-600 text-white font-black text-sm sm:text-base flex items-center justify-center shadow-md border border-cyan-400'>
 									{step}
 								</div>
-								{idx < steps.length - 1 && (
-									<span className='text-xs font-black text-cyan-400'>➔</span>
+								{idx < rawSteps.length - 1 && (
+									<span className='text-xs font-black text-cyan-500'>➔</span>
 								)}
 							</div>
 						))}
-						<span className='text-xs font-black text-cyan-400'>➔</span>
+						<span className='text-xs font-black text-cyan-500'>➔</span>
 						<div
-							className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center shadow-md transition-all ${
+							className={`min-w-[48px] px-3.5 py-2 rounded-2xl font-black text-sm sm:text-base flex items-center justify-center shadow-md transition-all ${
 								isSolution ?
-									'bg-emerald-500 text-white ring-2 ring-emerald-300 animate-bounce'
-								:	'bg-white border-2 border-dashed border-cyan-500 text-cyan-600'
+									'bg-gradient-to-tr from-emerald-500 to-teal-600 text-white ring-2 ring-emerald-300 animate-bounce-short border border-emerald-400'
+								:	'bg-white border-2 border-dashed border-cyan-500 text-cyan-700'
 							}`}>
 							{isSolution ? nextVal : '?'}
 						</div>
 					</div>
+
 					{rule && (
-						<span className='text-[10px] font-bold text-slate-500 mt-2'>
-							Pattern Rule: {rule}
-						</span>
+						<div className='mt-2.5 px-3 py-1 bg-white/80 rounded-xl border border-cyan-200 text-[11px] font-bold text-cyan-900'>
+							Rule: {rule}
+						</div>
 					)}
 				</div>
 			);
 		}
 
-		case 'classification-venn': {
-			const category = data.category || 'Category';
-			const items = Array.isArray(data.items) ? data.items : ['Item 1', 'Item 2'];
-			const oddItem = data.oddItem || 'Odd Item';
-
-			return (
-				<div className='flex flex-col items-center justify-center p-3.5 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-200 shadow-sm my-2 max-w-lg w-full animate-in fade-in duration-300'>
-					<div className='text-[11px] font-black uppercase text-emerald-800 tracking-wider mb-2'>
-						📂 Category: {category}
-					</div>
-					<div className='flex items-center justify-center flex-wrap gap-2'>
-						{items.map((it, idx) => (
-							<span
-								key={idx}
-								className='px-3 py-1.5 rounded-lg bg-white border border-emerald-300 text-emerald-900 font-bold text-xs shadow-sm'>
-								{it}
-							</span>
-						))}
-						{isSolution && (
-							<span className='px-3 py-1.5 rounded-lg bg-rose-500 text-white font-black text-xs shadow-md ring-2 ring-rose-300 animate-bounce'>
-								🚫 Odd: {oddItem}
-							</span>
-						)}
-					</div>
-				</div>
-			);
-		}
-
 		case 'matrix-grid': {
-			const grid = data.grid || [
-				['🔴', '🔵'],
-				['🔵', '?'],
+			const rawGrid = data.grid || [
+				['Square (Gray)', 'Circle (White)', 'Triangle (White)'],
+				['Square (White)', 'Circle (Gray)', 'Triangle (White)'],
+				['Square (Gray)', 'Circle (White)', '?'],
 			];
-			const answer = data.answer || '🔴';
+			const answer = data.answer || data.correctAnswer || 'Triangle (Gray)';
 
 			return (
-				<div className='flex flex-col items-center justify-center p-3 bg-purple-50 rounded-2xl border-2 border-purple-200 my-2'>
-					<div className='grid grid-cols-2 gap-2 bg-white p-2.5 rounded-xl border border-purple-200 shadow-inner'>
-						{grid.flat().map((cell, idx) => {
-							const isTarget = cell === '?' || idx === grid.flat().length - 1;
+				<div className='flex flex-col items-center justify-center p-3 sm:p-4 my-2 bg-gradient-to-br from-purple-50 via-indigo-50 to-slate-50 rounded-2xl border-2 border-purple-200 shadow-sm max-w-xl w-full animate-in fade-in duration-300'>
+					<div className='flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase text-purple-800 tracking-wider mb-2.5 bg-purple-100 px-3 py-0.5 rounded-full border border-purple-300'>
+						<Shapes className='w-3.5 h-3.5 text-purple-600' />
+						<span>3x3 Matrix Grid Shape & Shading Progression</span>
+					</div>
+
+					<div className='grid grid-cols-3 gap-2.5 bg-white p-3 rounded-2xl border-2 border-purple-200 shadow-md'>
+						{rawGrid.flat().map((cell, idx) => {
+							const isTarget =
+								cell === '?' || idx === rawGrid.flat().length - 1;
+
 							return (
 								<div
 									key={idx}
-									className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-xl transition-all shadow-sm ${
+									className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all shadow-xs min-w-[70px] sm:min-w-[80px] min-h-[70px] ${
 										isTarget ?
 											isSolution ?
-												'bg-emerald-500 text-white ring-2 ring-emerald-300 animate-bounce'
-											:	'bg-purple-100 border-2 border-dashed border-purple-400 text-purple-600'
-										:	'bg-slate-50 border border-slate-200 text-slate-800'
+												'bg-gradient-to-tr from-emerald-50 to-teal-50 border-2 border-emerald-500 ring-2 ring-emerald-300 shadow-md animate-bounce-short'
+											:	'bg-purple-50 border-2 border-dashed border-purple-400 text-purple-600'
+										:	'bg-slate-50 border border-slate-200 hover:scale-105'
 									}`}>
-									{isTarget ?
-										isSolution ?
-											answer
-										:	'?'
-									:	cell}
+									{isTarget && !isSolution ?
+										<div className='w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 font-black text-xl'>
+											❓
+										</div>
+									:	<DynamicShapeCard item={isTarget ? answer : cell} />}
 								</div>
 							);
 						})}
@@ -239,7 +1068,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 		}
 
 		case 'grid-tiles': {
-			// Configurable grid puzzle (default 6x6 with 3x3 hole in center)
 			const rows = data.rows || 6;
 			const cols = data.cols || 6;
 			const holeRow = data.holeRow ?? 1;
@@ -261,7 +1089,9 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 
 			return (
 				<div className='flex flex-col items-center justify-center p-3'>
-					<svg viewBox='0 0 240 240' className='w-48 h-48 sm:w-56 sm:h-56'>
+					<svg
+						viewBox='0 0 240 240'
+						className='w-48 h-48 sm:w-56 sm:h-56'>
 						<rect
 							x={startX}
 							y={startY}
@@ -362,31 +1192,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 			);
 		}
 
-		case 'pattern-shapes': {
-			const items = data.sequence || ['●', '▲', '■', '●', '▲'];
-			const nextItem = data.nextItem || '■';
-
-			return (
-				<div className='flex items-center justify-center flex-wrap gap-2.5 sm:gap-3.5 p-4 bg-purple-50 rounded-2xl border-2 border-purple-100 my-2'>
-					{items.map((item, idx) => (
-						<div
-							key={idx}
-							className='w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-indigo-600 text-white font-bold text-2xl flex items-center justify-center shadow-md transform hover:scale-105 transition-transform'>
-							{item}
-						</div>
-					))}
-					<div
-						className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center font-bold text-2xl shadow-inner transition-all ${
-							isSolution ?
-								'bg-rose-500 text-white animate-bounce'
-							:	'bg-white border-2 border-dashed border-purple-400 text-purple-600'
-						}`}>
-						{isSolution ? nextItem : '?'}
-					</div>
-				</div>
-			);
-		}
-
 		case 'apple-counting': {
 			const count = Number(data.count) > 0 ? Number(data.count) : 4;
 			const emoji = data.emoji || '🍎';
@@ -419,8 +1224,13 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 
 			return (
 				<div className='flex flex-col items-center justify-center p-3'>
-					<svg viewBox='0 0 260 160' className='w-56 h-36'>
-						<polygon points='130,110 110,150 150,150' fill='#64748B' />
+					<svg
+						viewBox='0 0 260 160'
+						className='w-56 h-36'>
+						<polygon
+							points='130,110 110,150 150,150'
+							fill='#64748B'
+						/>
 						<line
 							x1='30'
 							y1={isRightHeavy ? 85 : 125}
@@ -480,146 +1290,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 							textAnchor='middle'>
 							{rightItem}
 						</text>
-					</svg>
-				</div>
-			);
-		}
-
-		case 'block-tower': {
-			const bottom = data.bottom || 3;
-			const middle = data.middle || 2;
-			const top = data.top || 1;
-
-			return (
-				<div className='flex flex-col items-center justify-center p-3'>
-					<svg viewBox='0 0 200 160' className='w-48 h-40'>
-						{Array.from({ length: bottom }).map((_, i) => {
-							const x = 100 - (bottom * 40) / 2 + i * 40 + 2.5;
-							return (
-								<rect
-									key={`b-${i}`}
-									x={x}
-									y='110'
-									width='35'
-									height='35'
-									fill='#3B82F6'
-									stroke='#1D4ED8'
-									strokeWidth='2'
-									rx='4'
-								/>
-							);
-						})}
-						{Array.from({ length: middle }).map((_, i) => {
-							const x = 100 - (middle * 40) / 2 + i * 40 + 2.5;
-							return (
-								<rect
-									key={`m-${i}`}
-									x={x}
-									y='70'
-									width='35'
-									height='35'
-									fill='#F59E0B'
-									stroke='#B45309'
-									strokeWidth='2'
-									rx='4'
-								/>
-							);
-						})}
-						{Array.from({ length: top }).map((_, i) => {
-							const x = 100 - (top * 40) / 2 + i * 40 + 2.5;
-							return (
-								<rect
-									key={`t-${i}`}
-									x={x}
-									y='30'
-									width='35'
-									height='35'
-									fill='#EC4899'
-									stroke='#BE185D'
-									strokeWidth='2'
-									rx='4'
-								/>
-							);
-						})}
-						{isSolution && (
-							<g
-								fill='#FFFFFF'
-								fontWeight='bold'
-								fontSize='16'
-								textAnchor='middle'>
-								{Array.from({ length: bottom }).map((_, i) => (
-									<text
-										key={`bn-${i}`}
-										x={100 - (bottom * 40) / 2 + i * 40 + 20}
-										y='133'>
-										{i + 1}
-									</text>
-								))}
-								{Array.from({ length: middle }).map((_, i) => (
-									<text
-										key={`mn-${i}`}
-										x={100 - (middle * 40) / 2 + i * 40 + 20}
-										y='93'>
-										{bottom + i + 1}
-									</text>
-								))}
-								{Array.from({ length: top }).map((_, i) => (
-									<text
-										key={`tn-${i}`}
-										x={100 - (top * 40) / 2 + i * 40 + 20}
-										y='53'>
-										{bottom + middle + i + 1}
-									</text>
-								))}
-							</g>
-						)}
-					</svg>
-				</div>
-			);
-		}
-
-		case 'butterfly-symmetry': {
-			return (
-				<div className='flex flex-col items-center justify-center p-3'>
-					<svg viewBox='0 0 200 160' className='w-52 h-40'>
-						<line
-							x1='100'
-							y1='20'
-							x2='100'
-							y2='140'
-							stroke='#CBD5E1'
-							strokeWidth='2'
-							strokeDasharray='4 4'
-						/>
-						<ellipse cx='100' cy='80' rx='6' ry='30' fill='#475569' />
-						<path
-							d='M 96 60 C 50 10 20 40 50 80 C 20 110 50 140 96 100 Z'
-							fill='#8B5CF6'
-							stroke='#6D28D9'
-							strokeWidth='2'
-						/>
-						<circle cx='60' cy='60' r='8' fill='#FDE047' />
-						<circle cx='65' cy='100' r='6' fill='#F43F5E' />
-
-						{isSolution ?
-							<g>
-								<path
-									d='M 104 60 C 150 10 180 40 150 80 C 180 110 150 140 104 100 Z'
-									fill='#8B5CF6'
-									stroke='#6D28D9'
-									strokeWidth='2'
-								/>
-								<circle cx='140' cy='60' r='8' fill='#FDE047' />
-								<circle cx='135' cy='100' r='6' fill='#F43F5E' />
-							</g>
-						:	<path
-								d='M 104 60 C 150 10 180 40 150 80 C 180 110 150 140 104 100 Z'
-								fill='none'
-								stroke='#94A3B8'
-								strokeWidth='2'
-								strokeDasharray='4 4'
-							/>
-						}
 					</svg>
 				</div>
 			);

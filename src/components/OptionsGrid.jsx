@@ -1,5 +1,11 @@
 import { Check, X as XIcon } from 'lucide-react';
 import { playButtonPop } from '../utils/audioSynthesis';
+import {
+	DynamicSvgShape,
+	hasShapeOrVisualConcept,
+	parseDynamicShape,
+} from '../utils/shapeGenerator';
+import { getConceptVisual } from './VisualDiagrams';
 
 export default function OptionsGrid({
 	options,
@@ -10,54 +16,72 @@ export default function OptionsGrid({
 	soundEnabled,
 }) {
 	return (
-		<div className='grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 flex-1 h-full w-full'>
-			{options.map((opt) => {
+		<div className='grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4.5 p-1 flex-1 h-full w-full'>
+			{options.map((opt, idx) => {
 				const isSelected = selectedOptionId === opt.id;
 				const isCorrect = opt.id === correctAnswerId;
+				const text = String(opt.text || '');
 
+				const isShapeOption = hasShapeOrVisualConcept(text);
+				const parsedShape = isShapeOption ? parseDynamicShape(text) : null;
+				const conceptVisual = !parsedShape ? getConceptVisual(text) : null;
+
+				// Distinct Card Background & Ring State
 				let cardStyle =
-					'bg-white text-slate-800 border-2 border-transparent hover:border-indigo-300';
-				let badgeStyle = 'bg-[#302B63] text-white';
+					'bg-white text-slate-800 border-2 border-slate-200 hover:border-indigo-400 shadow-md hover:shadow-lg hover:scale-[1.01]';
+				let badgeStyle = 'bg-[#2A2368] text-white';
+				let contrastBoxStyle =
+					'bg-slate-100/90 border border-slate-300 shadow-inner';
 
 				if (!isSubmitted) {
 					if (isSelected) {
-						// Selected (active before submit): Vibrant Orange
+						// Selected State: High-contrast Orange gradient with dark offset ring
 						cardStyle =
-							'bg-[#FF9500] text-white shadow-xl scale-[1.01] border-2 border-white ring-4 ring-orange-400/40';
-						badgeStyle = 'bg-[#2A1D54] text-white';
+							'bg-gradient-to-tr from-[#FF9500] to-[#FF6B00] text-white shadow-2xl scale-[1.02] border-2 border-white ring-4 ring-orange-400/80 ring-offset-2 ring-offset-[#0d1033]';
+						badgeStyle = 'bg-[#1F174B] text-white ring-2 ring-white/60';
+						// Contrast pedestal for shape on orange card
+						contrastBoxStyle =
+							'bg-white/95 border-2 border-white shadow-md text-slate-900';
 					}
 				} else {
-					// Submitted states
+					// Submitted States
 					if (isCorrect) {
-						// Correct Answer: Bright Emerald Green
+						// Correct Answer: Vibrant Emerald Green
 						cardStyle =
-							'bg-[#00D166] text-white shadow-xl scale-[1.01] border-2 border-white ring-4 ring-emerald-400/40';
-						badgeStyle = 'bg-[#0F5132] text-white';
+							'bg-gradient-to-tr from-[#00D166] to-[#059669] text-white shadow-2xl scale-[1.02] border-2 border-white ring-4 ring-emerald-400/80 ring-offset-2 ring-offset-[#0d1033]';
+						badgeStyle = 'bg-[#093D22] text-white ring-2 ring-white/60';
+						contrastBoxStyle =
+							'bg-white/95 border-2 border-white shadow-md text-slate-900';
 					} else if (isSelected && !isCorrect) {
-						// User selected wrong answer: Coral Red
+						// Selected Wrong Answer: Coral Red
 						cardStyle =
-							'bg-[#FF435A] text-white shadow-xl scale-[1.01] border-2 border-white ring-4 ring-rose-400/40';
-						badgeStyle = 'bg-[#842029] text-white';
+							'bg-gradient-to-tr from-[#FF435A] to-[#DC2626] text-white shadow-2xl scale-[1.02] border-2 border-white ring-4 ring-rose-400/80 ring-offset-2 ring-offset-[#0d1033]';
+						badgeStyle = 'bg-[#5C0F17] text-white ring-2 ring-white/60';
+						contrastBoxStyle =
+							'bg-white/95 border-2 border-white shadow-md text-slate-900';
 					} else {
-						// Other non-selected wrong answers: Dimmed
+						// Other unselected answers: Dimmed
 						cardStyle =
-							'bg-white/90 text-slate-400 opacity-60 pointer-events-none';
-						badgeStyle = 'bg-slate-300 text-slate-600';
+							'bg-white/80 text-slate-400 opacity-55 pointer-events-none border-slate-200';
+						badgeStyle = 'bg-slate-200 text-slate-500';
+						contrastBoxStyle =
+							'bg-slate-100 border border-slate-200 opacity-60';
 					}
 				}
 
 				return (
 					<button
 						key={opt.id}
+						type='button'
 						disabled={isSubmitted}
 						onClick={() => {
 							playButtonPop(soundEnabled);
 							onSelectOption(opt.id);
 						}}
-						className={`option-card-hover rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex items-center justify-start gap-4 transition-all duration-200 text-left flex-1 h-full min-h-[90px] sm:min-h-[120px] cursor-pointer ${cardStyle}`}>
+						className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 flex items-center justify-start gap-3 sm:gap-3.5 transition-all duration-200 text-left flex-1 h-full min-h-[92px] sm:min-h-[110px] cursor-pointer relative overflow-hidden ${cardStyle}`}>
 						{/* Letter Badge (A, B, C, D) */}
 						<div
-							className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-extrabold text-base sm:text-lg flex-shrink-0 shadow-sm ${badgeStyle}`}>
+							className={`w-9 h-9 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center font-black text-sm sm:text-base flex-shrink-0 shadow-md ${badgeStyle}`}>
 							{isSubmitted && isCorrect ?
 								<Check className='w-5 h-5 sm:w-6 sm:h-6 text-white stroke-[3]' />
 							: isSubmitted && isSelected && !isCorrect ?
@@ -65,10 +89,32 @@ export default function OptionsGrid({
 							:	opt.id}
 						</div>
 
+						{/* Dynamic Visual Shape or Concept Icon */}
+						{parsedShape ?
+							<div
+								className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all ${contrastBoxStyle}`}>
+								<DynamicSvgShape
+									parsed={parsedShape}
+									size={52}
+									patternId={`opt-hatch-${opt.id}-${idx}`}
+								/>
+							</div>
+						: conceptVisual?.icon && conceptVisual.icon !== '💡' ?
+							<div
+								className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 transition-all ${contrastBoxStyle}`}>
+								{conceptVisual.icon}
+							</div>
+						:	null}
+
 						{/* Option Content Text */}
-						<span className='text-base sm:text-xl font-bold tracking-wide flex-1'>
-							{opt.text}
-						</span>
+						<div className='flex flex-col justify-center flex-1 min-w-0'>
+							<span
+								className={`text-sm sm:text-base md:text-lg font-black tracking-tight leading-snug break-words ${
+									isSelected && !isSubmitted ? 'text-white' : ''
+								}`}>
+								{text}
+							</span>
+						</div>
 					</button>
 				);
 			})}
