@@ -209,8 +209,42 @@ export default function App() {
 		questions.length,
 	]);
 
+	// Pending Skill target to auto-launch after setup
+	const [pendingSkill, setPendingSkill] = useState(null);
+
 	// Current Question Object
 	const currentQuestion = questions[currentIndex] || {};
+
+	// Start Thinksheet Session for a given skill
+	const startSkillSession = async (skill, age = kidAge) => {
+		setSelectedSkill(skill);
+		setIsLoadingSheet(true);
+		setAiError(null);
+		setCurrentScreen('thinksheet');
+		setCurrentIndex(0);
+		setSelectedOptionId(null);
+		setIsSubmitted(false);
+		setIsTimedOut(false);
+		setAutoAdvanceCountdown(null);
+		setQuestionTimeRemaining(timerConfig.secondsPerQuestion || 90);
+		setHistory([]);
+		setTimerSeconds(0);
+		setIsCompleted(false);
+
+		try {
+			const freshQuestions = await getFreshThinksheetSession(skill, 1, age);
+			setQuestions(freshQuestions);
+		} catch (err) {
+			console.error('AI Question Generation Failed:', err);
+			if (err.message === 'MISSING_API_KEY') {
+				setAiError('MISSING_KEY');
+			} else {
+				setAiError('API_ERROR');
+			}
+		} finally {
+			setIsLoadingSheet(false);
+		}
+	};
 
 	// Handle saving kid's profile (name, age, mandatory API key, and timer)
 	const handleSaveKidProfile = ({ name, age, timerConfig: newTimerConfig }) => {
@@ -227,6 +261,13 @@ export default function App() {
 		// Trigger prefetching with newly saved key and age
 		prefetchThinksheetSession('Visual', 1, age);
 		prefetchThinksheetSession('Analytical Thinking', 1, age);
+
+		// If user selected a skill before entering their key, auto-launch that skill immediately!
+		if (pendingSkill) {
+			const skillToLaunch = pendingSkill;
+			setPendingSkill(null);
+			startSkillSession(skillToLaunch, age);
+		}
 	};
 
 	// Handle Updating Timer Configuration
@@ -265,37 +306,12 @@ export default function App() {
 	// Start Sheet for a selected skill (100% Real-Time AI Generation)
 	const handleSelectSkill = async (skill) => {
 		if (!getStoredApiKey() || !getStoredKidName()) {
+			setPendingSkill(skill);
 			setIsNameModalOpen(true);
 			return;
 		}
 
-		setSelectedSkill(skill);
-		setIsLoadingSheet(true);
-		setAiError(null);
-		setCurrentScreen('thinksheet');
-		setCurrentIndex(0);
-		setSelectedOptionId(null);
-		setIsSubmitted(false);
-		setIsTimedOut(false);
-		setAutoAdvanceCountdown(null);
-		setQuestionTimeRemaining(timerConfig.secondsPerQuestion || 90);
-		setHistory([]);
-		setTimerSeconds(0);
-		setIsCompleted(false);
-
-		try {
-			const freshQuestions = await getFreshThinksheetSession(skill, 1, kidAge);
-			setQuestions(freshQuestions);
-		} catch (err) {
-			console.error('AI Question Generation Failed:', err);
-			if (err.message === 'MISSING_API_KEY') {
-				setAiError('MISSING_KEY');
-			} else {
-				setAiError('API_ERROR');
-			}
-		} finally {
-			setIsLoadingSheet(false);
-		}
+		startSkillSession(skill, kidAge);
 	};
 
 	// Handle Option Select
@@ -628,7 +644,14 @@ export default function App() {
 														:	'bg-black/30 text-white/90 border-white/20'
 													}`}
 													title={`Time remaining: ${questionTimeRemaining}s`}>
-													⏱️ {Math.floor(questionTimeRemaining / 60).toString().padStart(2, '0')}:{(questionTimeRemaining % 60).toString().padStart(2, '0')}
+													⏱️{' '}
+													{Math.floor(questionTimeRemaining / 60)
+														.toString()
+														.padStart(2, '0')}
+													:
+													{(questionTimeRemaining % 60)
+														.toString()
+														.padStart(2, '0')}
 												</span>
 											)}
 										</button>

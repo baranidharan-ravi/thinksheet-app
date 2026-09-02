@@ -25,6 +25,64 @@ export function setStoredApiKey(key) {
 }
 
 /**
+ * Validates a Gemini API key by making a lightweight test ping to the API
+ * Returns { valid: true, cleanedKey } or { valid: false, message }
+ */
+export async function validateGeminiApiKey(apiKey) {
+  if (!apiKey || typeof apiKey !== 'string' || !apiKey.trim()) {
+    return { valid: false, message: 'Please enter your Google Gemini API Key! 🔑' };
+  }
+
+  const cleanedKey = apiKey.replace(/^["']|["']$/g, '').trim();
+
+  if (cleanedKey.length < 15) {
+    return {
+      valid: false,
+      message: 'Invalid API Key length. Please paste a valid key from Google AI Studio.'
+    };
+  }
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${encodeURIComponent(
+      cleanedKey
+    )}`;
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: 'ping' }] }],
+        generationConfig: { maxOutputTokens: 2 }
+      })
+    });
+
+    if (res.ok) {
+      return { valid: true, cleanedKey };
+    }
+
+    const errJson = await res.json().catch(() => null);
+    let errMsg = errJson?.error?.message;
+
+    if (!errMsg) {
+      if (res.status === 400) {
+        errMsg = 'API key not valid. Please check and re-enter your API key from Google AI Studio.';
+      } else if (res.status === 403) {
+        errMsg = 'Access forbidden for this API key. Ensure Generative Language API is enabled.';
+      } else {
+        errMsg = `API key validation failed (HTTP ${res.status}). Please verify your key.`;
+      }
+    }
+
+    return { valid: false, message: errMsg };
+  } catch (err) {
+    return {
+      valid: false,
+      message: 'Network error connecting to Google Gemini API. Please check your internet connection.'
+    };
+  }
+}
+
+/**
  * Ensures diagram data mathematically and visually matches the correct answer
  */
 function synchronizeDiagramData(diagramType, rawData = {}, questionText = '', correctText = '') {

@@ -1,18 +1,19 @@
 # 🚀 Skill Thinksheet - 100% AI-Powered Cosmic Learning for Early Explorers
 
-An engaging, visual-first React.js educational platform designed for early childhood learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time AI question generation via Google Gemini API (Mandatory API Key)**, customizable per-question countdown timers, streamlined exit workflows, and strict age-calibrated difficulty with zero offline/hardcoded questions.
+An engaging, visual-first React.js educational platform designed for early childhood learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time AI question generation via Google Gemini API (Mandatory API Key with Live Validation)**, customizable per-question countdown timers, streamlined exit workflows, and strict age-calibrated difficulty with zero offline/hardcoded questions.
 
 ---
 
 ## ✨ Key Features
 
-### 1. 🪟 Unified Explorer & AI Setup Window
+### 1. 🪟 Unified Explorer & AI Setup Window (with Live Gemini Key Validation)
 - **All-in-One Configuration**: A single, clean setup window combines all settings on startup:
   1. **Child's Name** *(Required)*: Personalized explorer name.
   2. **Child's Age** *(Required)*: Quick age selector pills (`3`–`8`) + custom +/- stepper supporting ages `2` to `14`.
-  3. **Google Gemini API Key** *(Mandatory 🔑)*: Features an **Eye (`👁️`) visibility toggle** to easily show or mask your API key, with a direct link to get a free key from Google AI Studio.
+  3. **Google Gemini API Key** *(Mandatory 🔑 with Live Validation)*: Features an **Eye (`👁️`) visibility toggle** to easily show or mask your API key, with a direct link to get a free key from Google AI Studio.
   4. **Question Timer Challenge** *(Optional ⏱️)*: Toggle ON/OFF, select preset limits (`45s`, `60s`, `90s`, `2m`, `3m`), or set a custom duration.
-- **Easy Re-configuration**: Click the profile badge (`👋 Leo (Age 5)`) or the **`Setup & Key ⚙️`** button in the dashboard anytime to edit all settings in one place.
+- **Live Verification on Save**: When clicking **"Launch Thinksheet 🚀"**, the app makes an instant test ping to Google Gemini API. If the key is invalid or expired, a clear red error is shown and the dialog stays open until a valid key is provided.
+- **Skill Selection Auto-Launch**: If a user clicks a skill without having entered an API key, the setup dialog opens, validates the key on save, and automatically launches the selected skill questions seamlessly.
 
 ### 2. 🤖 100% Real-Time AI Generation (Mandatory Gemini API Key)
 - **Zero Offline / Hardcoded Questions**: The app synthesizes every single question, analogy, and visual puzzle live on demand via the **Google Gemini REST API** (`gemini-3.5-flash-lite`).
@@ -90,11 +91,11 @@ A Gemini API key is mandatory for generating questions in real time. Follow thes
 
 You can configure your API key using either of the following two methods:
 
-### Option A: Enter in the App Setup Window (Easiest)
+### Option A: Enter in the App Setup Window (Easiest & Validated Live)
 1. Launch the app (`npm run dev`) and open `http://localhost:3000`.
 2. Enter your child's Name, Age, and paste your Gemini API Key in the **Explorer & AI Setup** window.
 3. Click **"Launch Thinksheet 🚀"**.
-4. The key is securely saved in your browser's local storage and used for all subsequent sessions.
+4. The key is verified live with Google Gemini API and securely saved in your browser's local storage for all subsequent sessions.
 
 ### Option B: Configure via `.env` File
 1. In the root directory of the project, create a `.env` file:
@@ -130,7 +131,7 @@ npm run deploy
 ## 🛠️ Tech Stack
 
 - **React 18** (Modern functional components & hooks)
-- **Google Gemini API** (`gemini-3.5-flash-lite` via browser-native REST API)
+- **Google Gemini API** (`gemini-3.5-flash-lite` via browser-native REST API with live key validation)
 - **Vite 6** (Blazing fast HMR and build tool)
 - **Tailwind CSS 3** (Custom space theme palette, animations, and responsive design)
 - **Lucide Icons** (Clean, child-friendly iconography)
