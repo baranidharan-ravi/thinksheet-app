@@ -137,9 +137,10 @@ export default function App() {
 		aiError,
 	]);
 
-	// Live Countdown / Stopwatch Timer Loop
+	// 1. Unlimited Session Stopwatch (when per-question timer is disabled)
 	useEffect(() => {
 		if (
+			timerConfig.enabled ||
 			isCompleted ||
 			isLoadingSheet ||
 			currentScreen !== 'thinksheet' ||
@@ -148,39 +149,75 @@ export default function App() {
 			return;
 		}
 
-		const interval = setInterval(() => {
-			if (!timerConfig.enabled) {
-				// Normal unlimited session timer
-				setTimerSeconds((prev) => prev + 1);
-			} else {
-				// Per-question countdown timer mode
-				if (!isSubmitted && !isTimedOut) {
-					setQuestionTimeRemaining((prev) => {
-						if (prev <= 1) {
-							// Trigger question timeout
-							handleQuestionTimeout();
-							return 0;
-						}
-						return prev - 1;
-					});
-				}
-			}
+		const stopwatchInterval = setInterval(() => {
+			setTimerSeconds((prev) => prev + 1);
 		}, 1000);
 
-		return () => clearInterval(interval);
+		return () => clearInterval(stopwatchInterval);
 	}, [
+		timerConfig.enabled,
 		isCompleted,
 		isLoadingSheet,
 		currentScreen,
 		aiError,
+	]);
+
+	// 2. Per-Question Countdown Timer (when enabled)
+	useEffect(() => {
+		if (
+			!timerConfig.enabled ||
+			isSubmitted ||
+			isTimedOut ||
+			isCompleted ||
+			isLoadingSheet ||
+			currentScreen !== 'thinksheet' ||
+			aiError
+		) {
+			return;
+		}
+
+		const countdownInterval = setInterval(() => {
+			setQuestionTimeRemaining((prev) => Math.max(0, prev - 1));
+		}, 1000);
+
+		return () => clearInterval(countdownInterval);
+	}, [
 		timerConfig.enabled,
 		isSubmitted,
 		isTimedOut,
+		isCompleted,
+		isLoadingSheet,
+		currentScreen,
+		aiError,
 		currentIndex,
-		questions,
 	]);
 
-	// Auto-advance countdown on question submission or timeout
+	// 3. Trigger Question Timeout when countdown reaches 0
+	useEffect(() => {
+		if (
+			timerConfig.enabled &&
+			questionTimeRemaining === 0 &&
+			!isSubmitted &&
+			!isTimedOut &&
+			!isLoadingSheet &&
+			!isCompleted &&
+			currentScreen === 'thinksheet' &&
+			questions.length > 0
+		) {
+			handleQuestionTimeout();
+		}
+	}, [
+		questionTimeRemaining,
+		timerConfig.enabled,
+		isSubmitted,
+		isTimedOut,
+		isLoadingSheet,
+		isCompleted,
+		currentScreen,
+		questions.length,
+	]);
+
+	// 4. Auto-Advance Delay Countdown Loop (after submission or timeout)
 	useEffect(() => {
 		if (
 			!isSubmitted ||
@@ -193,14 +230,9 @@ export default function App() {
 		}
 
 		const advanceInterval = setInterval(() => {
-			setAutoAdvanceCountdown((prev) => {
-				if (prev === null) return null;
-				if (prev <= 1) {
-					handleNext();
-					return null;
-				}
-				return prev - 1;
-			});
+			setAutoAdvanceCountdown((prev) =>
+				prev !== null ? Math.max(0, prev - 1) : null,
+			);
 		}, 1000);
 
 		return () => clearInterval(advanceInterval);
@@ -210,8 +242,19 @@ export default function App() {
 		isCompleted,
 		currentScreen,
 		currentIndex,
-		questions.length,
 	]);
+
+	// 5. Trigger handleNext when Auto-Advance delay reaches 0
+	useEffect(() => {
+		if (
+			isSubmitted &&
+			autoAdvanceCountdown === 0 &&
+			!isCompleted &&
+			currentScreen === 'thinksheet'
+		) {
+			handleNext();
+		}
+	}, [autoAdvanceCountdown, isSubmitted, isCompleted, currentScreen]);
 
 	// Current Question Object
 	const currentQuestion = questions[currentIndex] || {};
