@@ -250,16 +250,44 @@ function shuffleAndFormatOptions(questionObj, selectedSkill) {
 }
 
 /**
+ * Sanitizes and repairs imperfect JSON from LLMs
+ */
+function cleanAndRepairJsonString(rawText) {
+  if (!rawText) return '';
+  let text = rawText.trim();
+
+  // 1. Strip markdown code block wrappers
+  if (text.startsWith('```')) {
+    text = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+  }
+
+  // 2. Fix parenthesized expressions inside arrays:
+  // e.g. [("(-5, 3)"), ("(-3, 5)")] -> ["(-5, 3)", "(-3, 5)"]
+  // e.g. [( "abc" ), ( 'def' )] -> ["abc", "def"]
+  text = text.replace(/\(\s*("[^"\\]*(?:\\.[^"\\]*)*")\s*\)/g, '$1');
+  text = text.replace(/\(\s*('[^'\\]*(?:\\.[^'\\]*)*')\s*\)/g, '$1');
+
+  // 3. Fix Python-style constants
+  text = text
+    .replace(/:\s*True\b/g, ': true')
+    .replace(/:\s*False\b/g, ': false')
+    .replace(/:\s*None\b/g, ': null');
+
+  // 4. Remove trailing commas before closing braces/brackets
+  text = text.replace(/,\s*([\]}])/g, '$1');
+
+  return text;
+}
+
+/**
  * Resilient JSON Parser for Gemini API responses
  */
 function parseGeminiJsonResponse(rawText) {
   if (!rawText) return null;
-  let cleaned = rawText.trim();
 
-  if (cleaned.startsWith('```')) {
-    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
-  }
+  const cleaned = cleanAndRepairJsonString(rawText);
 
+  // Try direct parse on cleaned string
   try {
     const parsed = JSON.parse(cleaned);
     if (Array.isArray(parsed)) return parsed;
@@ -271,15 +299,34 @@ function parseGeminiJsonResponse(rawText) {
       }
     }
   } catch (err) {
+    // If strict JSON.parse fails, try extracting array pattern
     try {
       const match = cleaned.match(/\[\s*\{[\s\S]*\}\s*\]/);
       if (match) {
-        return JSON.parse(match[0]);
+        const repairedMatch = cleanAndRepairJsonString(match[0]);
+        const parsed = JSON.parse(repairedMatch);
+        if (Array.isArray(parsed)) return parsed;
       }
-    } catch {
-      return null;
+    } catch (innerErr) {
+      // Last-ditch: parse individual JSON objects { ... } from the text
+      try {
+        const objectMatches = cleaned.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g);
+        if (objectMatches && objectMatches.length > 0) {
+          const items = [];
+          for (const objStr of objectMatches) {
+            try {
+              const obj = JSON.parse(cleanAndRepairJsonString(objStr));
+              if (obj.question && obj.options) {
+                items.push(obj);
+              }
+            } catch {}
+          }
+          if (items.length > 0) return items;
+        }
+      } catch {}
     }
   }
+
   return null;
 }
 
@@ -359,7 +406,8 @@ ${pedagogy.examples}
 CRITICAL RULES:
 1. The complexity, vocabulary, and concepts MUST match the cognitive level of a ${kidAge}-year-old.
 2. Every question must have 4 clear, plausible multiple-choice options with exactly 1 correct answer.
-3. For ${kidAge >= 11 ? 'Teenagers (Age 11-14)' : `${kidAge}-year-olds`}, ensure the questions are genuinely engaging, mature, and intellectually stimulating.
+3. All multiple-choice options in the "options" array MUST be standard JSON strings e.g. ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]. Do NOT use tuples or parentheses around items like [("...")].
+4. For ${kidAge >= 11 ? 'Teenagers (Age 11-14)' : `${kidAge}-year-olds`}, ensure the questions are genuinely engaging, mature, and intellectually stimulating.
 
 Output a valid JSON Array of ${count} items. Format:
 [
