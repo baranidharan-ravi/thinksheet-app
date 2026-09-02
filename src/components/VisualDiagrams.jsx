@@ -1,9 +1,243 @@
+import React, { useState } from 'react';
+import { Sparkles, Image as ImageIcon } from 'lucide-react';
+
 /**
- * Renders custom SVG graphical puzzles and their solution overlays.
+ * Lazy-loaded visual image component with skeleton placeholder and smooth transitions
+ */
+export function LazyVisualImage({ src, alt, caption = '' }) {
+	const [loaded, setLoaded] = useState(false);
+	const [error, setError] = useState(false);
+
+	if (!src || error) {
+		return (
+			<div className='flex flex-col items-center justify-center p-4 bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl text-slate-400 my-2'>
+				<ImageIcon className='w-6 h-6 text-slate-400 mb-1' />
+				<span className='text-xs font-semibold'>Visual Diagram</span>
+			</div>
+		);
+	}
+
+	return (
+		<div className='relative flex flex-col items-center justify-center my-2 max-w-md w-full'>
+			{/* Skeleton Shimmer while loading */}
+			{!loaded && (
+				<div className='w-full h-40 sm:h-48 bg-slate-100 rounded-2xl animate-pulse flex items-center justify-center border border-slate-200'>
+					<div className='flex items-center gap-2 text-slate-400 text-xs font-bold'>
+						<div className='w-4 h-4 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin' />
+						<span>Loading visual clue...</span>
+					</div>
+				</div>
+			)}
+			<img
+				src={src}
+				alt={alt || 'Question Visual Clue'}
+				loading='lazy'
+				decoding='async'
+				onLoad={() => setLoaded(true)}
+				onError={() => setError(true)}
+				className={`max-h-52 w-auto max-w-full rounded-2xl object-contain shadow-md border-2 border-slate-200 transition-all duration-500 ${
+					loaded ? 'opacity-100 block' : 'opacity-0 hidden'
+				}`}
+			/>
+			{caption && loaded && (
+				<span className='text-[11px] font-bold text-slate-500 mt-1.5 text-center'>
+					{caption}
+				</span>
+			)}
+		</div>
+	);
+}
+
+/**
+ * Renders custom SVG graphical puzzles, analogy cards, sequence ladders, and lazy images.
  * Supports both static presets and dynamic procedural puzzle data.
  */
 export default function VisualDiagram({ type, data = {}, isSolution = false }) {
+	// If direct image URL is passed, render lazy visual image
+	if (type === 'image' || data?.imageUrl || data?.src) {
+		const imgSrc = data?.imageUrl || data?.src || '';
+		return (
+			<LazyVisualImage
+				src={imgSrc}
+				alt={data?.alt || 'Question Diagram'}
+				caption={data?.caption}
+			/>
+		);
+	}
+
 	switch (type) {
+		case 'analogy-map': {
+			const itemA = data.itemA || 'Item A';
+			const itemB = data.itemB || 'Item B';
+			const itemC = data.itemC || 'Item C';
+			const itemD = data.itemD || data.target || '?';
+
+			return (
+				<div className='flex flex-col items-center justify-center p-3.5 my-2 bg-gradient-to-br from-indigo-50/90 via-purple-50/70 to-pink-50/90 rounded-2xl border-2 border-indigo-100 shadow-sm max-w-lg w-full animate-in fade-in duration-300'>
+					{/* Top pair: A -> B */}
+					<div className='flex items-center justify-center gap-2 sm:gap-3 w-full mb-1.5'>
+						<div className='px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white border border-indigo-200 text-indigo-950 font-extrabold text-xs sm:text-sm shadow-sm text-center max-w-[140px] truncate'>
+							{itemA}
+						</div>
+						<div className='flex items-center text-indigo-600 font-black text-sm'>
+							➔
+						</div>
+						<div className='px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-indigo-600 text-white font-extrabold text-xs sm:text-sm shadow-sm text-center max-w-[140px] truncate'>
+							{itemB}
+						</div>
+					</div>
+
+					{/* Linking text */}
+					<div className='flex items-center gap-2 text-[10px] font-black uppercase text-purple-600 tracking-widest my-1'>
+						<span>:: as ::</span>
+					</div>
+
+					{/* Bottom pair: C -> ? (or Solution) */}
+					<div className='flex items-center justify-center gap-2 sm:gap-3 w-full mt-1.5'>
+						<div className='px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white border border-pink-200 text-pink-950 font-extrabold text-xs sm:text-sm shadow-sm text-center max-w-[140px] truncate'>
+							{itemC}
+						</div>
+						<div className='flex items-center text-pink-600 font-black text-sm'>
+							➔
+						</div>
+						<div
+							className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl font-extrabold text-xs sm:text-sm shadow-md transition-all text-center max-w-[140px] truncate ${
+								isSolution ?
+									'bg-emerald-500 text-white ring-2 ring-emerald-300 animate-bounce'
+								:	'bg-white border-2 border-dashed border-purple-400 text-purple-600'
+							}`}>
+							{isSolution ? itemD : '?'}
+						</div>
+					</div>
+				</div>
+			);
+		}
+
+		case 'cause-effect': {
+			const cause = data.cause || 'Cause / Action';
+			const action = data.action || 'leads to';
+			const effect = data.effect || '?';
+
+			return (
+				<div className='flex items-center justify-center flex-wrap gap-2 sm:gap-3 p-3.5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-200 shadow-sm my-2 max-w-lg w-full animate-in fade-in duration-300'>
+					<div className='px-3.5 py-2.5 rounded-xl bg-white border border-amber-300 text-amber-950 font-extrabold text-xs sm:text-sm shadow-sm max-w-[150px] text-center truncate'>
+						{cause}
+					</div>
+					<div className='flex items-center gap-1 text-orange-500 font-black text-xs'>
+						<span>➔ {action} ➔</span>
+					</div>
+					<div
+						className={`px-3.5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm shadow-md transition-all max-w-[150px] text-center truncate ${
+							isSolution ?
+								'bg-emerald-500 text-white ring-2 ring-emerald-300 animate-bounce'
+							:	'bg-white border-2 border-dashed border-orange-400 text-orange-600'
+						}`}>
+						{isSolution ? effect : '?'}
+					</div>
+				</div>
+			);
+		}
+
+		case 'sequence-ladder': {
+			const steps = Array.isArray(data.steps) ? data.steps : [2, 4, 6, 8];
+			const nextVal = data.nextVal || '?';
+			const rule = data.rule || '';
+
+			return (
+				<div className='flex flex-col items-center justify-center p-3.5 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-2xl border-2 border-cyan-200 shadow-sm my-2 max-w-lg w-full animate-in fade-in duration-300'>
+					<div className='flex items-center justify-center flex-wrap gap-1.5 sm:gap-2'>
+						{steps.map((step, idx) => (
+							<div key={idx} className='flex items-center gap-1 sm:gap-1.5'>
+								<div className='w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-cyan-600 text-white font-black text-xs sm:text-sm flex items-center justify-center shadow-md'>
+									{step}
+								</div>
+								{idx < steps.length - 1 && (
+									<span className='text-xs font-black text-cyan-400'>➔</span>
+								)}
+							</div>
+						))}
+						<span className='text-xs font-black text-cyan-400'>➔</span>
+						<div
+							className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center shadow-md transition-all ${
+								isSolution ?
+									'bg-emerald-500 text-white ring-2 ring-emerald-300 animate-bounce'
+								:	'bg-white border-2 border-dashed border-cyan-500 text-cyan-600'
+							}`}>
+							{isSolution ? nextVal : '?'}
+						</div>
+					</div>
+					{rule && (
+						<span className='text-[10px] font-bold text-slate-500 mt-2'>
+							Pattern Rule: {rule}
+						</span>
+					)}
+				</div>
+			);
+		}
+
+		case 'classification-venn': {
+			const category = data.category || 'Category';
+			const items = Array.isArray(data.items) ? data.items : ['Item 1', 'Item 2'];
+			const oddItem = data.oddItem || 'Odd Item';
+
+			return (
+				<div className='flex flex-col items-center justify-center p-3.5 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-200 shadow-sm my-2 max-w-lg w-full animate-in fade-in duration-300'>
+					<div className='text-[11px] font-black uppercase text-emerald-800 tracking-wider mb-2'>
+						📂 Category: {category}
+					</div>
+					<div className='flex items-center justify-center flex-wrap gap-2'>
+						{items.map((it, idx) => (
+							<span
+								key={idx}
+								className='px-3 py-1.5 rounded-lg bg-white border border-emerald-300 text-emerald-900 font-bold text-xs shadow-sm'>
+								{it}
+							</span>
+						))}
+						{isSolution && (
+							<span className='px-3 py-1.5 rounded-lg bg-rose-500 text-white font-black text-xs shadow-md ring-2 ring-rose-300 animate-bounce'>
+								🚫 Odd: {oddItem}
+							</span>
+						)}
+					</div>
+				</div>
+			);
+		}
+
+		case 'matrix-grid': {
+			const grid = data.grid || [
+				['🔴', '🔵'],
+				['🔵', '?'],
+			];
+			const answer = data.answer || '🔴';
+
+			return (
+				<div className='flex flex-col items-center justify-center p-3 bg-purple-50 rounded-2xl border-2 border-purple-200 my-2'>
+					<div className='grid grid-cols-2 gap-2 bg-white p-2.5 rounded-xl border border-purple-200 shadow-inner'>
+						{grid.flat().map((cell, idx) => {
+							const isTarget = cell === '?' || idx === grid.flat().length - 1;
+							return (
+								<div
+									key={idx}
+									className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-xl transition-all shadow-sm ${
+										isTarget ?
+											isSolution ?
+												'bg-emerald-500 text-white ring-2 ring-emerald-300 animate-bounce'
+											:	'bg-purple-100 border-2 border-dashed border-purple-400 text-purple-600'
+										:	'bg-slate-50 border border-slate-200 text-slate-800'
+									}`}>
+									{isTarget ?
+										isSolution ?
+											answer
+										:	'?'
+									:	cell}
+								</div>
+							);
+						})}
+					</div>
+				</div>
+			);
+		}
+
 		case 'grid-tiles': {
 			// Configurable grid puzzle (default 6x6 with 3x3 hole in center)
 			const rows = data.rows || 6;
@@ -27,10 +261,7 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 
 			return (
 				<div className='flex flex-col items-center justify-center p-3'>
-					<svg
-						viewBox='0 0 240 240'
-						className='w-48 h-48 sm:w-56 sm:h-56'>
-						{/* Outer grid boundary */}
+					<svg viewBox='0 0 240 240' className='w-48 h-48 sm:w-56 sm:h-56'>
 						<rect
 							x={startX}
 							y={startY}
@@ -41,8 +272,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 							strokeWidth='2'
 							rx='4'
 						/>
-
-						{/* Vertical grid lines */}
 						{Array.from({ length: cols + 1 }).map((_, i) => (
 							<line
 								key={`v-${i}`}
@@ -54,8 +283,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 								strokeWidth='1.5'
 							/>
 						))}
-
-						{/* Horizontal grid lines */}
 						{Array.from({ length: rows + 1 }).map((_, i) => (
 							<line
 								key={`h-${i}`}
@@ -67,8 +294,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 								strokeWidth='1.5'
 							/>
 						))}
-
-						{/* Clean white mask for the empty hole */}
 						<rect
 							x={holeX}
 							y={holeY}
@@ -76,11 +301,8 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 							height={holeHeight}
 							fill='#FFFFFF'
 						/>
-
-						{/* If solution mode, show red frame, inner lines, and tile numbers */}
 						{isSolution ?
 							<g>
-								{/* Red boxed area */}
 								<rect
 									x={holeX}
 									y={holeY}
@@ -91,8 +313,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 									strokeWidth='3'
 									rx='2'
 								/>
-
-								{/* Subdivided red inner grid lines */}
 								{Array.from({ length: holeW - 1 }).map((_, i) => (
 									<line
 										key={`sol-v-${i}`}
@@ -104,7 +324,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 										strokeWidth='2'
 									/>
 								))}
-
 								{Array.from({ length: holeH - 1 }).map((_, i) => (
 									<line
 										key={`sol-h-${i}`}
@@ -116,8 +335,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 										strokeWidth='2'
 									/>
 								))}
-
-								{/* Numbered tiles */}
 								{Array.from({ length: totalHoleTiles }).map((_, i) => {
 									const r = Math.floor(i / holeW);
 									const c = i % holeW;
@@ -145,122 +362,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 			);
 		}
 
-		case 'paper-cut': {
-			const corners = data.corners || 4;
-			return (
-				<div className='flex flex-col items-center justify-center p-3'>
-					<svg
-						viewBox='0 0 280 180'
-						className='w-56 h-36 sm:w-64 sm:h-40'>
-						{/* Base paper outline */}
-						<path
-							d='M 40 140 L 40 60 L 240 60 L 240 140'
-							fill='none'
-							stroke='#0F172A'
-							strokeWidth='6'
-							strokeLinecap='round'
-							strokeLinejoin='round'
-						/>
-						{/* Vertical dashed cut line */}
-						<line
-							x1='90'
-							y1='25'
-							x2='90'
-							y2='155'
-							stroke='#0F172A'
-							strokeWidth='5'
-							strokeDasharray='8 8'
-							strokeLinecap='round'
-						/>
-
-						{/* If solution mode, show the resulting right piece with labeled corners */}
-						{isSolution && (
-							<g>
-								<rect
-									x='90'
-									y='60'
-									width='150'
-									height='80'
-									fill='#EFF6FF'
-									stroke='#3B82F6'
-									strokeWidth='2'
-									strokeDasharray='4 4'
-									opacity='0.3'
-								/>
-								<circle
-									cx='90'
-									cy='60'
-									r='10'
-									fill='#EF4444'
-								/>
-								<text
-									x='90'
-									y='64'
-									fill='#FFFFFF'
-									fontSize='12'
-									fontWeight='bold'
-									textAnchor='middle'
-									dominantBaseline='middle'>
-									1
-								</text>
-
-								<circle
-									cx='90'
-									cy='140'
-									r='10'
-									fill='#EF4444'
-								/>
-								<text
-									x='90'
-									y='144'
-									fill='#FFFFFF'
-									fontSize='12'
-									fontWeight='bold'
-									textAnchor='middle'
-									dominantBaseline='middle'>
-									2
-								</text>
-
-								<circle
-									cx='240'
-									cy='60'
-									r='10'
-									fill='#EF4444'
-								/>
-								<text
-									x='240'
-									y='64'
-									fill='#FFFFFF'
-									fontSize='12'
-									fontWeight='bold'
-									textAnchor='middle'
-									dominantBaseline='middle'>
-									3
-								</text>
-
-								<circle
-									cx='240'
-									cy='140'
-									r='10'
-									fill='#EF4444'
-								/>
-								<text
-									x='240'
-									y='144'
-									fill='#FFFFFF'
-									fontSize='12'
-									fontWeight='bold'
-									textAnchor='middle'
-									dominantBaseline='middle'>
-									4
-								</text>
-							</g>
-						)}
-					</svg>
-				</div>
-			);
-		}
-
 		case 'pattern-shapes': {
 			const items = data.sequence || ['●', '▲', '■', '●', '▲'];
 			const nextItem = data.nextItem || '■';
@@ -274,7 +375,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 							{item}
 						</div>
 					))}
-					{/* Question placeholder */}
 					<div
 						className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center font-bold text-2xl shadow-inner transition-all ${
 							isSolution ?
@@ -313,22 +413,14 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 		case 'scale-balance': {
 			const leftItem = data.leftEmoji || '🎈';
 			const rightItem = data.rightEmoji || '🪨';
-			const heavySide = data.heavySide || 'right'; // 'left' | 'right'
+			const heavySide = data.heavySide || 'right';
 
 			const isRightHeavy = heavySide === 'right';
 
 			return (
 				<div className='flex flex-col items-center justify-center p-3'>
-					<svg
-						viewBox='0 0 260 160'
-						className='w-56 h-36'>
-						{/* Fulcrum / Triangle base */}
-						<polygon
-							points='130,110 110,150 150,150'
-							fill='#64748B'
-						/>
-
-						{/* Tilted Lever */}
+					<svg viewBox='0 0 260 160' className='w-56 h-36'>
+						<polygon points='130,110 110,150 150,150' fill='#64748B' />
 						<line
 							x1='30'
 							y1={isRightHeavy ? 85 : 125}
@@ -338,8 +430,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 							strokeWidth='6'
 							strokeLinecap='round'
 						/>
-
-						{/* Left Pan */}
 						<line
 							x1='45'
 							y1={isRightHeavy ? 88 : 128}
@@ -365,8 +455,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 							textAnchor='middle'>
 							{leftItem}
 						</text>
-
-						{/* Right Pan */}
 						<line
 							x1='215'
 							y1={isRightHeavy ? 122 : 88}
@@ -401,14 +489,10 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 			const bottom = data.bottom || 3;
 			const middle = data.middle || 2;
 			const top = data.top || 1;
-			const total = bottom + middle + top;
 
 			return (
 				<div className='flex flex-col items-center justify-center p-3'>
-					<svg
-						viewBox='0 0 200 160'
-						className='w-48 h-40'>
-						{/* Layer 1 (Bottom) */}
+					<svg viewBox='0 0 200 160' className='w-48 h-40'>
 						{Array.from({ length: bottom }).map((_, i) => {
 							const x = 100 - (bottom * 40) / 2 + i * 40 + 2.5;
 							return (
@@ -425,8 +509,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 								/>
 							);
 						})}
-
-						{/* Layer 2 (Middle) */}
 						{Array.from({ length: middle }).map((_, i) => {
 							const x = 100 - (middle * 40) / 2 + i * 40 + 2.5;
 							return (
@@ -443,8 +525,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 								/>
 							);
 						})}
-
-						{/* Layer 3 (Top) */}
 						{Array.from({ length: top }).map((_, i) => {
 							const x = 100 - (top * 40) / 2 + i * 40 + 2.5;
 							return (
@@ -461,7 +541,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 								/>
 							);
 						})}
-
 						{isSolution && (
 							<g
 								fill='#FFFFFF'
@@ -502,9 +581,7 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 		case 'butterfly-symmetry': {
 			return (
 				<div className='flex flex-col items-center justify-center p-3'>
-					<svg
-						viewBox='0 0 200 160'
-						className='w-52 h-40'>
+					<svg viewBox='0 0 200 160' className='w-52 h-40'>
 						<line
 							x1='100'
 							y1='20'
@@ -514,31 +591,15 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 							strokeWidth='2'
 							strokeDasharray='4 4'
 						/>
-						<ellipse
-							cx='100'
-							cy='80'
-							rx='6'
-							ry='30'
-							fill='#475569'
-						/>
+						<ellipse cx='100' cy='80' rx='6' ry='30' fill='#475569' />
 						<path
 							d='M 96 60 C 50 10 20 40 50 80 C 20 110 50 140 96 100 Z'
 							fill='#8B5CF6'
 							stroke='#6D28D9'
 							strokeWidth='2'
 						/>
-						<circle
-							cx='60'
-							cy='60'
-							r='8'
-							fill='#FDE047'
-						/>
-						<circle
-							cx='65'
-							cy='100'
-							r='6'
-							fill='#F43F5E'
-						/>
+						<circle cx='60' cy='60' r='8' fill='#FDE047' />
+						<circle cx='65' cy='100' r='6' fill='#F43F5E' />
 
 						{isSolution ?
 							<g>
@@ -548,18 +609,8 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 									stroke='#6D28D9'
 									strokeWidth='2'
 								/>
-								<circle
-									cx='140'
-									cy='60'
-									r='8'
-									fill='#FDE047'
-								/>
-								<circle
-									cx='135'
-									cy='100'
-									r='6'
-									fill='#F43F5E'
-								/>
+								<circle cx='140' cy='60' r='8' fill='#FDE047' />
+								<circle cx='135' cy='100' r='6' fill='#F43F5E' />
 							</g>
 						:	<path
 								d='M 104 60 C 150 10 180 40 150 80 C 180 110 150 140 104 100 Z'
@@ -570,98 +621,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 							/>
 						}
 					</svg>
-				</div>
-			);
-		}
-
-		case 'rocket-maze': {
-			return (
-				<div className='flex flex-col items-center justify-center p-2'>
-					<svg
-						viewBox='0 0 240 160'
-						className='w-56 h-36'>
-						<text
-							x='20'
-							y='85'
-							fontSize='28'>
-							🚀
-						</text>
-
-						<path
-							d='M 50 60 Q 100 20 140 60 T 200 40'
-							fill='none'
-							stroke={isSolution ? '#EF4444' : '#94A3B8'}
-							strokeWidth={isSolution ? '4' : '2'}
-						/>
-						<text
-							x='120'
-							y='30'
-							fill='#6B7280'
-							fontSize='11'
-							fontWeight='bold'>
-							Path A 🪐
-						</text>
-
-						<path
-							d='M 50 80 C 90 80 110 120 150 100 S 190 70 200 80'
-							fill='none'
-							stroke={isSolution ? '#10B981' : '#3B82F6'}
-							strokeWidth={isSolution ? '5' : '3'}
-							strokeDasharray={isSolution ? 'none' : '4 2'}
-						/>
-						<text
-							x='120'
-							y='85'
-							fill='#2563EB'
-							fontSize='11'
-							fontWeight='bold'>
-							Path B ⭐ (Target)
-						</text>
-
-						<path
-							d='M 50 100 Q 90 140 140 120 T 200 130'
-							fill='none'
-							stroke={isSolution ? '#9CA3AF' : '#94A3B8'}
-							strokeWidth='2'
-						/>
-						<text
-							x='120'
-							y='140'
-							fill='#6B7280'
-							fontSize='11'
-							fontWeight='bold'>
-							Path C 🛸
-						</text>
-
-						<text
-							x='210'
-							y='85'
-							fontSize='28'>
-							⭐
-						</text>
-					</svg>
-				</div>
-			);
-		}
-
-		case 'color-mix': {
-			const c1 = data.color1 || 'Blue 🔵';
-			const c2 = data.color2 || 'Yellow 🟡';
-			const result = data.result || 'Green 🟢';
-			return (
-				<div className='flex items-center justify-center gap-3 p-4 bg-slate-50 rounded-2xl border-2 border-slate-200 my-2'>
-					<div className='px-3 py-2 rounded-xl bg-blue-100 text-blue-800 font-extrabold text-sm'>
-						{c1}
-					</div>
-					<span className='text-xl font-black text-slate-400'>+</span>
-					<div className='px-3 py-2 rounded-xl bg-yellow-100 text-yellow-800 font-extrabold text-sm'>
-						{c2}
-					</div>
-					<span className='text-xl font-black text-slate-400'>=</span>
-					<div
-						className={`px-4 py-2 rounded-xl font-black text-sm shadow ${isSolution ? 'bg-emerald-500 text-white animate-bounce' : 'bg-white border-2 border-dashed border-slate-400 text-slate-500'}`}>
-						{isSolution ? result : '?'}
-					</div>
 				</div>
 			);
 		}

@@ -1,4 +1,5 @@
-// Pure Web Audio API Sound Generator (No external asset files needed, 100% reliable & zero latency)
+// Pure Web Audio API Sound Generator & Web Speech API Narration
+// Zero external asset files needed, 100% reliable & zero latency
 
 let audioCtx = null;
 
@@ -219,15 +220,33 @@ const EMOJI_SPEECH_MAP = {
 	'☀️': 'sun',
 	'🌙': 'moon',
 	'🧢': 'hat',
-	'🧦': 'socks'
+	'🧦': 'socks',
 };
 
-const EMOJI_REGEX = /\p{Extended_Pictographic}|\p{Emoji_Presentation}|[\uFE00-\uFE0F\u200D\u20E3]/gu;
+const EMOJI_REGEX =
+	/\p{Extended_Pictographic}|\p{Emoji_Presentation}|[\uFE00-\uFE0F\u200D\u20E3]/gu;
+
+// Pre-warm and cache speech synthesis voices across browser engines
+let cachedVoices = [];
+function populateVoiceList() {
+	if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+		try {
+			cachedVoices = window.speechSynthesis.getVoices() || [];
+		} catch {}
+	}
+}
+
+if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+	populateVoiceList();
+	if (window.speechSynthesis.onvoiceschanged !== undefined) {
+		window.speechSynthesis.onvoiceschanged = populateVoiceList;
+	}
+}
 
 /**
  * Sanitizes question text for speech synthesis so it doesn't read both word and emoji.
  * e.g. "How many shiny red apples are in the basket? 🍎" -> "How many shiny red apples are in the basket?"
- * e.g. "Puppy 🐶 is to Dog 🐕" -> "Puppy is to Dog"
+ * e.g. "Puppy 🐶 is to Dog 🐕, as Kitten 🐱 is to...?" -> "Puppy is to Dog, as Kitten is to...?"
  * e.g. "🍎 🍌 🍎 🍌" (emoji only) -> "apple banana apple banana"
  */
 export function cleanTextForSpeech(raw) {
@@ -236,6 +255,10 @@ export function cleanTextForSpeech(raw) {
 
 	// Strip common prefixes
 	text = text.replace(/^(Prompt:|Question:)\s*/i, '');
+
+	// Replace mathematical analogy symbols so speech engine reads them naturally
+	text = text.replace(/\s*::\s*/g, ', as ');
+	text = text.replace(/\s*:\s*/g, ' is to ');
 
 	// Check if the string has regular alphanumeric words
 	const wordsOnly = text.replace(EMOJI_REGEX, '').trim();
@@ -257,49 +280,100 @@ export function cleanTextForSpeech(raw) {
 		.trim();
 }
 
+let activeUtterance = null; // Hold module-level reference to prevent Chromium garbage collection
+
 /**
  * Web Speech API Voice Narrator for Kids
- * Cleans emojis from spoken sentences to prevent redundant duplicate reading.
+ * Resilient against Chromium paused state and garbage collection quirks
  */
-export function speakText(text) {
+export function speakText(text, onStart = null, onEnd = null) {
 	try {
-		if (!('speechSynthesis' in window)) return;
-		window.speechSynthesis.cancel(); // cancel any ongoing speech
+		if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+			console.warn('Speech synthesis not supported on this browser.');
+			if (onEnd) onEnd();
+			return;
+		}
+
+		// Ensure speech synthesizer is unpaused
+		if (window.speechSynthesis.paused) {
+			window.speechSynthesis.resume();
+		}
+		window.speechSynthesis.cancel();
 
 		const cleaned = cleanTextForSpeech(text);
-		if (!cleaned) return;
+		if (!cleaned) {
+			if (onEnd) onEnd();
+			return;
+		}
 
 		const utterance = new SpeechSynthesisUtterance(cleaned);
-		utterance.rate = 0.9; // slightly slower & friendly
-		utterance.pitch = 1.15; // slightly cheerful pitch
+		activeUtterance = utterance; // Prevent garbage collection during speech in V8
 
-		// Pick an English voice if available
-		const voices = window.speechSynthesis.getVoices();
+		utterance.rate = 0.92; // natural pace for young learners
+		utterance.pitch = 1.1; // friendly tone
+		utterance.lang = 'en-US';
+
+		// Pick preferred English voice
+		const voices =
+			cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
 		if (voices && voices.length > 0) {
-			const preferredVoice = voices.find(
-				(v) =>
-					(v.name.includes('Natural') ||
-						v.name.includes('Google') ||
-						v.name.includes('Samantha') ||
-						v.name.includes('Child')) &&
-					v.lang.startsWith('en'),
-			);
+			const preferredVoice =
+				voices.find(
+					(v) =>
+						v.lang.startsWith('en') &&
+						(v.name.includes('Natural') ||
+							v.name.includes('Google') ||
+							v.name.includes('Samantha') ||
+							v.name.includes('Jenny') ||
+							v.name.includes('Guy') ||
+							v.name.includes('Aria') ||
+							v.name.includes('David') ||
+							v.name.includes('Zira') ||
+							v.name.includes('Child')),
+				) ||
+				voices.find((v) => v.lang.startsWith('en')) ||
+				voices[0];
+
 			if (preferredVoice) {
 				utterance.voice = preferredVoice;
+				utterance.lang = preferredVoice.lang || 'en-US';
 			}
 		}
 
-		window.speechSynthesis.speak(utterance);
+		utterance.onstart = () => {
+			if (onStart) onStart();
+		};
+
+		utterance.onend = () => {
+			activeUtterance = null;
+			if (onEnd) onEnd();
+		};
+
+		utterance.onerror = (err) => {
+			console.warn('Speech synthesis utterance error:', err);
+			activeUtterance = null;
+			if (onEnd) onEnd();
+		};
+
+		// Chromium workaround: small setTimeout ensures cancel() resolves cleanly before speak()
+		setTimeout(() => {
+			if (window.speechSynthesis.paused) {
+				window.speechSynthesis.resume();
+			}
+			window.speechSynthesis.speak(utterance);
+		}, 40);
 	} catch (err) {
 		console.warn('Speech synthesis error', err);
+		if (onEnd) onEnd();
 	}
 }
 
 export function stopSpeaking() {
 	try {
-		if ('speechSynthesis' in window) {
+		if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 			window.speechSynthesis.cancel();
 		}
+		activeUtterance = null;
 	} catch (err) {
 		console.warn('Speech synthesis stop error', err);
 	}

@@ -1,4 +1,5 @@
 import { Brain, Eye, Volume2, ZoomIn } from 'lucide-react';
+import { useState } from 'react';
 import { playButtonPop, speakText } from '../utils/audioSynthesis';
 import VisualDiagram from './VisualDiagrams';
 
@@ -10,11 +11,20 @@ export default function QuestionCard({
 	soundEnabled,
 	isSubmitted = false,
 }) {
+	const [isSpeaking, setIsSpeaking] = useState(false);
+
 	const handleListenQuestion = () => {
 		playButtonPop(soundEnabled);
 		const textToRead =
 			question.promptAudio || question.question || question.questionText || '';
-		speakText(textToRead);
+		if (!textToRead) return;
+
+		setIsSpeaking(true);
+		speakText(
+			textToRead,
+			() => setIsSpeaking(true),
+			() => setIsSpeaking(false),
+		);
 	};
 
 	const isVisual = question.category === 'Visual';
@@ -84,9 +94,15 @@ export default function QuestionCard({
 					<button
 						type='button'
 						onClick={handleListenQuestion}
-						className='p-1.5 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 hover:scale-110 active:scale-95 transition-all shadow-sm flex-shrink-0 mt-0.5 cursor-pointer'
+						className={`p-1.5 rounded-full transition-all shadow-sm flex-shrink-0 mt-0.5 cursor-pointer ${
+							isSpeaking ?
+								'bg-purple-300 text-purple-900 ring-2 ring-purple-500 scale-110 animate-pulse'
+							:	'bg-purple-100 text-purple-700 hover:bg-purple-200 hover:scale-110 active:scale-95'
+						}`}
 						title='Listen to question'>
-						<Volume2 className='w-4 h-4 sm:w-5 sm:h-5' />
+						<Volume2
+							className={`w-4 h-4 sm:w-5 sm:h-5 ${isSpeaking ? 'animate-bounce text-purple-950' : ''}`}
+						/>
 					</button>
 				</div>
 

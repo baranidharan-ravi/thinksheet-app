@@ -3,6 +3,7 @@ import {
 	Calendar,
 	Check,
 	Clock,
+	Cpu,
 	ExternalLink,
 	Eye,
 	EyeOff,
@@ -16,8 +17,11 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
+	AVAILABLE_GEMINI_MODELS,
 	getStoredApiKey,
+	getStoredSelectedModel,
 	setStoredApiKey,
+	setStoredSelectedModel,
 	validateGeminiApiKey,
 } from '../services/aiGenerator';
 import { playButtonPop, speakText } from '../utils/audioSynthesis';
@@ -40,6 +44,9 @@ export default function SettingsScreen({
 	const [apiKeyInput, setApiKeyInput] = useState(() => getStoredApiKey() || '');
 	const [showApiKey, setShowApiKey] = useState(false);
 	const [isCustomAge, setIsCustomAge] = useState(false);
+
+	// Gemini Model selection state
+	const [selectedModel, setSelectedModel] = useState(() => getStoredSelectedModel());
 
 	// Question Timer Challenge state
 	const [timerEnabled, setTimerEnabled] = useState(false);
@@ -139,8 +146,8 @@ export default function SettingsScreen({
 		setIsValidating(true);
 		playButtonPop(soundEnabled);
 
-		// Validate API Key live against Gemini API
-		const validationResult = await validateGeminiApiKey(trimmedKey);
+		// Validate API Key live against the selected Gemini model
+		const validationResult = await validateGeminiApiKey(trimmedKey, selectedModel);
 
 		if (!validationResult.valid) {
 			setIsValidating(false);
@@ -154,10 +161,13 @@ export default function SettingsScreen({
 		// 1. Save API Key
 		setStoredApiKey(validationResult.cleanedKey);
 
-		// 2. Save Kid Profile
+		// 2. Save Selected Gemini Model
+		setStoredSelectedModel(selectedModel);
+
+		// 3. Save Kid Profile
 		saveStoredKidProfile(trimmedName, numAge);
 
-		// 3. Save Settings & Timer Config
+		// 4. Save Settings & Timer Config
 		const updatedConfig = {
 			enabled: timerEnabled,
 			secondsPerQuestion: timerSeconds,
@@ -176,6 +186,7 @@ export default function SettingsScreen({
 				name: trimmedName,
 				age: numAge,
 				apiKey: validationResult.cleanedKey,
+				selectedModel,
 				timerConfig: updatedConfig,
 			});
 		}
@@ -211,7 +222,7 @@ export default function SettingsScreen({
 							<Sparkles className='w-5 h-5 text-amber-300' />
 						</h1>
 						<p className='text-xs text-slate-300 font-semibold'>
-							Configure child profile, Gemini API Key, and question pacing.
+							Configure child profile, Gemini API Key, AI model, and question pacing.
 						</p>
 					</div>
 				</div>
@@ -228,73 +239,77 @@ export default function SettingsScreen({
 			<div className='max-w-3xl w-full mx-auto bg-gradient-to-b from-[#1C1F5E]/90 via-[#141846]/95 to-[#0D1030] border-4 border-amber-400/80 rounded-3xl p-5 sm:p-8 shadow-[0_0_60px_rgba(251,191,36,0.25)] flex flex-col gap-6 backdrop-blur-md'>
 				{/* Section 1: Child Name & Age */}
 				<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-					{/* Name Input */}
-					<div className='bg-[#090B24]/80 p-4 rounded-2xl border border-[#2C3380]'>
-						<label className='block text-xs font-bold text-slate-300 mb-2 flex items-center gap-1.5'>
+					{/* Name Card */}
+					<div className='bg-[#090B24]/80 p-4 sm:p-5 rounded-2xl border border-[#2C3380]'>
+						<label className='text-xs sm:text-sm font-bold text-slate-200 flex items-center gap-1.5 mb-2'>
 							<Smile className='w-4 h-4 text-pink-400' />
-							<span>
-								Child's Name <span className='text-pink-400'>*</span>
-							</span>
+							<span>Child's Name</span>
 						</label>
 						<input
 							type='text'
-							maxLength={25}
+							maxLength={30}
 							disabled={isValidating}
 							value={nameInput}
 							onChange={(e) => {
 								setNameInput(e.target.value);
 								if (error) setError('');
 							}}
-							placeholder='e.g. Leo, Mia, Aaron...'
-							className='w-full bg-[#0D1030] border border-[#2C3380] focus:border-pink-400 text-white text-base font-bold rounded-xl px-4 py-3 placeholder:text-slate-500 focus:outline-none transition-all'
+							placeholder='e.g. Leo, Maya, Alex...'
+							className='w-full bg-[#0D1030] border border-pink-500/40 focus:border-pink-400 text-white font-bold text-sm sm:text-base rounded-xl px-4 py-3 placeholder:text-slate-500 focus:outline-none transition-all'
 						/>
+						<span className='text-[11px] text-slate-400 mt-1.5 block'>
+							Used to personalize questions, voice feedback & reports.
+						</span>
 					</div>
 
-					{/* Age Selector */}
-					<div className='bg-[#090B24]/80 p-4 rounded-2xl border border-[#2C3380] flex flex-col justify-between'>
+					{/* Age Card */}
+					<div className='bg-[#090B24]/80 p-4 sm:p-5 rounded-2xl border border-[#2C3380]'>
 						<div className='flex items-center justify-between mb-2'>
-							<label className='text-xs font-bold text-slate-300 flex items-center gap-1.5'>
-								<Calendar className='w-4 h-4 text-amber-400' />
-								<span>
-									Child's Age <span className='text-amber-400'>*</span>
-								</span>
+							<label className='text-xs sm:text-sm font-bold text-slate-200 flex items-center gap-1.5'>
+								<Calendar className='w-4 h-4 text-cyan-400' />
+								<span>Child's Age</span>
 							</label>
-							<span className='text-xs font-black text-pink-300 bg-pink-500/20 px-2.5 py-0.5 rounded-full border border-pink-500/30'>
-								🎂 {ageInput} Years Old
+							<span className='text-xs font-black text-cyan-300 bg-cyan-950/80 border border-cyan-500/40 px-2 py-0.5 rounded-full'>
+								{ageInput} Years Old
 							</span>
 						</div>
 
-						{/* Quick Ages */}
-						<div className='grid grid-cols-7 gap-1 sm:gap-1.5'>
+						{/* Quick Selection Pills */}
+						<div className='grid grid-cols-3 sm:grid-cols-6 gap-1.5'>
 							{quickAges.map((age) => (
 								<button
-									type='button'
 									key={age}
+									type='button'
 									disabled={isValidating}
 									onClick={() => handleQuickAgeSelect(age)}
-									className={`py-2 rounded-xl font-black text-xs transition-all border cursor-pointer ${
-										!isCustomAge && Number(ageInput) === age ?
-											'bg-gradient-to-r from-pink-500 to-rose-500 text-white border-white ring-2 ring-pink-400/50 shadow-md'
-										:	'bg-[#0D1030] text-slate-300 border-[#2C3380] hover:bg-[#1E2568]'
+									className={`py-2 rounded-xl text-xs font-black transition-all border cursor-pointer ${
+										Number(ageInput) === age && !isCustomAge ?
+											'bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-cyan-300 shadow-md scale-105'
+										:	'bg-[#0D1030] text-slate-300 border-slate-700/80 hover:bg-slate-800'
 									}`}>
-									{age}
+									{age} yo
 								</button>
 							))}
+						</div>
 
+						{/* Custom Age Toggle */}
+						<div className='flex items-center justify-between mt-2 pt-2 border-t border-white/10'>
+							<span className='text-[11px] text-slate-400'>
+								Other Age (2 to 14):
+							</span>
 							<button
 								type='button'
 								disabled={isValidating}
 								onClick={() => {
 									playButtonPop(soundEnabled);
-									setIsCustomAge(true);
-									if (error) setError('');
+									setIsCustomAge((prev) => !prev);
 								}}
-								className={`py-2 rounded-xl font-black text-xs transition-all border flex items-center justify-center cursor-pointer ${
+								className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border transition-all cursor-pointer ${
 									isCustomAge ?
-										'bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-white ring-2 ring-cyan-400/50 shadow-md'
-									:	'bg-[#0D1030] text-cyan-300 border-[#2C3380] hover:bg-[#1E2568]'
+										'bg-cyan-500/30 text-cyan-300 border-cyan-400'
+									:	'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
 								}`}>
-								<span>Edit ✍️</span>
+								{isCustomAge ? 'Custom Stepper Active' : 'Change Age Range'}
 							</button>
 						</div>
 
@@ -399,7 +414,72 @@ export default function SettingsScreen({
 					</span>
 				</div>
 
-				{/* Section 3: Per-Question Time Limit */}
+				{/* Section 3: Gemini AI Model Engine Selection */}
+				<div className='bg-[#090B24]/80 p-4 sm:p-5 rounded-2xl border border-cyan-500/40 shadow-inner'>
+					<div className='flex items-center justify-between mb-2.5'>
+						<div className='flex items-center gap-2'>
+							<Cpu className='w-4 h-4 text-cyan-400' />
+							<span className='text-xs sm:text-sm font-bold text-white'>
+								Gemini AI Model Engine
+							</span>
+						</div>
+						<span className='text-[10px] font-black px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'>
+							Active: {AVAILABLE_GEMINI_MODELS.find((m) => m.id === selectedModel)?.name || selectedModel}
+						</span>
+					</div>
+
+					<p className='text-xs text-slate-300 mb-3'>
+						Select which Google Gemini AI model generates questions in real time:
+					</p>
+
+					<div className='grid grid-cols-1 sm:grid-cols-2 gap-2.5'>
+						{AVAILABLE_GEMINI_MODELS.map((model) => {
+							const isSelected = selectedModel === model.id;
+							return (
+								<button
+									key={model.id}
+									type='button'
+									disabled={isValidating}
+									onClick={() => {
+										playButtonPop(soundEnabled);
+										setSelectedModel(model.id);
+										if (error) setError('');
+									}}
+									className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer flex flex-col justify-between gap-1.5 ${
+										isSelected ?
+											'bg-cyan-500/20 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.35)] ring-2 ring-cyan-400/50'
+										:	'bg-[#0D1030] border-slate-700/80 hover:border-slate-500 hover:bg-[#121644]'
+									}`}>
+									<div className='flex items-center justify-between gap-2'>
+										<span
+											className={`text-xs font-black ${
+												isSelected ? 'text-cyan-300' : 'text-white'
+											}`}>
+											{model.name}
+										</span>
+										<span
+											className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${model.badgeColor}`}>
+											{model.badge}
+										</span>
+									</div>
+									<div className='text-[11px] font-bold text-slate-300 flex items-center gap-1'>
+										<span>{model.tag}</span>
+									</div>
+									<p className='text-[10px] text-slate-400 leading-snug'>
+										{model.description}
+									</p>
+									{isSelected && (
+										<div className='absolute top-3 right-3 w-4 h-4 rounded-full bg-cyan-400 text-slate-950 flex items-center justify-center shadow'>
+											<Check className='w-3 h-3 stroke-[3]' />
+										</div>
+									)}
+								</button>
+							);
+						})}
+					</div>
+				</div>
+
+				{/* Section 4: Per-Question Time Limit */}
 				<div className='bg-[#090B24]/80 p-4 sm:p-5 rounded-2xl border border-[#2C3380]'>
 					<div className='flex items-center justify-between mb-2.5'>
 						<div>
@@ -449,18 +529,18 @@ export default function SettingsScreen({
 									{ label: '3m', sec: 180 },
 								].map((preset) => (
 									<button
-										type='button'
 										key={preset.sec}
+										type='button'
 										disabled={isValidating}
 										onClick={() => {
 											playButtonPop(soundEnabled);
 											setTimerSeconds(preset.sec);
 											setIsCustomTimer(false);
 										}}
-										className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+										className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all border cursor-pointer ${
 											timerSeconds === preset.sec && !isCustomTimer ?
-												'bg-amber-400 text-slate-950 font-black shadow'
-											:	'bg-[#0D1030] text-slate-300 border border-[#2C3380] hover:bg-[#1E2568]'
+												'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 border-amber-300 shadow-md font-black'
+											:	'bg-[#0D1030] text-slate-300 border-slate-700 hover:bg-slate-800'
 										}`}>
 										{preset.label}
 									</button>
@@ -475,15 +555,15 @@ export default function SettingsScreen({
 									}}
 									className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
 										isCustomTimer ?
-											'bg-gradient-to-r from-pink-500 to-purple-600 text-white border-white font-black'
-										:	'bg-[#0D1030] text-slate-300 border-[#2C3380]'
+											'bg-amber-400/30 text-amber-300 border-amber-400'
+										:	'bg-[#0D1030] text-slate-400 border-slate-700 hover:text-white'
 									}`}>
-									Custom ✍️
+									Custom Duration
 								</button>
 							</div>
 
 							{isCustomTimer && (
-								<div className='flex items-center gap-3 bg-[#0D1030] border border-amber-400/50 rounded-xl p-2 max-w-xs'>
+								<div className='flex items-center gap-3 bg-[#0D1030] border border-amber-500/40 rounded-xl p-2 max-w-xs animate-in fade-in duration-200'>
 									<button
 										type='button'
 										disabled={isValidating}
@@ -507,7 +587,7 @@ export default function SettingsScreen({
 					)}
 				</div>
 
-				{/* Section 4: Next Question Auto-Advance Delay (Optional) */}
+				{/* Section 5: Next Question Auto-Advance Delay */}
 				<div className='bg-[#090B24]/80 p-4 sm:p-5 rounded-2xl border border-[#2C3380]'>
 					<div className='flex items-center justify-between mb-2.5'>
 						<div>
@@ -522,13 +602,12 @@ export default function SettingsScreen({
 											'bg-emerald-400 text-slate-950 shadow'
 										:	'bg-slate-800 text-slate-400'
 									}`}>
-									{autoAdvanceEnabled ? 'Auto' : 'Manual'}
+									{autoAdvanceEnabled ? 'Auto-Next Active' : 'Manual Next'}
 								</span>
 							</div>
 							<p className='text-xs text-slate-400 mt-0.5'>
-								{autoAdvanceEnabled ?
-									'Automatically loads the next question after solution review.'
-								:	'Manual Mode: Solution stays on screen until you tap Next.'}
+								Controls how long the solution is displayed before moving to the
+								next question.
 							</p>
 						</div>
 
@@ -544,9 +623,16 @@ export default function SettingsScreen({
 									'bg-emerald-400 text-slate-950 border-emerald-300 shadow'
 								:	'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
 							}`}>
-							{autoAdvanceEnabled ? '⏩ Auto ON' : 'Manual (OFF)'}
+							{autoAdvanceEnabled ? '⏩ Auto Next ON' : 'Manual Next'}
 						</button>
 					</div>
+
+					{!autoAdvanceEnabled && (
+						<div className='p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 text-xs text-slate-300 font-semibold'>
+							💡 <strong>Manual Next Mode:</strong> The solution stays on screen
+							indefinitely until you click <em>Next Question ➔</em>.
+						</div>
+					)}
 
 					{autoAdvanceEnabled && (
 						<div className='space-y-3 pt-2 animate-in fade-in duration-200 border-t border-white/10'>
@@ -559,21 +645,19 @@ export default function SettingsScreen({
 									{ label: '15s', sec: 15 },
 								].map((preset) => (
 									<button
-										type='button'
 										key={preset.sec}
+										type='button'
 										disabled={isValidating}
 										onClick={() => {
 											playButtonPop(soundEnabled);
 											setAutoAdvanceSeconds(preset.sec);
 											setIsCustomAutoAdvance(false);
 										}}
-										className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-											(
-												autoAdvanceSeconds === preset.sec &&
-												!isCustomAutoAdvance
-											) ?
-												'bg-emerald-400 text-slate-950 font-black shadow'
-											:	'bg-[#0D1030] text-slate-300 border border-[#2C3380] hover:bg-[#1E2568]'
+										className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all border cursor-pointer ${
+											autoAdvanceSeconds === preset.sec &&
+											!isCustomAutoAdvance ?
+												'bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 border-emerald-300 shadow-md font-black'
+											:	'bg-[#0D1030] text-slate-300 border-slate-700 hover:bg-slate-800'
 										}`}>
 										{preset.label}
 									</button>
@@ -588,15 +672,15 @@ export default function SettingsScreen({
 									}}
 									className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
 										isCustomAutoAdvance ?
-											'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-white font-black'
-										:	'bg-[#0D1030] text-slate-300 border-[#2C3380]'
+											'bg-emerald-400/30 text-emerald-300 border-emerald-400'
+										:	'bg-[#0D1030] text-slate-400 border-slate-700 hover:text-white'
 									}`}>
-									Custom ✍️
+									Custom Delay
 								</button>
 							</div>
 
 							{isCustomAutoAdvance && (
-								<div className='flex items-center gap-3 bg-[#0D1030] border border-emerald-400/50 rounded-xl p-2 max-w-xs'>
+								<div className='flex items-center gap-3 bg-[#0D1030] border border-emerald-500/40 rounded-xl p-2 max-w-xs animate-in fade-in duration-200'>
 									<button
 										type='button'
 										disabled={isValidating}
