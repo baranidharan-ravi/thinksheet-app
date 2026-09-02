@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import {
 	ArrowLeft,
 	Calendar,
@@ -14,15 +13,14 @@ import {
 	Rocket,
 	Smile,
 	Sparkles,
-	Timer,
-	Zap,
 } from 'lucide-react';
-import { playButtonPop, speakText } from '../utils/audioSynthesis';
+import { useEffect, useState } from 'react';
 import {
 	getStoredApiKey,
 	setStoredApiKey,
 	validateGeminiApiKey,
 } from '../services/aiGenerator';
+import { playButtonPop, speakText } from '../utils/audioSynthesis';
 import {
 	getStoredKidAge,
 	getStoredKidName,
@@ -570,7 +568,10 @@ export default function SettingsScreen({
 											setIsCustomAutoAdvance(false);
 										}}
 										className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-											autoAdvanceSeconds === preset.sec && !isCustomAutoAdvance ?
+											(
+												autoAdvanceSeconds === preset.sec &&
+												!isCustomAutoAdvance
+											) ?
 												'bg-emerald-400 text-slate-950 font-black shadow'
 											:	'bg-[#0D1030] text-slate-300 border border-[#2C3380] hover:bg-[#1E2568]'
 										}`}>
