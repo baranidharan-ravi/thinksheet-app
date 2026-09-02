@@ -2,10 +2,8 @@ import { Clock, Edit2, Info, Settings, Sparkles, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getStoredApiKey } from '../services/aiGenerator';
 import { playButtonPop } from '../utils/audioSynthesis';
-import { calculateSkillLevel } from '../utils/progressTracker';
 
 export default function SkillSelectionDashboard({
-	profileStats = {},
 	onSelectSkill,
 	soundEnabled,
 	kidName,
@@ -47,16 +45,6 @@ export default function SkillSelectionDashboard({
 			clearTimeout(dockTimer);
 		};
 	}, [onAnimationComplete]);
-
-	const visualLevel = calculateSkillLevel(
-		profileStats.visualSolved || 0,
-		profileStats.visualScores || [],
-	);
-
-	const analyticalLevel = calculateSkillLevel(
-		profileStats.analyticalSolved || 0,
-		profileStats.analyticalScores || [],
-	);
 
 	const handleCardClick = (skill) => {
 		playButtonPop(soundEnabled);
@@ -244,7 +232,7 @@ export default function SkillSelectionDashboard({
 					{/* Skill Card 1: VISUAL */}
 					<div
 						onClick={() => handleCardClick('Visual')}
-						className='group bg-white text-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl border-4 border-cyan-400 hover:border-cyan-300 cursor-pointer transform hover:-translate-y-1.5 active:translate-y-0 transition-all duration-200 flex flex-col justify-between min-h-[240px]'>
+						className='group bg-white text-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl border-4 border-cyan-400 hover:border-cyan-300 cursor-pointer transform hover:-translate-y-1.5 active:translate-y-0 transition-all duration-200 flex flex-col justify-between min-h-[220px]'>
 						<div>
 							{/* Card Header */}
 							<div className='flex items-center justify-between mb-3'>
@@ -265,7 +253,7 @@ export default function SkillSelectionDashboard({
 								{/* Info Button */}
 								<button
 									onClick={(e) => handleInfoClick(e, 'Visual')}
-									className='p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-cyan-600 transition-colors'
+									className='p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-cyan-600 transition-colors cursor-pointer'
 									title='About Visual Skills'>
 									<Info className='w-5 h-5' />
 								</button>
@@ -278,14 +266,11 @@ export default function SkillSelectionDashboard({
 							</p>
 						</div>
 
-						{/* Card Footer: Level & Action Button */}
-						<div className='flex items-center justify-between pt-3 border-t border-slate-100'>
-							<span className='text-xs font-black px-3 py-1 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200'>
-								LV{visualLevel.levelNumber} {visualLevel.levelTitle}
-							</span>
-
-							<button className='px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-extrabold text-xs sm:text-sm shadow-md group-hover:shadow-cyan-400/50 group-hover:scale-105 transition-all'>
-								Start Sheet ➔
+						{/* Card Footer: Action Button */}
+						<div className='flex items-center justify-end pt-3 border-t border-slate-100'>
+							<button className='w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-extrabold text-xs sm:text-sm shadow-md group-hover:shadow-cyan-400/50 group-hover:scale-105 transition-all flex items-center justify-center gap-1.5'>
+								<span>Start Visual Sheet</span>
+								<span>➔</span>
 							</button>
 						</div>
 					</div>
@@ -293,7 +278,7 @@ export default function SkillSelectionDashboard({
 					{/* Skill Card 2: ANALYTICAL THINKING */}
 					<div
 						onClick={() => handleCardClick('Analytical Thinking')}
-						className='group bg-white text-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl border-4 border-purple-400 hover:border-purple-300 cursor-pointer transform hover:-translate-y-1.5 active:translate-y-0 transition-all duration-200 flex flex-col justify-between min-h-[240px]'>
+						className='group bg-white text-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl border-4 border-purple-400 hover:border-purple-300 cursor-pointer transform hover:-translate-y-1.5 active:translate-y-0 transition-all duration-200 flex flex-col justify-between min-h-[220px]'>
 						<div>
 							{/* Card Header */}
 							<div className='flex items-center justify-between mb-3'>
@@ -314,7 +299,7 @@ export default function SkillSelectionDashboard({
 								{/* Info Button */}
 								<button
 									onClick={(e) => handleInfoClick(e, 'Analytical Thinking')}
-									className='p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-purple-600 transition-colors'
+									className='p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-purple-600 transition-colors cursor-pointer'
 									title='About Analytical Thinking'>
 									<Info className='w-5 h-5' />
 								</button>
@@ -327,14 +312,11 @@ export default function SkillSelectionDashboard({
 							</p>
 						</div>
 
-						{/* Card Footer: Level & Action Button */}
-						<div className='flex items-center justify-between pt-3 border-t border-slate-100'>
-							<span className='text-xs font-black px-3 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200'>
-								LV{analyticalLevel.levelNumber} {analyticalLevel.levelTitle}
-							</span>
-
-							<button className='px-5 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-extrabold text-xs sm:text-sm shadow-md group-hover:shadow-purple-400/50 group-hover:scale-105 transition-all'>
-								Start Sheet ➔
+						{/* Card Footer: Action Button */}
+						<div className='flex items-center justify-end pt-3 border-t border-slate-100'>
+							<button className='w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-extrabold text-xs sm:text-sm shadow-md group-hover:shadow-purple-400/50 group-hover:scale-105 transition-all flex items-center justify-center gap-1.5'>
+								<span>Start Analytical Sheet</span>
+								<span>➔</span>
 							</button>
 						</div>
 					</div>
@@ -355,12 +337,11 @@ export default function SkillSelectionDashboard({
 						<p className='text-sm text-slate-300 font-semibold leading-relaxed mb-4'>
 							{infoModalTopic === 'Visual' ?
 								'Visual Thinksheets train spatial awareness, geometric pattern completion, object counting, grid observation, and symmetry detection.'
-							:	'Analytical Thinking Thinksheets develop logical reasoning, analogy deduction, classification, and everyday cause-and-effect problem solving.'
-							}
+							:	'Analytical Thinking Thinksheets develop logical reasoning, analogy deduction, classification, and everyday cause-and-effect problem solving.'}
 						</p>
 						<button
 							onClick={() => setInfoModalTopic(null)}
-							className='w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-sm transition-all'>
+							className='w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-sm transition-all cursor-pointer'>
 							Got It!
 						</button>
 					</div>
