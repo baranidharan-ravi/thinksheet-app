@@ -33,7 +33,6 @@ import {
 	loadProfileStats,
 	recordCompletedSheet,
 	saveStoredKidProfile,
-	saveStoredTimerConfig,
 } from './utils/progressTracker';
 import {
 	clearSessionState,
@@ -283,7 +282,7 @@ export default function App() {
 			if (err.message === 'MISSING_API_KEY') {
 				setAiError('MISSING_KEY');
 			} else {
-				setAiError('API_ERROR');
+				setAiError(err.message || 'API_ERROR');
 			}
 		} finally {
 			setIsLoadingSheet(false);
@@ -602,8 +601,9 @@ export default function App() {
 						<p className='text-sm text-slate-300 font-semibold mb-6 leading-relaxed'>
 							{aiError === 'MISSING_KEY' ?
 								'All thinksheet challenges are generated live by Google Gemini AI. Please configure your API key to start generating customized questions.'
-							:	'Unable to connect to the Gemini AI API. Please check your internet connection or verify your API key in Settings.'
-							}
+							: typeof aiError === 'string' && aiError !== 'API_ERROR' ?
+								aiError
+							:	'Unable to connect to the Gemini AI API. Please check your internet connection or verify your API key in Settings.'}
 						</p>
 
 						<div className='flex flex-col sm:flex-row gap-3 justify-center'>
@@ -699,7 +699,14 @@ export default function App() {
 														:	'bg-black/30 text-white/90 border-white/20'
 													}`}
 													title={`Time remaining: ${questionTimeRemaining}s`}>
-													⏱️ {Math.floor(questionTimeRemaining / 60).toString().padStart(2, '0')}:{(questionTimeRemaining % 60).toString().padStart(2, '0')}
+													⏱️{' '}
+													{Math.floor(questionTimeRemaining / 60)
+														.toString()
+														.padStart(2, '0')}
+													:
+													{(questionTimeRemaining % 60)
+														.toString()
+														.padStart(2, '0')}
 												</span>
 											)}
 										</button>

@@ -1,5 +1,5 @@
 // High-Quality, Sensible 100% AI Question Generator with Strict Age Calibration (Ages 2 to 14)
-// Guarantees logical consistency, exact age-appropriate difficulty, and diagram synchronization
+// Guarantees logical consistency, exact age-appropriate difficulty, diagram synchronization, and multi-model fallbacks
 
 const AI_KEY_STORAGE = 'thinksheet_gemini_api_key';
 
@@ -24,8 +24,79 @@ export function setStoredApiKey(key) {
   }
 }
 
+// Ordered list of models to try in sequence for maximum reliability and speed
+const GEMINI_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-2.5-flash-lite'
+];
+
 /**
- * Validates a Gemini API key by making a lightweight test ping to the API
+ * Universal Gemini API Caller with automatic multi-model fallback
+ */
+async function callGeminiApi(payload, apiKey) {
+  if (!apiKey) {
+    throw new Error('MISSING_API_KEY');
+  }
+
+  let lastError = null;
+
+  for (const model of GEMINI_MODELS) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(
+        apiKey
+      )}`;
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        return data;
+      }
+
+      const errText = await res.text();
+      let parsedErr = null;
+      try {
+        parsedErr = JSON.parse(errText);
+      } catch {}
+
+      const errMsg = parsedErr?.error?.message || errText;
+      lastError = new Error(`Model ${model} (${res.status}): ${errMsg}`);
+      console.warn(`[Gemini API] ${model} failed (${res.status}), trying fallback model...`);
+
+      // If it's an explicit key error (400 invalid key / 403 forbidden), stop trying other models
+      if (
+        res.status === 400 &&
+        (errMsg.toLowerCase().includes('api_key') ||
+          errMsg.toLowerCase().includes('key not valid') ||
+          errMsg.toLowerCase().includes('invalid api key'))
+      ) {
+        throw new Error('Invalid Gemini API Key. Please verify your key from Google AI Studio.');
+      }
+      if (res.status === 403) {
+        throw new Error('Gemini API key access forbidden. Ensure Generative Language API is enabled.');
+      }
+    } catch (err) {
+      if (
+        err.message.includes('Invalid Gemini API Key') ||
+        err.message.includes('access forbidden')
+      ) {
+        throw err;
+      }
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error('All Gemini API model endpoints failed.');
+}
+
+/**
+ * Validates a Gemini API key by making a lightweight test ping
  * Returns { valid: true, cleanedKey } or { valid: false, message }
  */
 export async function validateGeminiApiKey(apiKey) {
@@ -43,41 +114,20 @@ export async function validateGeminiApiKey(apiKey) {
   }
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${encodeURIComponent(
-      cleanedKey
-    )}`;
+    const payload = {
+      contents: [{ parts: [{ text: 'ping' }] }],
+      generationConfig: { maxOutputTokens: 5 }
+    };
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: 'ping' }] }],
-        generationConfig: { maxOutputTokens: 2 }
-      })
-    });
-
-    if (res.ok) {
-      return { valid: true, cleanedKey };
-    }
-
-    const errJson = await res.json().catch(() => null);
-    let errMsg = errJson?.error?.message;
-
-    if (!errMsg) {
-      if (res.status === 400) {
-        errMsg = 'API key not valid. Please check and re-enter your API key from Google AI Studio.';
-      } else if (res.status === 403) {
-        errMsg = 'Access forbidden for this API key. Ensure Generative Language API is enabled.';
-      } else {
-        errMsg = `API key validation failed (HTTP ${res.status}). Please verify your key.`;
-      }
-    }
-
-    return { valid: false, message: errMsg };
+    await callGeminiApi(payload, cleanedKey);
+    return { valid: true, cleanedKey };
   } catch (err) {
+    console.error('API Key validation error:', err);
     return {
       valid: false,
-      message: 'Network error connecting to Google Gemini API. Please check your internet connection.'
+      message:
+        err.message ||
+        'API key validation failed. Please check and re-enter your key from Google AI Studio.'
     };
   }
 }
@@ -178,24 +228,28 @@ function shuffleAndFormatOptions(questionObj, selectedSkill) {
     category: selectedSkill,
     categoryDescription:
       selectedSkill === 'Visual'
-        ? 'Develop your ability to spot visual information in order to solve a problem'
-        : 'Develop your ability to plan and breakdown information in order to analyze and solve complex problems',
-    question: qText,
-    promptAudio: questionObj.promptAudio || qText,
+        ? 'Pattern Completion, Counting & Spatial Recognition'
+        : 'Logical Deduction, Analogies & Critical Thinking',
+    questionText: qText,
     diagramType,
     diagramData: synchedData,
-    options: newOptions,
-    correctAnswerId: newCorrectId,
-    solutionText: questionObj.solutionText || questionObj.solution || questionObj.sol || `Great thinking! ${correctText} is the correct answer.`,
     solutionDiagramType: diagramType,
     solutionDiagramData: synchedData,
-    hint: questionObj.hint || 'Think step by step and look closely at the clues.',
-    isAIGenerated: true
+    options: newOptions,
+    correctAnswerId: newCorrectId,
+    correctAnswerText: String(correctText),
+    solutionText:
+      questionObj.solution ||
+      questionObj.solutionText ||
+      `The correct answer is ${correctText}.`,
+    hint:
+      questionObj.hint ||
+      'Carefully observe the clues and patterns before selecting an answer.'
   };
 }
 
 /**
- * Clean and parse raw Gemini text output into a valid JSON array
+ * Resilient JSON Parser for Gemini API responses
  */
 function parseGeminiJsonResponse(rawText) {
   if (!rawText) return null;
@@ -211,7 +265,7 @@ function parseGeminiJsonResponse(rawText) {
     if (parsed && Array.isArray(parsed.questions)) return parsed.questions;
   } catch (err) {
     try {
-      const match = cleaned.match(/\[\s*\{.*\}\s*\]/s);
+      const match = cleaned.match(/\[\s*\{[\s\S]*\}\s*\]/);
       if (match) {
         return JSON.parse(match[0]);
       }
@@ -223,7 +277,7 @@ function parseGeminiJsonResponse(rawText) {
 }
 
 /**
- * Generates age-specific pedagogy rules, teacher personas, and relevant few-shot examples
+ * Generates age-specific pedagogy rules, teacher personas, and relevant examples
  */
 function getAgeSpecificPedagogy(age, selectedSkill) {
   const numAge = parseInt(age, 10) || 5;
@@ -314,31 +368,16 @@ Output a valid JSON Array of ${count} items. Format:
 ]
 Return ONLY the valid JSON array without any markdown preamble.`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${encodeURIComponent(
-    apiKey
-  )}`;
-
   const bodyPayload = {
     contents: [{ parts: [{ text: prompt }] }],
     generationConfig: {
       responseMimeType: 'application/json',
-      temperature: 0.5,
-      maxOutputTokens: 1024
+      temperature: 0.7,
+      maxOutputTokens: 2048
     }
   };
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(bodyPayload)
-  });
-
-  if (!res.ok) {
-    const errData = await res.text();
-    throw new Error(`Status ${res.status}: ${errData}`);
-  }
-
-  const data = await res.json();
+  const data = await callGeminiApi(bodyPayload, apiKey);
   const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
   const parsed = parseGeminiJsonResponse(rawText);
 
@@ -346,6 +385,7 @@ Return ONLY the valid JSON array without any markdown preamble.`;
     return parsed;
   }
 
+  console.warn('[Gemini API] Failed to parse JSON response batch:', rawText);
   return [];
 }
 
@@ -358,6 +398,8 @@ export async function generateAIQuestions(selectedSkill = 'Visual', sheetNumber 
   if (!apiKey) {
     throw new Error('MISSING_API_KEY');
   }
+
+  let parallelError = null;
 
   try {
     const [batch1, batch2] = await Promise.all([
@@ -377,20 +419,29 @@ export async function generateAIQuestions(selectedSkill = 'Visual', sheetNumber 
       });
     }
   } catch (err) {
+    parallelError = err;
     console.warn('Parallel batch issue, falling back to single batch:', err.message);
   }
 
-  // Fallback single batch
-  const singleBatch = await fetchBatch(selectedSkill, 10, kidAge, 1, apiKey);
-  if (singleBatch.length >= 6) {
-    return singleBatch.slice(0, 10).map((q, idx) => {
-      const formatted = shuffleAndFormatOptions(q, selectedSkill);
-      return {
-        ...formatted,
-        id: `ai_${kidAge}yo_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`
-      };
-    });
+  // Fallback single batch of 10
+  try {
+    const singleBatch = await fetchBatch(selectedSkill, 10, kidAge, 1, apiKey);
+    if (singleBatch.length >= 6) {
+      return singleBatch.slice(0, 10).map((q, idx) => {
+        const formatted = shuffleAndFormatOptions(q, selectedSkill);
+        return {
+          ...formatted,
+          id: `ai_${kidAge}yo_${Date.now()}_${idx}_${Math.random().toString(36).substr(2, 4)}`
+        };
+      });
+    }
+  } catch (err) {
+    console.error('Single batch fallback failed:', err);
+    throw err;
   }
 
-  throw new Error('API_ERROR: Unable to generate questions from Gemini API');
+  throw (
+    parallelError ||
+    new Error('API_ERROR: Unable to generate questions from Gemini API. Please check your key.')
+  );
 }
