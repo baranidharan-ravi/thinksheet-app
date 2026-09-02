@@ -164,8 +164,8 @@ export default function SkillSelectionDashboard({
 						:	'opacity-100 translate-y-0'
 					}`}
 					title='Open Profile & Settings'>
-					<Settings className='w-3.5 h-3.5 text-amber-300 animate-spin-slow' />
-					<span>Settings ⚙️</span>
+					<Settings className='w-3.5 h-3.5 text-amber-300' />
+					<span>Settings</span>
 				</button>
 			</header>
 
@@ -230,7 +230,7 @@ export default function SkillSelectionDashboard({
 						}}
 						className='px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-white font-extrabold text-xs transition-all shadow-md flex items-center gap-1.5 cursor-pointer'>
 						<Timer className='w-3.5 h-3.5 text-amber-300' />
-						<span>Configure Settings ⚙️</span>
+						<span>Configure Settings</span>
 					</button>
 				</div>
 
