@@ -1,30 +1,49 @@
 # 🚀 Skill Thinksheet - 100% AI-Powered Cosmic Learning for Early Explorers
 
-An engaging, visual-first React.js educational platform designed for early childhood learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time AI question generation via Google Gemini API (Mandatory API Key with Live Validation)**, customizable per-question countdown timers, streamlined exit workflows, and strict age-calibrated difficulty with zero offline/hardcoded questions.
+An engaging, visual-first React.js educational platform designed for early childhood and young learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time AI question generation via Google Gemini API (Mandatory API Key with Live Validation)**, customizable per-question countdown timers, streamlined exit workflows, and strict age-calibrated difficulty with zero offline/hardcoded questions.
 
 ---
 
-## ✨ Key Features
+## ✨ Key Features & Architecture
 
 ### 1. 🪟 Unified Explorer & AI Setup Window (with Live Gemini Key Validation)
-- **All-in-One Configuration**: A single, clean setup window combines all settings on startup:
+- **All-in-One Configuration Modal**: A single setup window combines all settings on startup:
   1. **Child's Name** *(Required)*: Personalized explorer name.
-  2. **Child's Age** *(Required)*: Quick age selector pills (`3`–`8`) + custom +/- stepper supporting ages `2` to `14`.
+  2. **Child's Age** *(Required)*: Quick age selector pills (`3`–`8`) + custom stepper supporting ages `2` to `14`.
   3. **Google Gemini API Key** *(Mandatory 🔑 with Live Validation)*: Features an **Eye (`👁️`) visibility toggle** to easily show or mask your API key, with a direct link to get a free key from Google AI Studio.
-  4. **Question Timer Challenge** *(Optional ⏱️)*: Toggle ON/OFF, select preset limits (`45s`, `60s`, `90s`, `2m`, `3m`), or set a custom duration.
-- **Live Verification on Save**: When clicking **"Launch Thinksheet 🚀"**, the app makes an instant test ping to Google Gemini API. If the key is invalid or expired, a clear red error is shown and the dialog stays open until a valid key is provided.
-- **Skill Selection Auto-Launch**: If a user clicks a skill without having entered an API key, the setup dialog opens, validates the key on save, and automatically launches the selected skill questions seamlessly.
+  4. **Question Timer Challenge** *(Optional ⏱️)*: Toggle ON/OFF, select preset limits (`45s`, `60s`, `90s`, `2m`, `3m`), or set a custom duration (`15s`–`300s`).
+- **Live Verification on Save**: When clicking **"Launch Thinksheet 🚀"**, the app sends an asynchronous test ping to the Google Gemini API. If the key is invalid or expired, a clear red error is shown and the dialog stays open until a valid key is provided.
+- **Skill Selection Auto-Launch Flow**: If a user clicks a skill card without having entered an API key, the setup dialog automatically opens while remembering the targeted skill. Upon successful validation, it immediately launches the selected skill questions without requiring an extra click.
+
+---
 
 ### 2. 🤖 100% Real-Time AI Generation (Mandatory Gemini API Key)
-- **Zero Offline / Hardcoded Questions**: The app synthesizes every single question, analogy, and visual puzzle live on demand via the **Google Gemini REST API** (`gemini-3.5-flash-lite`).
+- **Zero Offline / Hardcoded Questions**: Every question, analogy, pattern sequence, and visual puzzle is synthesized live on demand via the **Google Gemini REST API** (`gemini-3.5-flash-lite`).
 - **High-Throughput Parallel Batching**: Fetches 10 questions in parallel batches in ~2 seconds for near-instant loading.
-- **Strict Age-Tiered Pedagogy**: AI prompts are dynamically calibrated across 4 distinct cognitive tiers (Preschool 2–4, Early Elementary 5–7, Upper Elementary 8–10, and Teen 11–14).
 - **Mathematical & Diagram Synchronization**: Automated validation ensures SVG visual puzzles (apple counting, pattern shapes, grid tiles, scale balance) match the exact numeric count and sequence of the correct answer.
+
+#### 🧠 Strict 4-Tier Age-Calibrated Pedagogy (Ages 2 to 14)
+The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity based on the child's exact age:
+
+| Age Tier | Cognitive Level | Visual Skill Examples | Analytical Thinking Examples |
+| :--- | :--- | :--- | :--- |
+| **Ages 2–4** (Preschool) | Foundational recognition & counting | Counting 1–5 objects (apples 🍎, stars ⭐), simple AB color patterns (🔴 🔵 🔴 🔵) | Parent/baby animals (*Puppy : Dog :: Kitten : Cat*), animal sounds & basic colors |
+| **Ages 5–7** (Early Elementary) | Early reasoning & arithmetic | Counting 4–12 items, AAB / ABC patterns, grid tile gaps, balance scales | Functional analogies (*Bird : Nest :: Bee : Hive*), everyday cause-and-effect (*Ice in sun -> melts*) |
+| **Ages 8–10** (Upper Elementary) | Multi-step logic & STEM deduction | Number sequences (`3, 6, 12, 24, ?`), 3D block projections, grid area matrices | Higher-order analogies (*Author : Book :: Sculptor : Statue*), scientific states of matter |
+| **Ages 11–14** (Middle School / Teen) | Advanced analytical problem-solving | Algebraic & non-linear sequences (`2, 5, 10, 17, 26, ?`), rotational symmetry, isometric volumes | Abstract analogies (*Microscope : Cell :: Telescope : Galaxy*), deductive syllogisms, physics & circuit logic |
+
+---
 
 ### 3. 📐 Symmetrical Layout & Live Timer on Submit Button
 - **Equal-Height Cards**: The left Question Card and right Options Section share identical vertical heights (`items-stretch` & `h-full`), keeping prompts and visual diagrams neatly centered.
 - **Expanding Options Grid**: Option buttons dynamically expand (`flex-1 h-full`) to fill available vertical space.
-- **Bottom-Anchored Submit Button with Live Countdown**: The Submit button and Hint power-up are anchored to the bottom of the card/page (`mt-auto border-t border-white/10`). When the timer challenge is active, the Submit button displays the real-time remaining countdown badge (e.g. `Submit ⏱️ 01:30`) with animated color urgency alerts.
+- **Bottom-Anchored Submit Button with Live Countdown**: The Submit button and Hint power-up are anchored to the bottom of the card/page (`mt-auto border-t border-white/10`).
+- **Real-Time Countdown on Submit**: When the timer challenge is active, the Submit button displays the remaining countdown badge (e.g. `Submit ⏱️ 01:30`) with animated color urgency alerts:
+  - **Normal (> 15s)**: Dark translucent pill (`bg-black/30 text-white/90`).
+  - **Warning (<= 15s)**: Pulsating amber alert (`bg-amber-950/80 text-amber-300`).
+  - **Critical (<= 5s)**: Bouncing red urgent indicator (`bg-rose-950 text-rose-300`).
+
+---
 
 ### 4. 🚪 Exit Confirmation Workflow
 - **Distraction-Free Header**: Clean top bar featuring live XP, timer, voice/sound toggles, fullscreen, and an **`Exit` button**.
@@ -33,38 +52,35 @@ An engaging, visual-first React.js educational platform designed for early child
   2. **🚪 Exit Without Downloading**: Discards the session and returns directly to the Skill Selection Hub.
   3. **🚀 Continue Sheet**: Resumes the current question seamlessly.
 
+---
+
 ### 5. ⏱️ Optional & Customizable Question Timer Limit
 - **Configurable in Setup Window & Hub**: Turn Timer Challenge **ON** or **OFF** (default is `OFF` for relaxed, untimed learning).
 - **Quick Presets**: `45s`, `60s`, **`90s (Default)`**, `2m`, `3m`, plus `Custom ✍️` stepper (`15s`–`300s`).
-- **Live Countdown & Urgency Visuals**: Real-time timer in the header (`⏱️ 01:30`) and on the Submit button with cyan, pulsating amber (<= 15s), and bouncing red (<= 5s) urgency states.
+- **Live Countdown & Urgency Visuals**: Real-time timer in the header (`⏱️ 01:30`) and on the Submit button.
 - **7-Second Solution Reveal & Auto-Advance**: If the timer runs out on a question:
   - The question is marked as **Timed Out (Not Answered)** with red wrong-answer styling.
   - The **Solution Panel immediately opens and highlights the correct answer for 7 seconds** (`Next in 7s... 6s... 5s...`).
   - Voice narration announces that time expired and the next question will load automatically.
   - Includes an immediate `Next ➔` button to skip waiting.
 
+---
+
 ### 6. 🎬 ThinkSheet Intro Animation
 - **Center Stage Splash**: On opening the dashboard, the green **ThinkSheet** banner starts in the center of the viewport with a huge, glowing bold font (`text-4xl` to `text-7xl`) and cosmic space sparkles (`✨` & `🚀`).
 - **Smooth Shrink-to-Top Glide**: Scales down smoothly and glides into its docked position in the top header using an organic spring transition (`cubic-bezier(0.34, 1.3, 0.64, 1)`).
 - **Deferred Welcome Prompt**: The Unified Setup Modal pops up smoothly right after the header animation finishes docking.
+
+---
 
 ### 7. 🗣️ Smart Emoji-Aware Voice Narration (Web Speech API)
 - **No Duplicate Reading**: Intelligently strips emoji characters from sentences when reading text aloud, preventing speech synthesis from redundantly repeating the word and emoji name (e.g. *"How many shiny red apples are in the basket?"* instead of *"shiny red apples red apple"*).
 - **Emoji-Only Sequences**: For pattern puzzles composed of emojis (e.g. `🍎 🍌 🍎 🍌`), each emoji is translated into a clean child-friendly word (*"apple banana apple banana"*).
 - **On-Demand Only**: Questions and solutions are read aloud only when clicking the speaker button (`🔊`).
 
-### 8. 🧠 Dual Skill Learning Tracks
-- **Visual Puzzles**:
-  - Missing grid tiles (scaled by age with numbered step-by-step overlays).
-  - Fruit & shape pattern completions (AB, AAB, and ABC repeating sequences).
-  - Object counting (apples, stars, fish, balloons, gems) calibrated to age.
-  - Seesaw balance scale physics, 3D block pyramids, paper cuts, mirror symmetry, and rocket mazes.
-- **Analytical Thinking**:
-  - Age-appropriate analogies with emojis (*Ear : Headphones :: Eye : Glasses*, *Puppy : Dog :: Kitten : Cat*).
-  - Picture classification and Odd-One-Out categories.
-  - Everyday cause-and-effect reasoning (melting ice in sunshine, seeds sprouting, floating toys).
+---
 
-### 9. 🏆 Space Cadet Leaderboard & Results System
+### 8. 🏆 Space Cadet Leaderboard & Results System
 - **Celebratory Feedback**: 3D `COMPLETED` ribbon banner, glowing star ratings (1 to 3 stars), and confetti particle bursts.
 - **Space Cadet League**: Dynamic leaderboard featuring the child as `[Name] (You)` with accumulated XP.
 - **Question Summary Breakdown**: Detailed accordion review comparing the child's selected answers against correct solutions, with clear `⏱️ Timed Out` indicators for unanswered questions.
