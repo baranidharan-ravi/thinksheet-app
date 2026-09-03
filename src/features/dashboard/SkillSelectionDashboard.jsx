@@ -197,13 +197,15 @@ const SkillSelectionDashboard = memo(function SkillSelectionDashboard({
 							<>
 								<Eye className='w-3.5 h-3.5 text-indigo-300' />
 								<span>
-									Visual Diagrams: <strong className='text-indigo-200'>Enabled 👁️</strong>
+									Visual Diagrams:{' '}
+									<strong className='text-indigo-200'>Enabled 👁️</strong>
 								</span>
 							</>
 						:	<>
 								<EyeOff className='w-3.5 h-3.5 text-slate-400' />
 								<span>
-									Visual Diagrams: <strong className='text-slate-300'>Hidden 🙈</strong>
+									Visual Diagrams:{' '}
+									<strong className='text-slate-300'>Hidden 🙈</strong>
 								</span>
 							</>
 						}
