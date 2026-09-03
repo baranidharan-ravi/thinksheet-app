@@ -25,14 +25,18 @@ app.use(express.json({ limit: '10mb' }));
  */
 function resolveApiKey(req) {
 	// 1. Prefer server-configured secret key from server/.env
-	const cleanServerKey = (SERVER_GEMINI_KEY || '').replace(/^["']|["']$/g, '').trim();
+	const cleanServerKey = (SERVER_GEMINI_KEY || '')
+		.replace(/^["']|["']$/g, '')
+		.trim();
 	if (cleanServerKey && !cleanServerKey.startsWith('enc:v1:')) {
 		return cleanServerKey;
 	}
 
 	const headerKey = req.headers['x-gemini-key'];
 	const bodyKey = req.body?.apiKey;
-	const clientKey = (headerKey || bodyKey || '').replace(/^["']|["']$/g, '').trim();
+	const clientKey = (headerKey || bodyKey || '')
+		.replace(/^["']|["']$/g, '')
+		.trim();
 
 	// Reject any encrypted ciphertext string
 	if (clientKey.startsWith('enc:v1:')) {
