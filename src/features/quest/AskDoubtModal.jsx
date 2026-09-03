@@ -1,5 +1,5 @@
 import { HelpCircle, Sparkles, Volume2, X } from 'lucide-react';
-import { playButtonPop, speakText } from '../utils/audioSynthesis';
+import { playButtonPop, speakText } from '../../utils/audioSynthesis';
 
 export default function AskDoubtModal({
 	question,

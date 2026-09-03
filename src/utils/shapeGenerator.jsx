@@ -775,7 +775,14 @@ export function DynamicShapeCard({
 	const parsed = parseDynamicShape(item);
 	const uniquePatternId = `diag-hatch-${index}-${Math.random().toString(36).substr(2, 4)}`;
 
-	if (isTarget && !isSolution) {
+	const isQuestionItem =
+		typeof item === 'string' &&
+		(item.trim() === '?' ||
+			item.trim().startsWith('?') ||
+			item.trim() === '___' ||
+			/^(what|which|how|find)\b/i.test(item.trim()));
+
+	if ((isTarget || isQuestionItem) && !isSolution) {
 		return (
 			<div className='flex flex-col items-center justify-center p-3 rounded-2xl bg-white border-2 border-dashed border-indigo-400 min-w-[80px] sm:min-w-[95px] shadow-sm animate-pulse'>
 				<div className='w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-2xl shadow-inner'>
@@ -839,12 +846,26 @@ export function extractShapeSequenceTerms(questionText, defaultTerms = []) {
 
 	// 3. Split by colon after sequence prompt e.g. "progression: A, B, C, D, ?"
 	const colonSplit = questionText.split(/:\s*/);
-	if (colonSplit.length > 1) {
-		const rawList = colonSplit[1].split(/\s*\?\s*$/)[0];
-		const items = rawList
+	const candidate = colonSplit.length > 1 ? colonSplit[1] : questionText;
+
+	// Isolate the sequence part before any '?', '___', or question starter ("What", "Which", "How", "Find")
+	const cleanSequenceText = candidate.split(
+		/\s*\?|\s*_{2,}|\b(?:what|which|how|find)\b/i,
+	)[0];
+
+	if (cleanSequenceText) {
+		const items = cleanSequenceText
 			.split(/,\s*(?![^()]*\))/)
 			.map((s) => s.trim())
-			.filter((s) => s.length > 0 && s !== '?');
+			.filter((s) => {
+				if (!s) return false;
+				if (s === '?' || s.includes('?')) return false;
+				if (/^(_+|\.\.\.+)$/.test(s)) return false;
+				if (/^(what|which|how|find|comes|pattern|sequence|look)\b/i.test(s))
+					return false;
+				return true;
+			});
+
 		if (items.length >= 2) {
 			return items;
 		}

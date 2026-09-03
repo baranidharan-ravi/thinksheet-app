@@ -1,6 +1,6 @@
-# 🚀 Skill Thinksheet - 100% Live AI-Powered Cosmic Learning for Early Explorers
+# 🚀 AstroQuest - 100% Live AI-Powered Cosmic Learning for Early Explorers
 
-An engaging, visual-first React.js educational platform designed for early childhood and young learners (Ages 2–14), featuring cosmic space-themed Thinksheets, interactive animations, sound effects, on-demand voice narration, **100% real-time direct AI question generation via Google Gemini API (Mandatory API Key with Live Validation)**, configurable auto-advance question pacing, customizable per-question countdown timers, streamlined exit workflows, dynamic mathematical SVG shape generation, and strict age-calibrated difficulty with zero offline/cached questions.
+An engaging, visual-first React.js educational platform designed for early childhood and young learners (Ages 2–14), featuring cosmic space-themed AstroQuest challenges, interactive animations, sound effects, on-demand voice narration, **100% real-time direct AI question generation via Google Gemini API (Mandatory API Key with Live Validation)**, configurable auto-advance question pacing, customizable per-question countdown timers, streamlined exit workflows, dynamic mathematical SVG shape generation, and strict age-calibrated difficulty with zero offline/cached questions.
 
 ---
 
@@ -15,8 +15,9 @@ An engaging, visual-first React.js educational platform designed for early child
   4. **Gemini AI Model Selection** _(Selectable 🤖)_: Choose between `gemini-3.5-flash-lite` _(Recommended)_, `gemini-3.5-flash`, `gemini-3-flash-preview`, and `gemini-2.5-flash`.
   5. **Per-Question Time Limit** _(Optional ⏱️)_: Toggle ON/OFF, select preset limits (`45s`, `60s`, `90s`, `2m`, `3m`), or set a custom duration (`15s`–`300s`).
   6. **Next Question Auto-Advance Delay** _(Optional ⏩)_: Toggle Auto-Advance ON/OFF, select preset delay (`3s`, `5s`, `7s Default`, `10s`, `15s`), or set a custom delay (`2s`–`30s`).
+  7. **Visual Diagrams & Clues Display** _(Optional 👁️)_: Toggle ON/OFF (`👁️ Shown` / `🙈 Hidden`) to choose whether interactive geometric diagrams, 3x3 matrices, sequence patterns, and STEM illustrations appear alongside questions.
 - **Live Verification on Save**: When clicking **"Save & Launch 🚀"**, the app sends an asynchronous test ping to Google Gemini API. If the key is invalid or expired, a clear red error is shown and the settings page remains open until a valid key is provided.
-- **Skill Selection Auto-Launch Flow**: If a user clicks a skill card without having entered an API key, the app transitions directly to the Settings page while remembering the targeted skill. Upon successful validation, it immediately launches the selected skill thinksheet.
+- **Skill Selection Auto-Launch Flow**: If a user clicks a skill card without having entered an API key, the app transitions directly to the Settings page while remembering the targeted skill. Upon successful validation, it immediately launches the selected skill quest.
 
 ---
 
@@ -164,11 +165,11 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 8. 🎬 ThinkSheet Intro Animation & Clean Dashboard
+### 8. 🎬 AstroQuest Intro Animation & Clean Dashboard
 
-- **Center Stage Splash**: On opening the dashboard, the green **ThinkSheet** banner starts in the center of the viewport with a glowing bold font and cosmic sparkles (`✨` & `🚀`).
+- **Center Stage Splash**: On opening the dashboard, the green **AstroQuest** banner starts in the center of the viewport with a glowing bold font and cosmic sparkles (`✨` & `🚀`).
 - **Smooth Shrink-to-Top Glide**: Scales down smoothly and glides into its docked position in the top header using an organic spring transition (`cubic-bezier(0.34, 1.3, 0.64, 1)`).
-- **Streamlined Skill Cards**: Clean, focused action cards (`Start Visual Sheet ➔` & `Start Analytical Sheet ➔`) without cluttered level badges.
+- **Streamlined Skill Cards**: Clean, focused action cards (`Start Visual Quest ➔` & `Start Analytical Quest ➔`) without cluttered level badges.
 
 ---
 
@@ -182,7 +183,7 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 10. 🏆 Space Cadet Leaderboard & Results System
+### 10. 🏆 Performance Results & Session Summary System
 
 - **Celebratory Feedback**: 3D `COMPLETED` ribbon banner, glowing star ratings (1 to 3 stars), and confetti particle bursts.
 - **Detailed Question Summary Accordion**:
@@ -192,16 +193,18 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
     - 🟡 **Skipped Question** (`SkipForward ⏭️` with amber card and `⏭️ Skipped (Not Answered)` label).
     - ⏱️ **Timed Out** (`⏱️ Timed Out (Not Answered)` label).
     - 🔴 **Incorrect Answer** (`XCircle` with red card).
-- **Result Overview Card**: Displays `{correctCount} Correct Answers` along with `⏭️ {skippedCount} Skipped` when any questions were skipped.
+- **Result Overview Card**: Dedicated session performance card displaying a clear 3-way breakdown:
+  - 🟢 **Correct**: Total questions answered correctly.
+  - 🔴 **Wrong**: Total questions answered incorrectly.
+  - 🟡 **Skipped**: Total questions skipped without answering.
 - **📄 Download PDF Session Report (`exportSessionToPdf`)**:
   - Replaces raw JSON exports with a beautifully formatted, multi-page PDF document.
   - **Timestamped & Personalized Filename**: Includes Child Name, Skill, Sheet #, Date, and Time:
-    `Thinksheet_{ChildName}_Age{Age}_{Skill}_Sheet{SheetNumber}_{DDMonYYYY}_{HH-MM-AM/PM}.pdf`
-    (e.g., `Thinksheet_Shraddha_Age5_Visual_Sheet1_03Sep2026_12-07PM.pdf`).
-  - **Top Header Banner**: Prominently highlights **Child / Student Name**, **Age**, **Selected Skill**, **Sheet #**, and **Exact Date & Time Taken** (e.g. `Thu, Sep 3, 2026, 12:07:15 PM`).
-  - Structure mirrors the Question Summary page with **all questions and answers fully expanded**:
-    - **Header Banner**: Cosmic Thinksheet branding, student name, student age, skill, sheet number, and precise date & time taken.
-    - **Score Bar**: Score percentage, correct/skipped/incorrect counts, and XP badge.
+    `AstroQuest_{ChildName}_Age{Age}_{Skill}_Sheet{SheetNumber}_{DDMonYYYY}_{HH-MM-AM/PM}.pdf`
+    (e.g., `AstroQuest_Shraddha_Age5_Visual_Sheet1_03Sep2026_12-07PM.pdf`).
+  - **Unified Cosmic Top Header Banner**: Merged the header and score cards into a single cohesive banner:
+    - **Header Banner**: Cosmic AstroQuest branding, student name, student age, skill, sheet number, and precise date & time taken.
+    - **Integrated Score & Status Badges**: Top-right overall score percentage (`Score: X/10 (Y%)`) accompanied by 3 color-coded performance pills (`Correct`, `Wrong`, and `Skipped`) directly inside the top header banner—eliminating redundant sections and saving vertical space.
     - **Color-Coded Options Breakdown**: Multiple-choice options render in distinct rounded cards with color-coded fills and borders (Emerald Green for correct answers, Rose Red for user-selected incorrect answers, and clean Slate for other choices) without cluttering text tags. Includes side-by-side answer comparisons and complete pedagogical solution explanations.
     - **Running Footers**: Page numbering (`Page X of Y`) and platform watermark.
   - Accessible via **"Download PDF Report 📄"** on the Result Overview page, Question Summary page, and Exit modal.
@@ -272,12 +275,62 @@ npm run deploy
 
 ---
 
+## 🎨 Official App Icon & Visual Identity
+
+- **Vector App Icon (`/public/astroquest-icon.svg`)**:
+  - **Cosmic Squircle Canvas**: Multi-stop deep space radial gradient (`#312E81` ➔ `#1E1B4B` ➔ `#0B0D28`) with an indigo border.
+  - **Soaring Space Rocket**: Aerodynamic white chassis tilted at 45° with vibrant coral fins, central stabilizer ridge, and dual-layer fiery thruster plume (`#FBBF24` ➔ `#EF4444`).
+  - **Porthole Cockpit**: Glass sphere with specular highlights and cyan light reflection.
+  - **Planetary Orbit & Stardust**: Dashed celestial orbit ring (`#38BDF8` ➔ `#A855F7`), distant mini planet, and twinkling 4-point golden/cyan stars.
+  - **Cross-Platform Integration**: Linked as primary favicon, mobile touch icon (`apple-touch-icon`), and featured directly in the in-app navigation header badge.
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── features/                                 # Feature-specific components and UI modules
+│   ├── dashboard/                            # Landing screen & skill selection
+│   │   └── SkillSelectionDashboard.jsx
+│   ├── settings/                             # Full-screen profile & preferences screen
+│   │   └── SettingsScreen.jsx
+│   ├── quest/                                # Live learning quiz & session interaction
+│   │   ├── QuestionCard.jsx                  # Main question prompt card with TTS audio
+│   │   ├── OptionsGrid.jsx                   # Multiple-choice answer options grid
+│   │   ├── SolutionPanel.jsx                 # Solution review & next button panel
+│   │   ├── HintModal.jsx                     # Cognitive hint modal
+│   │   ├── AskDoubtModal.jsx                 # AI tutor doubt explanation modal
+│   │   └── ExitConfirmationModal.jsx         # Exit modal with PDF download option
+│   └── results/                              # Session results & performance breakdown
+│       ├── ResultOverview.jsx                # Session results & performance breakdown
+│       └── QuestionSummary.jsx               # Question-by-question review accordion
+├── services/                                 # AI generation & external API communication
+│   ├── aiGenerator.js                        # Google Gemini AI generation engine & live model discovery
+│   └── questionService.js                    # Question session pipeline & prompt orchestration
+├── utils/                                    # Common utility logic & shared components
+│   ├── Header.jsx                            # Shared top navigation & progress bar component
+│   ├── VisualDiagrams.jsx                    # Shared visual diagram rendering component
+│   ├── ZoomModal.jsx                         # Shared visual diagram zoom modal component
+│   ├── audioSynthesis.js                     # Sound effects & speech synthesis engine
+│   ├── pdfGenerator.js                       # Multi-page PDF session report generator
+│   ├── progressTracker.js                    # Local storage profile & settings tracker
+│   ├── shapeGenerator.jsx                    # Dynamic SVG shape math engine
+│   └── storage.js                            # Session state persistence
+├── App.jsx                                   # Top-level application controller
+├── main.jsx                                  # React entry point
+└── index.css                                 # Global styles & Tailwind
+```
+
+---
+
 ## 🛠️ Tech Stack
 
 - **React 18** (Modern functional components & hooks)
-- **Google Gemini API** (`gemini-3.5-flash-lite`, `gemini-3.5-flash`, `gemini-3-flash-preview`, `gemini-2.5-flash` via browser-native REST API with live key validation)
+- **Google Gemini API** (`gemini-3.5-flash-lite`, `gemini-3.5-flash`, `gemini-3-flash-preview`, `gemini-2.5-flash` via browser-native REST API with live key validation & dynamic model discovery)
 - **Vite 6** (Blazing fast HMR and build tool)
 - **Tailwind CSS 3** (Custom space theme palette, animations, and responsive design)
+- **jsPDF 4** (Client-side multi-page PDF generation engine with color-coded options & headers)
 - **Lucide Icons** (Clean, child-friendly iconography)
 - **Canvas Confetti** (Celebratory particle effects)
 - **Web Audio API & Web Speech API** (Zero-asset sound synthesis and sanitized voice narration)

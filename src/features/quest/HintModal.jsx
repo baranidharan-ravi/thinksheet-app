@@ -1,5 +1,5 @@
 import { X, Zap } from 'lucide-react';
-import { playButtonPop } from '../utils/audioSynthesis';
+import { playButtonPop } from '../../utils/audioSynthesis';
 
 export default function HintModal({ hintText, isOpen, onClose, soundEnabled }) {
 	if (!isOpen) return null;

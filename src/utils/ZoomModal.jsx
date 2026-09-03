@@ -1,6 +1,6 @@
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import React from 'react';
-import { playButtonPop } from '../utils/audioSynthesis';
+import { playButtonPop } from './audioSynthesis';
 import VisualDiagram from './VisualDiagrams';
 
 export default function ZoomModal({

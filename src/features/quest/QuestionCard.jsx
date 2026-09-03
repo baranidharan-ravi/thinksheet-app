@@ -1,7 +1,7 @@
 import { Brain, Eye, Volume2, ZoomIn } from 'lucide-react';
 import { useState } from 'react';
-import { playButtonPop, speakText } from '../utils/audioSynthesis';
-import VisualDiagram from './VisualDiagrams';
+import { playButtonPop, speakText } from '../../utils/audioSynthesis';
+import VisualDiagram from '../../utils/VisualDiagrams';
 
 export default function QuestionCard({
 	question,
@@ -10,6 +10,7 @@ export default function QuestionCard({
 	onZoomClick,
 	soundEnabled,
 	isSubmitted = false,
+	showVisualDiagrams = true,
 }) {
 	const [isSpeaking, setIsSpeaking] = useState(false);
 
@@ -60,7 +61,7 @@ export default function QuestionCard({
 				</div>
 
 				{/* Zoom Button */}
-				{question.diagramType ?
+				{showVisualDiagrams && question.diagramType ?
 					<button
 						type='button'
 						onClick={() => {
@@ -106,8 +107,8 @@ export default function QuestionCard({
 					</button>
 				</div>
 
-				{/* Visual Diagram (If Visual Question) */}
-				{question.diagramType && (
+				{/* Visual Diagram (If Enabled & Question has Diagram) */}
+				{showVisualDiagrams && question.diagramType && (
 					<div className='flex justify-center items-center py-2'>
 						<VisualDiagram
 							type={question.diagramType}

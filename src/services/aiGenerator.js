@@ -601,6 +601,18 @@ function synchronizeDiagramData(
 					:	['1st', '2nd', '3rd', '4th'];
 			}
 		}
+
+		if (Array.isArray(data.sequence)) {
+			data.sequence = data.sequence
+				.map((s) => (typeof s === 'string' ? s.trim() : s))
+				.filter(
+					(s) =>
+						s &&
+						s !== '?' &&
+						!String(s).includes('?') &&
+						!/^(what|which|how|find|comes)\b/i.test(String(s)),
+				);
+		}
 		data.nextVal = data.nextVal || correctText.trim();
 	} else if (type === 'odd-one-out') {
 		data.target = data.target || correctText.trim();
@@ -645,6 +657,18 @@ function synchronizeDiagramData(
 				emojis && emojis.length >= 2 ?
 					emojis
 				:	['Triangle (3 sides, white)', 'Square (4 sides, shaded)'];
+		}
+
+		if (Array.isArray(data.sequence)) {
+			data.sequence = data.sequence
+				.map((s) => (typeof s === 'string' ? s.trim() : s))
+				.filter(
+					(s) =>
+						s &&
+						s !== '?' &&
+						!String(s).includes('?') &&
+						!/^(what|which|how|find|comes)\b/i.test(String(s)),
+				);
 		}
 		data.nextItem =
 			data.nextItem || data.nextVal || correctText.trim() || data.sequence[0];

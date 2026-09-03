@@ -56,6 +56,26 @@ export function saveStoredTimerConfig(config) {
 	}
 }
 
+const VISUAL_DIAGRAMS_CONFIG_KEY = 'astroquest_show_visual_diagrams_v1';
+
+export function getStoredShowVisualDiagrams() {
+	try {
+		const raw = localStorage.getItem(VISUAL_DIAGRAMS_CONFIG_KEY);
+		if (raw !== null) {
+			return raw === 'true';
+		}
+	} catch {}
+	return true; // Default to true (visual diagrams enabled)
+}
+
+export function saveStoredShowVisualDiagrams(show) {
+	try {
+		localStorage.setItem(VISUAL_DIAGRAMS_CONFIG_KEY, String(Boolean(show)));
+	} catch (err) {
+		console.warn('Could not save visual diagrams preference', err);
+	}
+}
+
 export const INITIAL_PROFILE = {
 	visualSolved: 0,
 	analyticalSolved: 0,

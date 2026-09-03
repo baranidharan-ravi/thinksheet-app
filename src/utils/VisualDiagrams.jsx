@@ -9,13 +9,13 @@ import {
 	Sparkles,
 	Zap,
 } from 'lucide-react';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import {
 	DynamicShapeCard,
 	DynamicSvgShape,
 	extractShapeSequenceTerms,
 	ShapeClusterCard,
-} from '../utils/shapeGenerator';
+} from './shapeGenerator';
 
 /**
  * Intelligent Concept Visual Mapper for STEM & Analogy Words
@@ -697,7 +697,7 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 
 				<div className='flex items-center justify-center flex-wrap gap-2 sm:gap-3 w-full'>
 					{steps.map((st, idx) => (
-						<React.Fragment key={idx}>
+						<Fragment key={idx}>
 							<div className='flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl bg-white text-slate-900 border-2 border-slate-200 shadow-md min-w-[85px] sm:min-w-[95px]'>
 								<span className='text-[10px] font-black uppercase text-indigo-700 mb-1 tracking-wider bg-indigo-50 px-2 py-0.2 rounded'>
 									Step {st.step || idx + 1}
@@ -726,7 +726,7 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 									+{angle}° {direction}
 								</span>
 							</div>
-						</React.Fragment>
+						</Fragment>
 					))}
 
 					{/* Target Step Card */}
@@ -882,14 +882,30 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 
 	// 3. Shape & Color Sequence Progressions
 	if (type === 'shape-sequence' || type === 'pattern-shapes') {
-		let items =
+		let rawItems =
 			Array.isArray(data.sequence) ? data.sequence
 			: Array.isArray(data.steps) ? data.steps
 			: [];
 
-		if (items.length === 0 && data.raw) {
-			items = extractShapeSequenceTerms(data.raw);
+		if (rawItems.length === 0 && data.raw) {
+			rawItems = extractShapeSequenceTerms(data.raw);
 		}
+
+		// Filter out any trailing question sentences, question marks, or placeholders
+		let items = rawItems
+			.map((item) => (typeof item === 'string' ? item.trim() : item))
+			.filter((item) => {
+				if (!item) return false;
+				if (typeof item === 'string') {
+					if (item === '?' || item.includes('?')) return false;
+					if (/^(_+|\.\.\.+)$/.test(item)) return false;
+					if (
+						/^(what|which|how|find|comes|pattern|sequence|look)\b/i.test(item)
+					)
+						return false;
+				}
+				return true;
+			});
 
 		if (items.length === 0) {
 			items = ['Triangle (3 sides, white)', 'Square (4 sides, shaded)'];

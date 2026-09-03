@@ -1,11 +1,11 @@
 import { Check, X as XIcon } from 'lucide-react';
-import { playButtonPop } from '../utils/audioSynthesis';
+import { playButtonPop } from '../../utils/audioSynthesis';
 import {
 	DynamicSvgShape,
 	hasShapeOrVisualConcept,
 	parseDynamicShape,
-} from '../utils/shapeGenerator';
-import { getConceptVisual } from './VisualDiagrams';
+} from '../../utils/shapeGenerator';
+import { getConceptVisual } from '../../utils/VisualDiagrams';
 
 export default function OptionsGrid({
 	options,

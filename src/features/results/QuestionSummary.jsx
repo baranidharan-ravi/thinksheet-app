@@ -10,8 +10,8 @@ import {
 	XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
-import { playButtonPop } from '../utils/audioSynthesis';
-import VisualDiagram from './VisualDiagrams';
+import { playButtonPop } from '../../utils/audioSynthesis';
+import VisualDiagram from '../../utils/VisualDiagrams';
 
 export default function QuestionSummary({
 	questions,
@@ -22,6 +22,7 @@ export default function QuestionSummary({
 	setActiveTab,
 	soundEnabled,
 	onBackToDashboard,
+	showVisualDiagrams = true,
 }) {
 	const [expandedIndex, setExpandedIndex] = useState(null);
 
@@ -132,7 +133,7 @@ export default function QuestionSummary({
 									</p>
 
 									{/* Visual Diagram Preview */}
-									{q.diagramType && (
+									{showVisualDiagrams && q.diagramType && (
 										<div className='w-full flex justify-center py-2'>
 											<VisualDiagram
 												type={q.diagramType}
@@ -212,7 +213,7 @@ export default function QuestionSummary({
 					}}
 					className='w-full sm:w-auto py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-[#FF5B84] to-[#FF435A] hover:from-[#FF435A] hover:to-[#E11D48] text-white font-extrabold text-sm sm:text-base shadow-[0_10px_25px_rgba(255,91,132,0.4)] flex items-center justify-center gap-2 transform hover:-translate-y-0.5 transition-all cursor-pointer'>
 					<RefreshCw className='w-4 h-4 animate-spin-slow' />
-					<span>Start Next Thinksheet</span>
+					<span>Start Next AstroQuest</span>
 				</button>
 
 				{onDownloadPdf && (

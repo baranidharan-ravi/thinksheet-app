@@ -1,5 +1,5 @@
 import { ArrowRight, Download, LogOut, Play, X } from 'lucide-react';
-import { playButtonPop } from '../utils/audioSynthesis';
+import { playButtonPop } from '../../utils/audioSynthesis';
 
 export default function ExitConfirmationModal({
 	isOpen,
@@ -35,7 +35,7 @@ export default function ExitConfirmationModal({
 					</div>
 
 					<h2 className='text-xl sm:text-2xl font-black text-white tracking-wide'>
-						Exit Thinksheet?
+						Exit AstroQuest?
 					</h2>
 					<p className='text-xs font-semibold text-slate-300 mt-1'>
 						You are on Question {currentIndex + 1} of {totalQuestions} in{' '}
@@ -102,7 +102,7 @@ export default function ExitConfirmationModal({
 						}}
 						className='w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold text-sm tracking-wide shadow-lg transform hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2 mt-1'>
 						<Play className='w-4 h-4 fill-white' />
-						<span>Continue Sheet 🚀</span>
+						<span>Continue AstroQuest 🚀</span>
 					</button>
 				</div>
 			</div>

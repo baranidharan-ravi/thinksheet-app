@@ -9,13 +9,12 @@ import {
 	VolumeX,
 } from 'lucide-react';
 import React from 'react';
-import { playButtonPop } from '../utils/audioSynthesis';
+import { playButtonPop } from './audioSynthesis';
 
 export default function Header({
 	questionIndex,
 	totalQuestions,
 	history,
-	xp,
 	timerSeconds,
 	timerConfig = { enabled: false, secondsPerQuestion: 90 },
 	questionTimeRemaining = 90,
@@ -54,14 +53,21 @@ export default function Header({
 
 	return (
 		<header className='w-full max-w-7xl mx-auto px-3 sm:px-6 py-3 flex items-center justify-between gap-2 sm:gap-4 select-none'>
-			{/* Skill Thinksheet Badge */}
-			<div className='flex flex-col items-center bg-[#151747] border border-[#2B3075] rounded-xl px-3 py-1 sm:px-4 sm:py-1.5 shadow-lg'>
-				<span className='text-white font-extrabold text-sm sm:text-base tracking-wider bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent'>
-					SKILL
-				</span>
-				<span className='text-[10px] sm:text-xs font-semibold text-gray-300 tracking-wide uppercase'>
-					THINKSHEET
-				</span>
+			{/* AstroQuest Badge with App Icon */}
+			<div className='flex items-center gap-2 bg-[#151747] border border-[#2B3075] rounded-xl px-2.5 py-1 sm:px-3.5 sm:py-1.5 shadow-lg'>
+				<img
+					src='/astroquest-icon.svg'
+					alt='AstroQuest'
+					className='w-6 h-6 sm:w-7 sm:h-7 rounded-lg shadow-sm flex-shrink-0'
+				/>
+				<div className='flex flex-col items-start leading-none'>
+					<span className='text-white font-extrabold text-xs sm:text-sm tracking-wider bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent'>
+						ASTRO
+					</span>
+					<span className='text-[9px] sm:text-[10px] font-bold text-gray-300 tracking-wide uppercase mt-0.5'>
+						QUEST
+					</span>
+				</div>
 			</div>
 
 			{/* 10-Segment Segmented Progress Bar */}
@@ -186,7 +192,7 @@ export default function Header({
 							onExitClick();
 						}}
 						className='px-3 sm:px-3.5 py-2 rounded-xl bg-[#121644] hover:bg-rose-950/60 border border-[#29307A] hover:border-rose-500 text-rose-300 hover:text-white shadow-md transition-all flex items-center gap-1.5 cursor-pointer transform hover:scale-105 active:scale-95'
-						title='Exit Thinksheet'>
+						title='Exit AstroQuest'>
 						<LogOut className='w-4 h-4 text-rose-400' />
 						<span className='text-xs font-bold'>Exit</span>
 					</button>

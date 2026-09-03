@@ -8,8 +8,8 @@ import {
 	Volume2,
 	XCircle,
 } from 'lucide-react';
-import { playButtonPop, speakText } from '../utils/audioSynthesis';
-import VisualDiagram from './VisualDiagrams';
+import { playButtonPop, speakText } from '../../utils/audioSynthesis';
+import VisualDiagram from '../../utils/VisualDiagrams';
 
 export default function SolutionPanel({
 	isCorrect,

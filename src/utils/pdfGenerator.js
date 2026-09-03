@@ -46,7 +46,6 @@ export function exportSessionToPdf(sessionData, customFilename) {
 	// Calculate counts
 	const skippedCount = history.filter((h) => h && h.skipped).length;
 	const incorrectCount = totalQuestions - correctCount - skippedCount;
-	const earnedXp = xp || correctCount * 5;
 
 	// Helper to check space & auto-add page
 	const ensureSpace = (neededHeight) => {
@@ -59,100 +58,100 @@ export function exportSessionToPdf(sessionData, customFilename) {
 	};
 
 	// ==========================================
-	// 1. HEADER BANNER (Top of First Page)
+	// 1. UNIFIED HEADER BANNER WITH INTEGRATED SCORE & PERFORMANCE STATS
 	// ==========================================
+	const headerHeight = 36;
 	doc.setFillColor(21, 24, 76); // Dark Cosmic Navy (#15184C)
-	doc.roundedRect(marginX, currentY, contentWidth, 29, 3, 3, 'F');
+	doc.roundedRect(marginX, currentY, contentWidth, headerHeight, 3, 3, 'F');
 
+	// Row 1: Title & Score
 	doc.setTextColor(255, 255, 255);
 	doc.setFont('helvetica', 'bold');
-	doc.setFontSize(15);
-	doc.text('SKILL THINKSHEET - SESSION REPORT', marginX + 6, currentY + 8);
+	doc.setFontSize(13.5);
+	doc.text('ASTROQUEST - SESSION REPORT', marginX + 6, currentY + 7.5);
 
-	doc.setFontSize(9.5);
+	// Score in top right of header
+	doc.setFontSize(11);
 	doc.setFont('helvetica', 'bold');
-	doc.setTextColor(147, 197, 253); // Light Cyan/Blue (#93C5FD)
+	doc.setTextColor(254, 240, 138); // Soft Gold (#FEF08A)
+	doc.text(
+		`Score: ${correctCount}/${totalQuestions} (${scorePercent}%)`,
+		pageWidth - marginX - 6,
+		currentY + 7.5,
+		{ align: 'right' },
+	);
+
+	// Row 2: Student & Skill Details
+	doc.setFontSize(9);
+	doc.setFont('helvetica', 'bold');
+	doc.setTextColor(147, 197, 253); // Light Blue (#93C5FD)
 	doc.text(
 		`Student: ${cleanPdfText(studentName)} (Age ${studentAge})`,
 		marginX + 6,
-		currentY + 16,
+		currentY + 14.5,
 	);
 
 	doc.setFont('helvetica', 'normal');
 	doc.setTextColor(203, 213, 225); // Slate 300
 	doc.text(
 		`Skill: ${cleanPdfText(selectedSkill)}   |   Sheet #${sheetNumber}`,
-		marginX + 80,
-		currentY + 16,
+		pageWidth - marginX - 6,
+		currentY + 14.5,
+		{ align: 'right' },
 	);
 
-	doc.setFontSize(8.5);
-	doc.setFont('helvetica', 'bold');
-	doc.setTextColor(254, 240, 138); // Soft Gold (#FEF08A)
+	// Row 3: Date & Time Taken
+	doc.setFontSize(8);
+	doc.setFont('helvetica', 'normal');
+	doc.setTextColor(148, 163, 184); // Slate 400
 	doc.text(
 		`Date & Time Taken: ${cleanPdfText(date)}`,
 		marginX + 6,
-		currentY + 23.5,
+		currentY + 20.5,
 	);
 
-	currentY += 34;
+	// Row 4: Performance Badges (Correct, Wrong, Skipped, XP)
+	let badgeX = marginX + 6;
+	const badgeY = currentY + 24.5;
+	const badgeHeight = 7.5;
 
-	// ==========================================
-	// 2. SCORE & PERFORMANCE SUMMARY BAR
-	// ==========================================
-	doc.setFillColor(248, 250, 252); // Soft slate background
-	doc.setDrawColor(203, 213, 225); // Border (#CBD5E1)
-	doc.roundedRect(marginX, currentY, contentWidth, 18, 2.5, 2.5, 'FD');
-
-	// Score badge (Left)
+	// 1. Correct Pill (Green color alone)
+	doc.setFillColor(220, 252, 231); // #DCFCE7
+	doc.setDrawColor(34, 197, 94); // #22C55E
+	doc.roundedRect(badgeX, badgeY, 26, badgeHeight, 1.8, 1.8, 'FD');
 	doc.setFont('helvetica', 'bold');
-	doc.setFontSize(12);
-	doc.setTextColor(15, 23, 42); // Dark slate
-	doc.text(
-		`Score: ${correctCount}/${totalQuestions} (${scorePercent}%)`,
-		marginX + 5,
-		currentY + 11,
-	);
-
-	// Status Badges (Right side - Color alone, no icons)
-	let badgeX = marginX + 80;
-
-	// Correct Pill (Green color alone)
-	doc.setFillColor(220, 252, 231); // Green tint
-	doc.setDrawColor(34, 197, 94);
-	doc.roundedRect(badgeX, currentY + 4.5, 28, 9, 2, 2, 'FD');
-	doc.setFont('helvetica', 'bold');
-	doc.setFontSize(8.5);
-	doc.setTextColor(21, 128, 61);
-	doc.text(`${correctCount} Correct`, badgeX + 14, currentY + 10.2, {
+	doc.setFontSize(8);
+	doc.setTextColor(21, 128, 61); // #15803D
+	doc.text(`${correctCount} Correct`, badgeX + 13, badgeY + 5, {
 		align: 'center',
 	});
-	badgeX += 32;
+	badgeX += 29;
 
-	// Skipped Pill (Amber color alone)
-	doc.setFillColor(254, 243, 199); // Amber tint
-	doc.setDrawColor(245, 158, 11);
-	doc.roundedRect(badgeX, currentY + 4.5, 28, 9, 2, 2, 'FD');
+	// 2. Wrong Pill (Red color alone)
+	const safeWrongCount = Math.max(0, incorrectCount);
+	doc.setFillColor(254, 226, 226); // #FEE2E2
+	doc.setDrawColor(244, 63, 94); // #F43F5E
+	doc.roundedRect(badgeX, badgeY, 26, badgeHeight, 1.8, 1.8, 'FD');
 	doc.setFont('helvetica', 'bold');
-	doc.setFontSize(8.5);
-	doc.setTextColor(180, 83, 9);
-	doc.text(`${skippedCount} Skipped`, badgeX + 14, currentY + 10.2, {
+	doc.setFontSize(8);
+	doc.setTextColor(190, 18, 60); // #BE123C
+	doc.text(`${safeWrongCount} Wrong`, badgeX + 13, badgeY + 5, {
 		align: 'center',
 	});
-	badgeX += 32;
+	badgeX += 29;
 
-	// XP Pill (Purple color alone)
-	doc.setFillColor(243, 232, 255); // Purple tint
-	doc.setDrawColor(168, 85, 247);
-	doc.roundedRect(badgeX, currentY + 4.5, 30, 9, 2, 2, 'FD');
+	// 3. Skipped Pill (Amber color alone)
+	doc.setFillColor(254, 243, 199); // #FEF3C7
+	doc.setDrawColor(245, 158, 11); // #F59E0B
+	doc.roundedRect(badgeX, badgeY, 26, badgeHeight, 1.8, 1.8, 'FD');
 	doc.setFont('helvetica', 'bold');
-	doc.setFontSize(8.5);
-	doc.setTextColor(126, 34, 206);
-	doc.text(`+${earnedXp} XP`, badgeX + 15, currentY + 10.2, {
+	doc.setFontSize(8);
+	doc.setTextColor(180, 83, 9); // #B45309
+	doc.text(`${skippedCount} Skipped`, badgeX + 13, badgeY + 5, {
 		align: 'center',
 	});
 
-	currentY += 23;
+	currentY += headerHeight + 6;
 
 	// ==========================================
 	// 3. FULLY EXPANDED QUESTIONS LIST
@@ -439,7 +438,7 @@ export function exportSessionToPdf(sessionData, customFilename) {
 		doc.setFont('helvetica', 'normal');
 		doc.setTextColor(148, 163, 184); // Slate 400
 		doc.text(
-			'Skill Thinksheet | 100% AI-Generated Adaptive Learning for Kids',
+			'AstroQuest | 100% AI-Generated Adaptive Learning for Kids',
 			marginX,
 			pageHeight - 6,
 		);
@@ -481,7 +480,7 @@ export function exportSessionToPdf(sessionData, customFilename) {
 		cleanPdfText(studentName).replace(/[^\w-]/g, '_') || 'Explorer';
 	const safeFileName =
 		customFilename ||
-		`Thinksheet_${safeStudentName}_Age${studentAge}_${selectedSkill}_Sheet${sheetNumber}_${timeStampStr}.pdf`;
+		`AstroQuest_${safeStudentName}_Age${studentAge}_${selectedSkill}_Sheet${sheetNumber}_${timeStampStr}.pdf`;
 
 	doc.save(safeFileName);
 }

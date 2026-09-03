@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
-import AskDoubtModal from './components/AskDoubtModal';
-import ExitConfirmationModal from './components/ExitConfirmationModal';
-import Header from './components/Header';
-import HintModal from './components/HintModal';
-import OptionsGrid from './components/OptionsGrid';
-import QuestionCard from './components/QuestionCard';
-import QuestionSummary from './components/QuestionSummary';
-import ResultOverview from './components/ResultOverview';
-import SettingsScreen from './components/SettingsScreen';
-import SkillSelectionDashboard from './components/SkillSelectionDashboard';
-import SolutionPanel from './components/SolutionPanel';
-import ZoomModal from './components/ZoomModal';
+import SkillSelectionDashboard from './features/dashboard/SkillSelectionDashboard';
+import AskDoubtModal from './features/quest/AskDoubtModal';
+import ExitConfirmationModal from './features/quest/ExitConfirmationModal';
+import HintModal from './features/quest/HintModal';
+import OptionsGrid from './features/quest/OptionsGrid';
+import QuestionCard from './features/quest/QuestionCard';
+import SolutionPanel from './features/quest/SolutionPanel';
+import QuestionSummary from './features/results/QuestionSummary';
+import ResultOverview from './features/results/ResultOverview';
+import SettingsScreen from './features/settings/SettingsScreen';
+import Header from './utils/Header';
+import ZoomModal from './utils/ZoomModal';
 
 import confetti from 'canvas-confetti';
 import {
@@ -33,6 +33,7 @@ import { exportSessionToPdf } from './utils/pdfGenerator';
 import {
 	getStoredKidAge,
 	getStoredKidName,
+	getStoredShowVisualDiagrams,
 	getStoredTimerConfig,
 	loadProfileStats,
 	recordCompletedSheet,
@@ -44,6 +45,9 @@ export default function App() {
 	// Kid Profile & Name State
 	const [kidName, setKidName] = useState(getStoredKidName);
 	const [kidAge, setKidAge] = useState(getStoredKidAge);
+	const [showVisualDiagrams, setShowVisualDiagrams] = useState(
+		getStoredShowVisualDiagrams,
+	);
 
 	// Navigation State
 	const [currentScreen, setCurrentScreen] = useState('dashboard'); // 'dashboard' | 'settings' | 'thinksheet'
@@ -282,13 +286,21 @@ export default function App() {
 	};
 
 	// Handle saving kid's profile & settings
-	const handleSaveKidProfile = ({ name, age, timerConfig: newTimerConfig }) => {
+	const handleSaveKidProfile = ({
+		name,
+		age,
+		timerConfig: newTimerConfig,
+		showVisualDiagrams: newShowVisualDiagrams,
+	}) => {
 		saveStoredKidProfile(name, age);
 		setKidName(name);
 		setKidAge(age);
 		if (newTimerConfig) {
 			setTimerConfig(newTimerConfig);
 			setQuestionTimeRemaining(newTimerConfig.secondsPerQuestion || 90);
+		}
+		if (newShowVisualDiagrams !== undefined) {
+			setShowVisualDiagrams(newShowVisualDiagrams);
 		}
 
 		// If user clicked a skill card before entering their key, auto-launch that skill immediately!
@@ -551,12 +563,11 @@ export default function App() {
 				scorePercent,
 				correctCount,
 				totalQuestions: questions.length,
-				xp: correctCount * 5,
 				timerSeconds,
 				questions,
 				history,
 			},
-			`Thinksheet_${safeKidName}_Age${kidAge}_${selectedSkill}_Sheet${sheetNumber}_${timeStampStr}.pdf`,
+			`AstroQuest_${safeKidName}_Age${kidAge}_${selectedSkill}_Sheet${sheetNumber}_${timeStampStr}.pdf`,
 		);
 	};
 
@@ -625,7 +636,6 @@ export default function App() {
 				questionIndex={currentIndex}
 				totalQuestions={questions.length || 10}
 				history={history}
-				xp={xp}
 				timerSeconds={timerSeconds}
 				timerConfig={timerConfig}
 				questionTimeRemaining={questionTimeRemaining}
@@ -667,7 +677,7 @@ export default function App() {
 
 						<p className='text-sm text-slate-300 font-semibold mb-6 leading-relaxed'>
 							{aiError === 'MISSING_KEY' ?
-								'All thinksheet challenges are generated live by Google Gemini AI. Please configure your API key to start generating customized questions.'
+								'All AstroQuest challenges are generated live by Google Gemini AI. Please configure your API key to start generating customized questions.'
 							: typeof aiError === 'string' && aiError !== 'API_ERROR' ?
 								aiError
 							:	'Unable to connect to the Gemini AI API. Please check your internet connection or verify your API key in Settings.'
@@ -717,6 +727,7 @@ export default function App() {
 										totalQuestions={questions.length}
 										onZoomClick={() => setIsZoomOpen(true)}
 										soundEnabled={soundEnabled}
+										showVisualDiagrams={showVisualDiagrams}
 									/>
 								</div>
 
@@ -803,6 +814,7 @@ export default function App() {
 										onZoomClick={() => setIsZoomOpen(true)}
 										soundEnabled={soundEnabled}
 										isSubmitted={true}
+										showVisualDiagrams={showVisualDiagrams}
 									/>
 									<OptionsGrid
 										options={currentQuestion.options || []}
@@ -838,7 +850,6 @@ export default function App() {
 								scorePercent={scorePercent}
 								correctCount={correctCount}
 								totalCount={questions.length}
-								earnedXp={correctCount * 5}
 								history={history}
 								onStartNextSheet={handleStartNextSheet}
 								onViewSummary={() => setResultTab('summary')}
@@ -858,6 +869,7 @@ export default function App() {
 								setActiveTab={setResultTab}
 								soundEnabled={soundEnabled}
 								onBackToDashboard={() => setCurrentScreen('dashboard')}
+								showVisualDiagrams={showVisualDiagrams}
 							/>
 						}
 					</div>

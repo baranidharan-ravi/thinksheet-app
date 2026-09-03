@@ -1,9 +1,7 @@
 import { Clock, Edit2, Info, Settings, Sparkles, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { getStoredApiKey } from '../services/aiGenerator';
-import { playButtonPop } from '../utils/audioSynthesis';
-
-export default function SkillSelectionDashboard({
+import { getStoredApiKey } from '../../services/aiGenerator';
+import { playButtonPop } from '../../utils/audioSynthesis';
 	onSelectSkill,
 	soundEnabled,
 	kidName,
@@ -110,7 +108,7 @@ export default function SkillSelectionDashboard({
 									{animationPhase === 'center' && (
 										<Sparkles className='w-7 h-7 sm:w-10 sm:h-10 text-yellow-300 animate-spin-slow' />
 									)}
-									<span>Thinksheet</span>
+									<span>AstroQuest</span>
 									{animationPhase === 'center' && (
 										<span className='text-3xl sm:text-5xl animate-bounce'>
 											🚀
@@ -127,7 +125,7 @@ export default function SkillSelectionDashboard({
 					<div className='relative flex items-center justify-center animate-in fade-in duration-300'>
 						<div className='bg-[#22C55E] text-white px-8 py-2.5 rounded-2xl shadow-xl border-2 border-[#16A34A] flex items-center justify-center'>
 							<h1 className='text-xl sm:text-2xl font-black tracking-wide drop-shadow-md font-heading'>
-								Thinksheet
+								AstroQuest
 							</h1>
 						</div>
 						{/* Decorative side ribbon tabs */}
@@ -337,7 +335,8 @@ export default function SkillSelectionDashboard({
 						<p className='text-sm text-slate-300 font-semibold leading-relaxed mb-4'>
 							{infoModalTopic === 'Visual' ?
 								'Visual Thinksheets train spatial awareness, geometric pattern completion, object counting, grid observation, and symmetry detection.'
-							:	'Analytical Thinking Thinksheets develop logical reasoning, analogy deduction, classification, and everyday cause-and-effect problem solving.'}
+							:	'Analytical Thinking Thinksheets develop logical reasoning, analogy deduction, classification, and everyday cause-and-effect problem solving.'
+							}
 						</p>
 						<button
 							onClick={() => setInfoModalTopic(null)}

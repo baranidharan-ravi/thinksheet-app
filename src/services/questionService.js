@@ -35,3 +35,5 @@ export async function getFreshThinksheetSession(
 
 	throw new Error('API_ERROR: Unable to generate questions from Gemini API.');
 }
+
+export const getFreshAstroQuestSession = getFreshThinksheetSession;

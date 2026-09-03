@@ -25,15 +25,17 @@ import {
 	setStoredApiKey,
 	setStoredSelectedModel,
 	validateGeminiApiKey,
-} from '../services/aiGenerator';
-import { playButtonPop, speakText } from '../utils/audioSynthesis';
+} from '../../services/aiGenerator';
+import { playButtonPop, speakText } from '../../utils/audioSynthesis';
 import {
 	getStoredKidAge,
 	getStoredKidName,
+	getStoredShowVisualDiagrams,
 	getStoredTimerConfig,
 	saveStoredKidProfile,
+	saveStoredShowVisualDiagrams,
 	saveStoredTimerConfig,
-} from '../utils/progressTracker';
+} from '../../utils/progressTracker';
 
 export default function SettingsScreen({
 	onSaveAndReturn,
@@ -46,6 +48,9 @@ export default function SettingsScreen({
 	const [apiKeyInput, setApiKeyInput] = useState(() => getStoredApiKey() || '');
 	const [showApiKey, setShowApiKey] = useState(false);
 	const [isCustomAge, setIsCustomAge] = useState(false);
+	const [showVisualDiagrams, setShowVisualDiagrams] = useState(
+		getStoredShowVisualDiagrams,
+	);
 
 	// Gemini Model selection state
 	const [selectedModel, setSelectedModel] = useState(() =>
@@ -213,7 +218,7 @@ export default function SettingsScreen({
 		// 3. Save Kid Profile
 		saveStoredKidProfile(trimmedName, numAge);
 
-		// 4. Save Settings & Timer Config
+		// 4. Save Settings, Timer Config & Visual Diagrams Preference
 		const updatedConfig = {
 			enabled: timerEnabled,
 			secondsPerQuestion: timerSeconds,
@@ -221,6 +226,7 @@ export default function SettingsScreen({
 			autoAdvanceSeconds,
 		};
 		saveStoredTimerConfig(updatedConfig);
+		saveStoredShowVisualDiagrams(showVisualDiagrams);
 
 		setIsValidating(false);
 		setSaveSuccess(true);
@@ -234,6 +240,7 @@ export default function SettingsScreen({
 				apiKey: validationResult.cleanedKey,
 				selectedModel,
 				timerConfig: updatedConfig,
+				showVisualDiagrams,
 			});
 		}
 	};
@@ -789,6 +796,46 @@ export default function SettingsScreen({
 							)}
 						</div>
 					)}
+				</div>
+
+				{/* Section 6: Visual Diagrams & Clues Display */}
+				<div className='bg-[#090B24]/80 p-4 sm:p-5 rounded-2xl border border-indigo-500/40 shadow-inner'>
+					<div className='flex items-center justify-between mb-2'>
+						<div className='flex items-center gap-2'>
+							<Eye className='w-4 h-4 text-indigo-400' />
+							<span className='text-xs sm:text-sm font-bold text-white'>
+								Visual Diagrams & Clues
+							</span>
+							<span
+								className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
+									showVisualDiagrams ?
+										'bg-indigo-500 text-white shadow'
+									:	'bg-slate-800 text-slate-400'
+								}`}>
+								{showVisualDiagrams ? 'Enabled' : 'Disabled'}
+							</span>
+						</div>
+
+						<button
+							type='button'
+							disabled={isValidating}
+							onClick={() => {
+								playButtonPop(soundEnabled);
+								setShowVisualDiagrams((prev) => !prev);
+							}}
+							className={`px-3.5 py-1.5 rounded-full text-xs font-black transition-all border cursor-pointer ${
+								showVisualDiagrams ?
+									'bg-indigo-500 text-white border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.4)]'
+								:	'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+							}`}>
+							{showVisualDiagrams ? '👁️ Shown' : '🙈 Hidden'}
+						</button>
+					</div>
+
+					<p className='text-xs text-slate-300 leading-relaxed'>
+						Choose whether interactive visual diagrams, 3x3 matrices, sequence
+						patterns, and STEM illustrations appear alongside questions.
+					</p>
 				</div>
 
 				{/* Error Alert */}

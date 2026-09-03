@@ -1,18 +1,16 @@
 import confetti from 'canvas-confetti';
-import { Award, Download, LayoutGrid, RefreshCw } from 'lucide-react';
+import { Download, LayoutGrid, RefreshCw } from 'lucide-react';
 import { useEffect } from 'react';
-import { LEADERBOARD_DATA } from '../data/leaderboardData';
 import {
 	playButtonPop,
 	playStarSound,
 	playVictoryFanfare,
-} from '../utils/audioSynthesis';
+} from '../../utils/audioSynthesis';
 
 export default function ResultOverview({
 	scorePercent,
 	correctCount,
 	totalCount,
-	earnedXp,
 	onStartNextSheet,
 	onViewSummary,
 	onDownloadPdf,
@@ -136,98 +134,60 @@ export default function ResultOverview({
 					</p>
 				</div>
 
-				{/* Right Side: Correct Answers & Space Cadet League Leaderboard */}
+				{/* Right Side: Performance Breakdown & Action Buttons */}
 				<div className='lg:col-span-6 flex flex-col gap-4'>
-					{/* Correct Answers & XP Pill Card */}
-					<div className='bg-white text-slate-800 rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-xl border-2 border-white'>
-						<div className='flex items-center gap-3'>
-							<span className='text-2xl sm:text-3xl'>🎉</span>
+					{/* Performance Summary Card */}
+					<div className='bg-[#121644] border-2 border-[#2C3480] rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col gap-4'>
+						<div className='flex items-center gap-3 pb-3 border-b border-[#252C7A]'>
+							<span className='text-2xl sm:text-3xl'>📊</span>
 							<div>
-								<span className='font-extrabold text-sm sm:text-lg text-slate-800 block leading-tight'>
-									{correctCount} Correct Answers
+								<h3 className='font-extrabold text-white text-base sm:text-lg leading-tight'>
+									Performance Breakdown
+								</h3>
+								<p className='text-xs font-semibold text-slate-300'>
+									Summary of your completed session
+								</p>
+							</div>
+						</div>
+
+						{/* Stat Cards Grid: Correct, Incorrect, Skipped */}
+						<div className='grid grid-cols-3 gap-2.5 sm:gap-3'>
+							{/* Correct Pill Card */}
+							<div className='bg-emerald-950/60 border-2 border-emerald-500/60 rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center shadow-md'>
+								<span className='text-xl sm:text-2xl mb-1'>✅</span>
+								<span className='text-lg sm:text-2xl font-black text-emerald-400'>
+									{correctCount}
 								</span>
-								{history?.some((h) => h?.skipped) && (
-									<span className='text-xs font-bold text-amber-600 block mt-0.5'>
-										⏭️ {history.filter((h) => h?.skipped).length} Skipped
-									</span>
-								)}
-							</div>
-						</div>
-						<div className='bg-cyan-50 text-cyan-700 font-black text-sm sm:text-lg px-4 py-1.5 rounded-xl border border-cyan-200'>
-							+{earnedXp} XP
-						</div>
-					</div>
-
-					{/* Space Cadet League Card */}
-					<div className='bg-[#121644] border-2 border-[#2C3480] rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col justify-between'>
-						<div>
-							{/* League Header */}
-							<div className='flex items-center gap-3 mb-4 pb-3 border-b border-[#252C7A]'>
-								<div className='w-10 h-10 rounded-xl bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-white font-bold text-xl shadow-inner'>
-									<Award className='w-6 h-6 text-yellow-300' />
-								</div>
-								<div>
-									<h3 className='font-extrabold text-white text-base sm:text-lg leading-tight'>
-										Space Cadet
-									</h3>
-									<p className='text-xs font-semibold text-pink-300'>
-										⏱️ Ends in 6 days
-									</p>
-								</div>
+								<span className='text-[10px] sm:text-xs font-bold text-emerald-200 mt-0.5 uppercase tracking-wider'>
+									Correct
+								</span>
 							</div>
 
-							{/* Leaderboard Table List */}
-							<div className='flex flex-col gap-2.5'>
-								{LEADERBOARD_DATA.slice(0, 3).map((player) => (
-									<div
-										key={player.rank}
-										className={`rounded-2xl p-3 flex items-center justify-between transition-all ${
-											player.isUser ?
-												'bg-gradient-to-r from-purple-900/60 to-indigo-900/60 border-2 border-pink-400/80 shadow-lg scale-[1.02]'
-											:	'bg-[#181D52]/80 border border-[#2B3378]'
-										}`}>
-										<div className='flex items-center gap-3'>
-											{/* Rank Medal */}
-											<span className='text-xl sm:text-2xl font-bold'>
-												{player.rank === 1 ?
-													'🥇'
-												: player.rank === 2 ?
-													'🥈'
-												:	'🥉'}
-											</span>
+							{/* Incorrect Pill Card */}
+							<div className='bg-rose-950/60 border-2 border-rose-500/60 rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center shadow-md'>
+								<span className='text-xl sm:text-2xl mb-1'>❌</span>
+								<span className='text-lg sm:text-2xl font-black text-rose-400'>
+									{Math.max(
+										0,
+										totalCount -
+											correctCount -
+											(history?.filter((h) => h?.skipped).length || 0),
+									)}
+								</span>
+								<span className='text-[10px] sm:text-xs font-bold text-rose-200 mt-0.5 uppercase tracking-wider'>
+									Wrong
+								</span>
+							</div>
 
-											{/* Avatar */}
-											<div
-												className={`w-9 h-9 rounded-full ${player.avatarBg} flex items-center justify-center text-lg shadow-md`}>
-												{player.avatar}
-											</div>
-
-											{/* Name */}
-											<span className='font-bold text-white text-xs sm:text-sm'>
-												{player.isUser ?
-													kidName ?
-														`${kidName} (You)`
-													:	'You'
-												:	player.name}
-											</span>
-										</div>
-
-										{/* Gems & XP */}
-										<div className='flex items-center gap-3'>
-											<span className='text-xs sm:text-sm font-black text-pink-400'>
-												{player.gems}
-											</span>
-											<div className='text-right'>
-												<span className='text-[10px] text-gray-400 uppercase font-semibold block leading-none'>
-													XP
-												</span>
-												<span className='text-xs sm:text-sm font-bold text-cyan-300'>
-													{player.isUser ? player.xp + earnedXp : player.xp}
-												</span>
-											</div>
-										</div>
-									</div>
-								))}
+							{/* Skipped Pill Card */}
+							<div className='bg-amber-950/60 border-2 border-amber-500/60 rounded-2xl p-3 sm:p-4 flex flex-col items-center text-center shadow-md'>
+								<span className='text-xl sm:text-2xl mb-1'>⏭️</span>
+								<span className='text-lg sm:text-2xl font-black text-amber-400'>
+									{history?.filter((h) => h?.skipped).length || 0}
+								</span>
+								<span className='text-[10px] sm:text-xs font-bold text-amber-200 mt-0.5 uppercase tracking-wider'>
+									Skipped
+								</span>
 							</div>
 						</div>
 
@@ -237,9 +197,9 @@ export default function ResultOverview({
 								playButtonPop(soundEnabled);
 								onStartNextSheet();
 							}}
-							className='mt-6 w-full py-4 rounded-2xl bg-gradient-to-r from-[#FF5B84] to-[#FF435A] hover:from-[#FF435A] hover:to-[#E11D48] text-white font-extrabold text-base sm:text-lg shadow-[0_10px_25px_rgba(255,91,132,0.4)] hover:shadow-[0_12px_30px_rgba(255,91,132,0.6)] transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 cursor-pointer'>
+							className='mt-3 w-full py-4 rounded-2xl bg-gradient-to-r from-[#FF5B84] to-[#FF435A] hover:from-[#FF435A] hover:to-[#E11D48] text-white font-extrabold text-base sm:text-lg shadow-[0_10px_25px_rgba(255,91,132,0.4)] hover:shadow-[0_12px_30px_rgba(255,91,132,0.6)] transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 cursor-pointer'>
 							<RefreshCw className='w-5 h-5 animate-spin-slow' />
-							<span>Start Next Thinksheet (10 New Questions)</span>
+							<span>Start Next AstroQuest (10 New Questions)</span>
 						</button>
 
 						{/* Download PDF Report Button */}
@@ -249,7 +209,7 @@ export default function ResultOverview({
 									playButtonPop(soundEnabled);
 									onDownloadPdf();
 								}}
-								className='mt-3 w-full py-3.5 rounded-2xl bg-[#0F143D] hover:bg-[#1A205E] border-2 border-cyan-400 text-cyan-300 hover:text-white font-extrabold text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5'>
+								className='w-full py-3.5 rounded-2xl bg-[#0F143D] hover:bg-[#1A205E] border-2 border-cyan-400 text-cyan-300 hover:text-white font-extrabold text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5'>
 								<Download className='w-5 h-5' />
 								<span>Download PDF Report 📄</span>
 							</button>
@@ -262,7 +222,7 @@ export default function ResultOverview({
 									playButtonPop(soundEnabled);
 									onBackToDashboard();
 								}}
-								className='mt-3 w-full py-3 rounded-2xl bg-[#1C2263] hover:bg-[#252D80] border border-[#3A45A8] text-slate-300 hover:text-white font-extrabold text-sm sm:text-base transition-all flex items-center justify-center gap-2 cursor-pointer'>
+								className='w-full py-3 rounded-2xl bg-[#1C2263] hover:bg-[#252D80] border border-[#3A45A8] text-slate-300 hover:text-white font-extrabold text-sm sm:text-base transition-all flex items-center justify-center gap-2 cursor-pointer'>
 								<LayoutGrid className='w-4 h-4' />
 								<span>Back to Skills Hub</span>
 							</button>
