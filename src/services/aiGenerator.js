@@ -1,4 +1,8 @@
 import {
+	getSecureStorageItem,
+	setSecureStorageItem,
+} from '../utils/cryptoStorage';
+import {
 	extractShapeSequenceTerms,
 	parseMatrixGridFromQuestion,
 	parseRotationSequence,
@@ -10,6 +14,29 @@ const SELECTED_MODEL_KEY = 'thinksheet_selected_gemini_model_v1';
 const SEEN_QUESTIONS_KEY = 'thinksheet_seen_question_signatures_v9';
 
 export const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash-lite';
+
+// Cached proxy availability flag
+let isProxyAvailable = null;
+
+/**
+ * Checks whether the local Node.js Express proxy middleware is running on /api/health
+ */
+export async function checkProxyAvailability() {
+	if (isProxyAvailable !== null) return isProxyAvailable;
+	try {
+		const res = await fetch('/api/health', { method: 'GET' });
+		if (res.ok) {
+			const data = await res.json();
+			isProxyAvailable = data?.proxy === true;
+			if (isProxyAvailable) {
+				console.log('🔒 [Security] Node.js Express Proxy detected! API calls are securely routed through server middleware without exposing keys in client Network tab.');
+			}
+			return isProxyAvailable;
+		}
+	} catch (_) {}
+	isProxyAvailable = false;
+	return false;
+}
 
 export const AVAILABLE_GEMINI_MODELS = [
 	{
@@ -28,7 +55,7 @@ export const AVAILABLE_GEMINI_MODELS = [
 		badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40',
 		tag: '🧠 High Reasoning & Speed',
 		description:
-			'Frontier-class model delivering superior reasoning capabilities and complex logical deduction.',
+			'Advanced reasoning capabilities balanced with fast generation speed. Great for complex logic.',
 	},
 	{
 		id: 'gemini-3-flash-preview',
@@ -52,7 +79,7 @@ export const AVAILABLE_GEMINI_MODELS = [
 
 export function getStoredApiKey() {
 	let key =
-		localStorage.getItem(AI_KEY_STORAGE) ||
+		getSecureStorageItem(AI_KEY_STORAGE) ||
 		import.meta.env.VITE_GEMINI_API_KEY ||
 		'';
 
@@ -65,7 +92,7 @@ export function getStoredApiKey() {
 export function setStoredApiKey(key) {
 	if (key) {
 		const cleaned = key.replace(/^["']|["']$/g, '').trim();
-		localStorage.setItem(AI_KEY_STORAGE, cleaned);
+		setSecureStorageItem(AI_KEY_STORAGE, cleaned);
 	} else {
 		localStorage.removeItem(AI_KEY_STORAGE);
 	}
@@ -256,11 +283,40 @@ export const SKILL_DEFINITIONS = {
  * Universal Gemini API Caller prioritizing the user's selected model with automatic fallback
  */
 async function callGeminiApi(payload, apiKey, preferredModel = null) {
+	const activeSelected = preferredModel || getStoredSelectedModel() || DEFAULT_GEMINI_MODEL;
+
+	// 1. Check if secure Node.js Express proxy is available (Zero API key in Network tab!)
+	const hasProxy = await checkProxyAvailability();
+	if (hasProxy) {
+		try {
+			const proxyRes = await fetch('/api/generate-content', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					...(apiKey ? { 'x-gemini-key': apiKey } : {}),
+				},
+				body: JSON.stringify({
+					model: activeSelected,
+					contents: payload.contents,
+					systemInstruction: payload.systemInstruction,
+					generationConfig: payload.generationConfig,
+				}),
+			});
+
+			if (proxyRes.ok) {
+				const data = await proxyRes.json();
+				return data;
+			}
+			console.warn(`[Proxy] /api/generate-content returned HTTP ${proxyRes.status}, falling back to direct client call.`);
+		} catch (proxyErr) {
+			console.warn('[Proxy] Connection failed, falling back to direct client call:', proxyErr);
+		}
+	}
+
 	if (!apiKey) {
 		throw new Error('MISSING_API_KEY');
 	}
 
-	const activeSelected = preferredModel || getStoredSelectedModel();
 	const allModelIds = AVAILABLE_GEMINI_MODELS.map((m) => m.id);
 
 	// Sequence: user's selected model first, followed by remaining models
@@ -1639,6 +1695,30 @@ export async function generateAiVisualImage(
 	}
 
 	const cleanedPrompt = `Clean educational puzzle illustration for elementary kids, vector illustration style, simple geometric and logical objects on crisp white background: ${promptDescription.slice(0, 300)}`;
+
+	// 1. Try secure Node.js Express proxy first (Zero API key in Network tab!)
+	const hasProxy = await checkProxyAvailability();
+	if (hasProxy) {
+		try {
+			const proxyResp = await fetch('/api/generate-image', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					...(apiKey ? { 'x-gemini-key': apiKey } : {}),
+				},
+				body: JSON.stringify({ prompt: cleanedPrompt }),
+			});
+			if (proxyResp.ok) {
+				const proxyData = await proxyResp.json();
+				if (proxyData?.imageUrl) {
+					aiImageCache.set(cacheKey, proxyData.imageUrl);
+					return proxyData.imageUrl;
+				}
+			}
+		} catch (err) {
+			console.warn('[Proxy Image failed, falling back to client providers]:', err);
+		}
+	}
 
 	let currentIdx = getActiveImageProviderIndex();
 	const totalProviders = IMAGE_PROVIDERS.length;

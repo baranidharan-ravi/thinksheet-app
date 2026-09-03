@@ -192,7 +192,7 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
     - 🙈 **When Disabled**: Slate pill reading `Visual Diagrams: Hidden 🙈`.
   - Clicking the pill directly opens the Settings screen for one-click configuration.
 - **Quest Settings & Pacing Overview Card**:
-  - Summarizes the active configuration directly above the skill cards: `Timer: 90s/question • Next: Auto in 7s • Diagrams: 👁️ Shown` *(or `🙈 Hidden`)*.
+  - Summarizes the active configuration directly above the skill cards: `Timer: 90s/question • Next: Auto in 7s • Diagrams: 👁️ Shown` _(or `🙈 Hidden`)_.
 
 ---
 
