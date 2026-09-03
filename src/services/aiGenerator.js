@@ -1642,7 +1642,9 @@ async function generateWithPollinationsTurbo(prompt) {
 			};
 			img.onerror = () => {
 				clearTimeout(timer);
-				reject(new Error('Pollinations Turbo blocked by browser ORB or network'));
+				reject(
+					new Error('Pollinations Turbo blocked by browser ORB or network'),
+				);
 			};
 			img.src = url;
 		});
@@ -1668,7 +1670,9 @@ async function generateWithPollinationsDefault(prompt) {
 			};
 			img.onerror = () => {
 				clearTimeout(timer);
-				reject(new Error('Pollinations Default blocked by browser ORB or network'));
+				reject(
+					new Error('Pollinations Default blocked by browser ORB or network'),
+				);
 			};
 			img.src = url;
 		});
@@ -1694,7 +1698,9 @@ async function generateWithPollinationsFlux(prompt) {
 			};
 			img.onerror = () => {
 				clearTimeout(timer);
-				reject(new Error('Pollinations Flux blocked by browser ORB or rate limit'));
+				reject(
+					new Error('Pollinations Flux blocked by browser ORB or rate limit'),
+				);
 			};
 			img.src = url;
 		});

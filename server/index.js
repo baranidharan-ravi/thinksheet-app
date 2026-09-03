@@ -48,12 +48,10 @@ app.get('/api/health', (req, res) => {
 app.post('/api/validate-key', async (req, res) => {
 	const key = resolveApiKey(req);
 	if (!key) {
-		return res
-			.status(400)
-			.json({
-				valid: false,
-				error: 'No API key provided or configured on server',
-			});
+		return res.status(400).json({
+			valid: false,
+			error: 'No API key provided or configured on server',
+		});
 	}
 
 	try {
@@ -67,12 +65,10 @@ app.post('/api/validate-key', async (req, res) => {
 			.status(400)
 			.json({ valid: false, error: data?.error?.message || 'Invalid API key' });
 	} catch (err) {
-		return res
-			.status(500)
-			.json({
-				valid: false,
-				error: err.message || 'Validation request failed',
-			});
+		return res.status(500).json({
+			valid: false,
+			error: err.message || 'Validation request failed',
+		});
 	}
 });
 
@@ -207,22 +203,22 @@ app.post('/api/generate-image', async (req, res) => {
 		}
 	}
 
-function sanitizePromptForImage(text) {
-	return String(text || '')
-		.replace(/⭐/g, ' star ')
-		.replace(/🌙/g, ' moon ')
-		.replace(/☀️/g, ' sun ')
-		.replace(/🔴/g, ' red circle ')
-		.replace(/🔵/g, ' blue circle ')
-		.replace(/🔷/g, ' blue diamond ')
-		.replace(/🟩/g, ' green square ')
-		.replace(/🔺/g, ' red triangle ')
-		.replace(/🍎/g, ' apple ')
-		.replace(/[^\w\s.,?!:;-]/g, ' ')
-		.replace(/\s+/g, ' ')
-		.trim()
-		.slice(0, 160);
-}
+	function sanitizePromptForImage(text) {
+		return String(text || '')
+			.replace(/⭐/g, ' star ')
+			.replace(/🌙/g, ' moon ')
+			.replace(/☀️/g, ' sun ')
+			.replace(/🔴/g, ' red circle ')
+			.replace(/🔵/g, ' blue circle ')
+			.replace(/🔷/g, ' blue diamond ')
+			.replace(/🟩/g, ' green square ')
+			.replace(/🔺/g, ' red triangle ')
+			.replace(/🍎/g, ' apple ')
+			.replace(/[^\w\s.,?!:;-]/g, ' ')
+			.replace(/\s+/g, ' ')
+			.trim()
+			.slice(0, 160);
+	}
 
 	// 3. Fallback to Free Pollinations AI (Turbo Fast) - Server-side binary conversion to Data URI
 	try {
