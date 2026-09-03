@@ -186,6 +186,13 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 - **Center Stage Splash**: On opening the dashboard, the green **AstroQuest** banner starts in the center of the viewport with a glowing bold font and cosmic sparkles (`✨` & `🚀`).
 - **Smooth Shrink-to-Top Glide**: Scales down smoothly and glides into its docked position in the top header using an organic spring transition (`cubic-bezier(0.34, 1.3, 0.64, 1)`).
 - **Streamlined Skill Cards**: Clean, focused action cards (`Start Visual Quest ➔` & `Start Analytical Quest ➔`) without cluttered level badges.
+- **Interactive Visual Diagrams Status Badge**:
+  - Displays a live status pill directly below the header:
+    - 👁️ **When Enabled**: Indigo pill reading `Visual Diagrams: Enabled 👁️`.
+    - 🙈 **When Disabled**: Slate pill reading `Visual Diagrams: Hidden 🙈`.
+  - Clicking the pill directly opens the Settings screen for one-click configuration.
+- **Quest Settings & Pacing Overview Card**:
+  - Summarizes the active configuration directly above the skill cards: `Timer: 90s/question • Next: Auto in 7s • Diagrams: 👁️ Shown` *(or `🙈 Hidden`)*.
 
 ---
 
@@ -230,7 +237,7 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 ### 11. 🛡️ Cosmic Error Boundary & Instant Debugging (`ErrorBoundary.jsx`)
 
 - **Comprehensive Exception Shield**: Wraps the entire application tree to intercept and catch runtime errors without collapsing into a blank screen.
-- **Friendly Kid-Themed Fallback Interface**: Displays an encouraging recovery screen (*"Cosmic Bump Detected! AstroQuest hit a little stardust! Don't worry, your progress and settings are safe."*) featuring:
+- **Friendly Kid-Themed Fallback Interface**: Displays an encouraging recovery screen (_"Cosmic Bump Detected! AstroQuest hit a little stardust! Don't worry, your progress and settings are safe."_) featuring:
   - **`🔄 Refresh & Continue 🚀`**: Re-mounts the app with a single click.
   - **`🧹 Reset Session Cache & Restart`**: Clears corrupted local session storage keys and reloads cleanly.
 - **Interactive Technical Error Drawer**: Expandable developer drawer displaying the exact error message and React component stack trace.

@@ -1440,7 +1440,8 @@ function blobToDataUri(blob) {
  */
 function isResourceExhausted(status, errorPayload, errorText = '') {
 	if (status === 429 || status === 503) return true;
-	const text = `${JSON.stringify(errorPayload || {})} ${errorText}`.toUpperCase();
+	const text =
+		`${JSON.stringify(errorPayload || {})} ${errorText}`.toUpperCase();
 	return (
 		text.includes('RESOURCE_EXHAUSTED') ||
 		text.includes('QUOTA') ||
@@ -1475,7 +1476,9 @@ async function generateWithImagen(prompt, apiKey) {
 		try {
 			data = await response.json();
 		} catch (_) {}
-		const err = new Error(data?.error?.message || `Imagen HTTP ${response.status}`);
+		const err = new Error(
+			data?.error?.message || `Imagen HTTP ${response.status}`,
+		);
 		if (isResourceExhausted(response.status, data, err.message)) {
 			err.isResourceExhausted = true;
 		}
@@ -1514,7 +1517,9 @@ async function generateWithGeminiFlash(prompt, apiKey) {
 		try {
 			data = await flashResp.json();
 		} catch (_) {}
-		const err = new Error(data?.error?.message || `Gemini Flash HTTP ${flashResp.status}`);
+		const err = new Error(
+			data?.error?.message || `Gemini Flash HTTP ${flashResp.status}`,
+		);
 		if (isResourceExhausted(flashResp.status, data, err.message)) {
 			err.isResourceExhausted = true;
 		}
