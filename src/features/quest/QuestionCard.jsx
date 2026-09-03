@@ -156,7 +156,9 @@ const QuestionCard = memo(function QuestionCard({
 										imageUrl: aiImageUrl,
 										alt: question.question || 'Question Diagram',
 										onError: () => {
-											console.warn('[AI Image] Load failed or rate-limited, smoothly falling back to procedural SVG diagram.');
+											console.warn(
+												'[AI Image] Load failed or rate-limited, smoothly falling back to procedural SVG diagram.',
+											);
 											setAiImageUrl(null);
 										},
 									}}
