@@ -9,7 +9,12 @@ import { clearSessionState } from './storage';
 export default class ErrorBoundary extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = { hasError: false, error: null, errorInfo: null, copied: false };
+		this.state = {
+			hasError: false,
+			error: null,
+			errorInfo: null,
+			copied: false,
+		};
 	}
 
 	static getDerivedStateFromError(error) {
@@ -17,7 +22,11 @@ export default class ErrorBoundary extends React.Component {
 	}
 
 	componentDidCatch(error, errorInfo) {
-		console.error('AstroQuest ErrorBoundary caught an error:', error, errorInfo);
+		console.error(
+			'AstroQuest ErrorBoundary caught an error:',
+			error,
+			errorInfo,
+		);
 		this.setState({ errorInfo });
 	}
 
@@ -35,7 +44,7 @@ export default class ErrorBoundary extends React.Component {
 
 	handleCopyError = () => {
 		const text = `Error: ${this.state.error?.toString() || 'Unknown Error'}\n\nComponent Stack:\n${this.state.errorInfo?.componentStack || 'No stack available'}`;
-		if (navigator.clipboard && navigator.clipboard.writeText) {
+		if (navigator.clipboard?.writeText) {
 			navigator.clipboard.writeText(text).then(() => {
 				this.setState({ copied: true });
 				setTimeout(() => this.setState({ copied: false }), 2500);
@@ -47,7 +56,7 @@ export default class ErrorBoundary extends React.Component {
 			document.body.appendChild(textarea);
 			textarea.select();
 			document.execCommand('copy');
-			document.body.removeChild(textarea);
+			textarea.remove();
 			this.setState({ copied: true });
 			setTimeout(() => this.setState({ copied: false }), 2500);
 		}
@@ -70,7 +79,8 @@ export default class ErrorBoundary extends React.Component {
 
 						{/* Kid-Friendly Subtitle */}
 						<p className='text-sm sm:text-base text-cyan-200 font-semibold mb-6 leading-relaxed'>
-							AstroQuest hit a little stardust! Don&apos;t worry, your progress and settings are safe.
+							AstroQuest hit a little stardust! Don&apos;t worry, your progress
+							and settings are safe.
 						</p>
 
 						{/* Action Buttons */}
@@ -93,18 +103,22 @@ export default class ErrorBoundary extends React.Component {
 							<details className='mt-6 w-full text-left bg-black/40 border border-slate-700/60 rounded-xl p-3 text-xs text-slate-400'>
 								<summary className='cursor-pointer font-bold text-slate-300 hover:text-cyan-300 transition-colors flex items-center justify-between'>
 									<span>Technical Details</span>
-									<span className='text-[10px] text-cyan-400 font-normal'>Click to expand</span>
+									<span className='text-[10px] text-cyan-400 font-normal'>
+										Click to expand
+									</span>
 								</summary>
 								<div className='mt-3 flex items-center justify-end'>
 									<button
 										type='button'
 										onClick={this.handleCopyError}
 										className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm ${
-											this.state.copied
-												? 'bg-emerald-600 text-white'
-												: 'bg-indigo-600/80 hover:bg-indigo-600 text-cyan-100 hover:text-white border border-indigo-400/40'
+											this.state.copied ?
+												'bg-emerald-600 text-white'
+											:	'bg-indigo-600/80 hover:bg-indigo-600 text-cyan-100 hover:text-white border border-indigo-400/40'
 										}`}>
-										{this.state.copied ? '✅ Copied to Clipboard!' : '📋 Copy Error Details'}
+										{this.state.copied ?
+											'✅ Copied to Clipboard!'
+										:	'📋 Copy Error Details'}
 									</button>
 								</div>
 								<pre className='mt-2 overflow-x-auto text-[11px] text-rose-300 whitespace-pre-wrap font-mono p-2 bg-black/50 rounded-lg border border-rose-900/40'>
