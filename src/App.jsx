@@ -83,7 +83,6 @@ export default function App() {
 	const [selectedOptionId, setSelectedOptionId] = useState(null);
 	const [isSubmitted, setIsSubmitted] = useState(false);
 	const [history, setHistory] = useState([]);
-	const [xp, setXp] = useState(0);
 	const [timerSeconds, setTimerSeconds] = useState(0);
 	const [isCompleted, setIsCompleted] = useState(false);
 	const [resultTab, setResultTab] = useState('overview'); // 'overview' | 'summary'

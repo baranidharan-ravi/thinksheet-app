@@ -103,16 +103,8 @@ const Header = React.memo(function Header({
 				})}
 			</div>
 
-			{/* Right Controls Area: XP, Timer, Audio, Speech, Fullscreen, Exit */}
+			{/* Right Controls Area: Timer, Audio, Speech, Fullscreen, Exit */}
 			<div className='flex items-center gap-1 sm:gap-2.5'>
-				{/* XP Counter */}
-				<div className='flex items-center gap-1.5 bg-[#121644] border border-[#29307A] px-2 sm:px-3 py-1.5 rounded-xl shadow-md'>
-					<span className='text-cyan-400 font-extrabold text-xs sm:text-sm'>
-						XP
-					</span>
-					<span className='text-white font-bold text-xs sm:text-sm'>{xp}</span>
-				</div>
-
 				{/* Timer Display (Countdown when enabled, Stopwatch when disabled) */}
 				<div
 					className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all border ${
