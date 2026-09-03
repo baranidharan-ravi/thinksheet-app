@@ -207,21 +207,38 @@ app.post('/api/generate-image', async (req, res) => {
 		}
 	}
 
-	// 3. Fallback to Free Pollinations AI (Flux)
+function sanitizePromptForImage(text) {
+	return String(text || '')
+		.replace(/⭐/g, ' star ')
+		.replace(/🌙/g, ' moon ')
+		.replace(/☀️/g, ' sun ')
+		.replace(/🔴/g, ' red circle ')
+		.replace(/🔵/g, ' blue circle ')
+		.replace(/🔷/g, ' blue diamond ')
+		.replace(/🟩/g, ' green square ')
+		.replace(/🔺/g, ' red triangle ')
+		.replace(/🍎/g, ' apple ')
+		.replace(/[^\w\s.,?!:;-]/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim()
+		.slice(0, 160);
+}
+
+	// 3. Fallback to Free Pollinations AI (Turbo Fast) - Server-side binary conversion to Data URI
 	try {
-		const seed = Math.floor(Math.random() * 100000);
-		const pollUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanedPrompt)}?width=400&height=400&nologo=true&seed=${seed}&model=flux`;
+		const clean = sanitizePromptForImage(prompt);
+		const pollUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(clean)}?width=400&height=400&nologo=true&model=turbo`;
 		const pollResp = await fetch(pollUrl);
 		if (pollResp.ok) {
 			const buffer = await pollResp.arrayBuffer();
 			const b64 = Buffer.from(buffer).toString('base64');
 			return res.json({
 				imageUrl: `data:image/jpeg;base64,${b64}`,
-				provider: 'Pollinations AI (Flux Free)',
+				provider: 'Pollinations AI (Turbo Free)',
 			});
 		}
 	} catch (err) {
-		console.warn('[Proxy Image] Pollinations Flux failed:', err.message);
+		console.warn('[Proxy Image] Pollinations Turbo failed:', err.message);
 	}
 
 	return res

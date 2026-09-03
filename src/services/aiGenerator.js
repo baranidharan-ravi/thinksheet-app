@@ -1630,18 +1630,22 @@ async function generateWithPollinationsTurbo(prompt) {
 	const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(clean)}?width=400&height=400&nologo=true&model=turbo`;
 
 	if (typeof window !== 'undefined' && typeof Image !== 'undefined') {
-		try {
-			await new Promise((resolve) => {
-				const img = new Image();
-				img.onload = () => resolve(url);
-				img.onerror = () => resolve(url);
-				img.src = url;
-				setTimeout(() => resolve(url), 4000);
-			});
-			return url;
-		} catch (_) {
-			return url;
-		}
+		return new Promise((resolve, reject) => {
+			const timer = setTimeout(() => {
+				reject(new Error('Pollinations Turbo load timeout'));
+			}, 3500);
+
+			const img = new Image();
+			img.onload = () => {
+				clearTimeout(timer);
+				resolve(url);
+			};
+			img.onerror = () => {
+				clearTimeout(timer);
+				reject(new Error('Pollinations Turbo blocked by browser ORB or network'));
+			};
+			img.src = url;
+		});
 	}
 	return url;
 }
@@ -1652,18 +1656,22 @@ async function generateWithPollinationsDefault(prompt) {
 	const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(clean)}?width=400&height=400&nologo=true`;
 
 	if (typeof window !== 'undefined' && typeof Image !== 'undefined') {
-		try {
-			await new Promise((resolve) => {
-				const img = new Image();
-				img.onload = () => resolve(url);
-				img.onerror = () => resolve(url);
-				img.src = url;
-				setTimeout(() => resolve(url), 4000);
-			});
-			return url;
-		} catch (_) {
-			return url;
-		}
+		return new Promise((resolve, reject) => {
+			const timer = setTimeout(() => {
+				reject(new Error('Pollinations Default load timeout'));
+			}, 3500);
+
+			const img = new Image();
+			img.onload = () => {
+				clearTimeout(timer);
+				resolve(url);
+			};
+			img.onerror = () => {
+				clearTimeout(timer);
+				reject(new Error('Pollinations Default blocked by browser ORB or network'));
+			};
+			img.src = url;
+		});
 	}
 	return url;
 }
@@ -1674,18 +1682,22 @@ async function generateWithPollinationsFlux(prompt) {
 	const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(clean)}?width=400&height=400&nologo=true&model=flux`;
 
 	if (typeof window !== 'undefined' && typeof Image !== 'undefined') {
-		try {
-			await new Promise((resolve) => {
-				const img = new Image();
-				img.onload = () => resolve(url);
-				img.onerror = () => resolve(url);
-				img.src = url;
-				setTimeout(() => resolve(url), 5000);
-			});
-			return url;
-		} catch (_) {
-			return url;
-		}
+		return new Promise((resolve, reject) => {
+			const timer = setTimeout(() => {
+				reject(new Error('Pollinations Flux load timeout'));
+			}, 3500);
+
+			const img = new Image();
+			img.onload = () => {
+				clearTimeout(timer);
+				resolve(url);
+			};
+			img.onerror = () => {
+				clearTimeout(timer);
+				reject(new Error('Pollinations Flux blocked by browser ORB or rate limit'));
+			};
+			img.src = url;
+		});
 	}
 	return url;
 }
