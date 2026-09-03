@@ -1,4 +1,13 @@
-import { Clock, Edit2, Info, Settings, Sparkles, Timer } from 'lucide-react';
+import {
+	Clock,
+	Edit2,
+	Eye,
+	EyeOff,
+	Info,
+	Settings,
+	Sparkles,
+	Timer,
+} from 'lucide-react';
 import { memo, useEffect, useState } from 'react';
 import { getStoredApiKey } from '../../services/aiGenerator';
 import { playButtonPop } from '../../utils/audioSynthesis';
@@ -16,6 +25,7 @@ const SkillSelectionDashboard = memo(function SkillSelectionDashboard({
 		autoAdvanceEnabled: true,
 		autoAdvanceSeconds: 7,
 	},
+	showVisualDiagrams = true,
 }) {
 	const [infoModalTopic, setInfoModalTopic] = useState(null);
 	const [hasApiKey, setHasApiKey] = useState(false);
@@ -164,10 +174,40 @@ const SkillSelectionDashboard = memo(function SkillSelectionDashboard({
 						'opacity-0 translate-y-8 pointer-events-none'
 					:	'opacity-100 translate-y-0'
 				}`}>
-				{/* AI Active Indicator */}
-				<div className='flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/15 px-4 py-1.5 rounded-full text-xs font-bold text-cyan-200 mb-3 shadow-sm'>
-					<Sparkles className='w-4 h-4 text-amber-300' />
-					<span>AI-Powered Dynamic Question Engine Active</span>
+				{/* Status Badges: AI Active & Visual Diagrams */}
+				<div className='flex items-center gap-2.5 flex-wrap justify-center mb-3.5'>
+					<div className='flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/15 px-3.5 py-1.5 rounded-full text-xs font-bold text-cyan-200 shadow-sm'>
+						<Sparkles className='w-4 h-4 text-amber-300' />
+						<span>AI Question Engine Active</span>
+					</div>
+
+					<button
+						type='button'
+						onClick={() => {
+							playButtonPop(soundEnabled);
+							onOpenSettings();
+						}}
+						className={`flex items-center gap-1.5 backdrop-blur-md border px-3.5 py-1.5 rounded-full text-xs font-bold shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+							showVisualDiagrams ?
+								'bg-indigo-500/20 border-indigo-400/40 text-indigo-200 hover:bg-indigo-500/30'
+							:	'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:bg-slate-800/80'
+						}`}
+						title='Visual Diagrams & Clues Display Setting (Click to configure)'>
+						{showVisualDiagrams ?
+							<>
+								<Eye className='w-3.5 h-3.5 text-indigo-300' />
+								<span>
+									Visual Diagrams: <strong className='text-indigo-200'>Enabled 👁️</strong>
+								</span>
+							</>
+						:	<>
+								<EyeOff className='w-3.5 h-3.5 text-slate-400' />
+								<span>
+									Visual Diagrams: <strong className='text-slate-300'>Hidden 🙈</strong>
+								</span>
+							</>
+						}
+					</button>
 				</div>
 
 				{/* Question Timer & Settings Summary Card */}
@@ -185,7 +225,7 @@ const SkillSelectionDashboard = memo(function SkillSelectionDashboard({
 						<div>
 							<div className='flex items-center gap-2'>
 								<span className='font-extrabold text-sm sm:text-base text-white'>
-									⏱️ Question Pacing & Timer
+									⚙️ Quest Settings & Pacing
 								</span>
 							</div>
 							<p className='text-xs text-slate-300 font-semibold mt-0.5 flex items-center gap-2 flex-wrap'>
@@ -199,11 +239,23 @@ const SkillSelectionDashboard = memo(function SkillSelectionDashboard({
 								</span>
 								<span>•</span>
 								<span>
-									Next Question:{' '}
+									Next:{' '}
 									<strong className='text-emerald-300'>
 										{timerConfig.autoAdvanceEnabled ?
 											`Auto in ${timerConfig.autoAdvanceSeconds || 7}s`
-										:	'Manual Next'}
+										:	'Manual'}
+									</strong>
+								</span>
+								<span>•</span>
+								<span>
+									Diagrams:{' '}
+									<strong
+										className={
+											showVisualDiagrams ?
+												'text-indigo-300 font-extrabold'
+											:	'text-slate-400 font-extrabold'
+										}>
+										{showVisualDiagrams ? '👁️ Shown' : '🙈 Hidden'}
 									</strong>
 								</span>
 							</p>

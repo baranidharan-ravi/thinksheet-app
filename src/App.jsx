@@ -654,6 +654,7 @@ export default function App() {
 					}
 				}}
 				timerConfig={timerConfig}
+				showVisualDiagrams={showVisualDiagrams}
 			/>
 		);
 	}
