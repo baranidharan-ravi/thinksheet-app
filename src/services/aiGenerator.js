@@ -29,7 +29,9 @@ export async function checkProxyAvailability() {
 			const data = await res.json();
 			isProxyAvailable = data?.proxy === true;
 			if (isProxyAvailable) {
-				console.log('🔒 [Security] Node.js Express Proxy detected! API calls are securely routed through server middleware without exposing keys in client Network tab.');
+				console.log(
+					'🔒 [Security] Node.js Express Proxy detected! API calls are securely routed through server middleware without exposing keys in client Network tab.',
+				);
 			}
 			return isProxyAvailable;
 		}
@@ -283,7 +285,8 @@ export const SKILL_DEFINITIONS = {
  * Universal Gemini API Caller prioritizing the user's selected model with automatic fallback
  */
 async function callGeminiApi(payload, apiKey, preferredModel = null) {
-	const activeSelected = preferredModel || getStoredSelectedModel() || DEFAULT_GEMINI_MODEL;
+	const activeSelected =
+		preferredModel || getStoredSelectedModel() || DEFAULT_GEMINI_MODEL;
 
 	// 1. Check if secure Node.js Express proxy is available (Zero API key in Network tab!)
 	const hasProxy = await checkProxyAvailability();
@@ -307,9 +310,14 @@ async function callGeminiApi(payload, apiKey, preferredModel = null) {
 				const data = await proxyRes.json();
 				return data;
 			}
-			console.warn(`[Proxy] /api/generate-content returned HTTP ${proxyRes.status}, falling back to direct client call.`);
+			console.warn(
+				`[Proxy] /api/generate-content returned HTTP ${proxyRes.status}, falling back to direct client call.`,
+			);
 		} catch (proxyErr) {
-			console.warn('[Proxy] Connection failed, falling back to direct client call:', proxyErr);
+			console.warn(
+				'[Proxy] Connection failed, falling back to direct client call:',
+				proxyErr,
+			);
 		}
 	}
 
@@ -1591,36 +1599,51 @@ async function generateWithGeminiFlash(prompt, apiKey) {
 	return `data:${mime};base64,${part.inlineData.data}`;
 }
 
-// 3. Free Provider: Pollinations AI (Flux)
+// 3. Free Provider: Pollinations AI (Flux) - Zero-key direct image URL
 async function generateWithPollinationsFlux(prompt) {
 	const seed = Math.floor(Math.random() * 100000);
 	const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=400&height=400&nologo=true&seed=${seed}&model=flux`;
-	const response = await fetch(url);
-	if (!response.ok) {
-		const err = new Error(`Pollinations Flux HTTP ${response.status}`);
-		if (isResourceExhausted(response.status, null, err.message)) {
-			err.isResourceExhausted = true;
+
+	// Pre-validate via native browser Image loader to bypass AJAX/fetch extension interceptors
+	if (typeof window !== 'undefined' && typeof Image !== 'undefined') {
+		try {
+			await new Promise((resolve) => {
+				const img = new Image();
+				img.onload = () => resolve(url);
+				img.onerror = () => resolve(url); // gracefully resolve URL for <img> rendering
+				img.src = url;
+				setTimeout(() => resolve(url), 5000);
+			});
+			return url;
+		} catch (_) {
+			return url;
 		}
-		throw err;
 	}
-	const blob = await response.blob();
-	return await blobToDataUri(blob);
+
+	return url;
 }
 
-// 4. Free Provider: Pollinations AI (Turbo)
+// 4. Free Provider: Pollinations AI (Turbo) - Zero-key direct image URL
 async function generateWithPollinationsTurbo(prompt) {
 	const seed = Math.floor(Math.random() * 100000);
 	const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=400&height=400&nologo=true&seed=${seed}&model=turbo`;
-	const response = await fetch(url);
-	if (!response.ok) {
-		const err = new Error(`Pollinations Turbo HTTP ${response.status}`);
-		if (isResourceExhausted(response.status, null, err.message)) {
-			err.isResourceExhausted = true;
+
+	if (typeof window !== 'undefined' && typeof Image !== 'undefined') {
+		try {
+			await new Promise((resolve) => {
+				const img = new Image();
+				img.onload = () => resolve(url);
+				img.onerror = () => resolve(url);
+				img.src = url;
+				setTimeout(() => resolve(url), 5000);
+			});
+			return url;
+		} catch (_) {
+			return url;
 		}
-		throw err;
 	}
-	const blob = await response.blob();
-	return await blobToDataUri(blob);
+
+	return url;
 }
 
 // Ordered list of AI Image Generation Providers
@@ -1716,7 +1739,10 @@ export async function generateAiVisualImage(
 				}
 			}
 		} catch (err) {
-			console.warn('[Proxy Image failed, falling back to client providers]:', err);
+			console.warn(
+				'[Proxy Image failed, falling back to client providers]:',
+				err,
+			);
 		}
 	}
 

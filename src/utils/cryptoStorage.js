@@ -7,8 +7,8 @@
 
 const ENCRYPTION_PREFIX = 'enc:v1:';
 const APP_SALT = new Uint8Array([
-	0x61, 0x73, 0x74, 0x72, 0x6f, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2d, 0x63,
-	0x6f, 0x73, 0x6d, 0x69,
+	0x61, 0x73, 0x74, 0x72, 0x6f, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2d, 0x63, 0x6f,
+	0x73, 0x6d, 0x69,
 ]); // "astroquest-cosmi"
 
 // Cached derived CryptoKey
@@ -142,7 +142,10 @@ export async function decryptValue(encryptedValue) {
 		const dec = new TextDecoder();
 		return dec.decode(decryptedBuffer);
 	} catch (err) {
-		console.warn('Decryption failed, key might be invalid or from another origin:', err);
+		console.warn(
+			'Decryption failed, key might be invalid or from another origin:',
+			err,
+		);
 		return '';
 	}
 }
@@ -160,7 +163,9 @@ export function getSecureStorageItem(storageKey) {
 			// For instantaneous synchronous initialization, if base64:
 			if (raw.startsWith(`${ENCRYPTION_PREFIX}b64:`)) {
 				try {
-					return decodeURIComponent(atob(raw.slice(`${ENCRYPTION_PREFIX}b64:`.length)));
+					return decodeURIComponent(
+						atob(raw.slice(`${ENCRYPTION_PREFIX}b64:`.length)),
+					);
 				} catch (_) {}
 			}
 			return raw;

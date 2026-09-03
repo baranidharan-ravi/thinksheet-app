@@ -14,7 +14,8 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
-const SERVER_GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
+const SERVER_GEMINI_KEY =
+	process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -47,7 +48,12 @@ app.get('/api/health', (req, res) => {
 app.post('/api/validate-key', async (req, res) => {
 	const key = resolveApiKey(req);
 	if (!key) {
-		return res.status(400).json({ valid: false, error: 'No API key provided or configured on server' });
+		return res
+			.status(400)
+			.json({
+				valid: false,
+				error: 'No API key provided or configured on server',
+			});
 	}
 
 	try {
@@ -57,9 +63,16 @@ app.post('/api/validate-key', async (req, res) => {
 			return res.json({ valid: true, message: 'Key validated successfully' });
 		}
 		const data = await response.json().catch(() => ({}));
-		return res.status(400).json({ valid: false, error: data?.error?.message || 'Invalid API key' });
+		return res
+			.status(400)
+			.json({ valid: false, error: data?.error?.message || 'Invalid API key' });
 	} catch (err) {
-		return res.status(500).json({ valid: false, error: err.message || 'Validation request failed' });
+		return res
+			.status(500)
+			.json({
+				valid: false,
+				error: err.message || 'Validation request failed',
+			});
 	}
 });
 
@@ -89,10 +102,17 @@ app.get('/api/models', async (req, res) => {
 app.post('/api/generate-content', async (req, res) => {
 	const key = resolveApiKey(req);
 	if (!key) {
-		return res.status(400).json({ error: 'GEMINI_API_KEY is not configured on the server' });
+		return res
+			.status(400)
+			.json({ error: 'GEMINI_API_KEY is not configured on the server' });
 	}
 
-	const { model = 'gemini-3.5-flash-lite', contents, systemInstruction, generationConfig } = req.body;
+	const {
+		model = 'gemini-3.5-flash-lite',
+		contents,
+		systemInstruction,
+		generationConfig,
+	} = req.body;
 
 	try {
 		const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
@@ -112,7 +132,9 @@ app.post('/api/generate-content', async (req, res) => {
 		return res.status(response.status).json(data);
 	} catch (err) {
 		console.error('[Proxy Error] generate-content:', err);
-		return res.status(500).json({ error: err.message || 'Proxy request failed' });
+		return res
+			.status(500)
+			.json({ error: err.message || 'Proxy request failed' });
 	}
 });
 
@@ -147,7 +169,10 @@ app.post('/api/generate-image', async (req, res) => {
 				const data = await imagenResp.json();
 				const b64 = data?.predictions?.[0]?.bytesBase64Encoded;
 				if (b64) {
-					return res.json({ imageUrl: `data:image/png;base64,${b64}`, provider: 'Google Imagen 3' });
+					return res.json({
+						imageUrl: `data:image/png;base64,${b64}`,
+						provider: 'Google Imagen 3',
+					});
 				}
 			}
 		} catch (err) {
@@ -171,7 +196,10 @@ app.post('/api/generate-image', async (req, res) => {
 				const part = flashData?.candidates?.[0]?.content?.parts?.[0];
 				if (part?.inlineData?.data) {
 					const mime = part.inlineData.mimeType || 'image/png';
-					return res.json({ imageUrl: `data:${mime};base64,${part.inlineData.data}`, provider: 'Gemini Flash Image' });
+					return res.json({
+						imageUrl: `data:${mime};base64,${part.inlineData.data}`,
+						provider: 'Gemini Flash Image',
+					});
 				}
 			}
 		} catch (err) {
@@ -187,16 +215,25 @@ app.post('/api/generate-image', async (req, res) => {
 		if (pollResp.ok) {
 			const buffer = await pollResp.arrayBuffer();
 			const b64 = Buffer.from(buffer).toString('base64');
-			return res.json({ imageUrl: `data:image/jpeg;base64,${b64}`, provider: 'Pollinations AI (Flux Free)' });
+			return res.json({
+				imageUrl: `data:image/jpeg;base64,${b64}`,
+				provider: 'Pollinations AI (Flux Free)',
+			});
 		}
 	} catch (err) {
 		console.warn('[Proxy Image] Pollinations Flux failed:', err.message);
 	}
 
-	return res.status(500).json({ error: 'All image generation providers exhausted' });
+	return res
+		.status(500)
+		.json({ error: 'All image generation providers exhausted' });
 });
 
 app.listen(PORT, () => {
-	console.log(`\n🚀 [AstroQuest Proxy] Node.js Express server running on http://localhost:${PORT}`);
-	console.log(`🔒 [Security] Client Network tab will see requests to http://localhost:${PORT}/api/* without exposing any Gemini API keys!\n`);
+	console.log(
+		`\n🚀 [AstroQuest Proxy] Node.js Express server running on http://localhost:${PORT}`,
+	);
+	console.log(
+		`🔒 [Security] Client Network tab will see requests to http://localhost:${PORT}/api/* without exposing any Gemini API keys!\n`,
+	);
 });
