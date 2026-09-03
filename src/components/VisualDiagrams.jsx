@@ -648,11 +648,7 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 	}
 
 	// 3. Spatial Rotation & Quadrant Progression (e.g. 90° Clockwise Rotation with Quadrants or Shapes)
-	if (
-		type === 'shape-rotation' ||
-		data.isRotationSequence ||
-		data.isQuadrant
-	) {
+	if (type === 'shape-rotation' || data.isRotationSequence || data.isQuadrant) {
 		const steps = data.steps || [
 			{
 				step: 1,
@@ -692,8 +688,7 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 				<div className='flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase text-cyan-300 tracking-wider mb-3 bg-cyan-950/80 px-3 py-0.5 rounded-full border border-cyan-500/40'>
 					{isCCW ?
 						<RotateCcw className='w-3.5 h-3.5 text-cyan-400 animate-spin-slow' />
-					:	<RotateCw className='w-3.5 h-3.5 text-cyan-400 animate-spin-slow' />
-					}
+					:	<RotateCw className='w-3.5 h-3.5 text-cyan-400 animate-spin-slow' />}
 					<span>
 						Spatial Geometry: {angle}°{' '}
 						{isCCW ? 'Counter-Clockwise' : 'Clockwise'} Rotation
@@ -770,8 +765,8 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 				{isSolution && (
 					<div className='mt-3 px-3.5 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-xs font-black shadow-lg animate-bounce-short flex items-center gap-2'>
 						<span>
-							✨ Next {angle}°{' '}
-							{isCCW ? 'Counter-Clockwise' : 'Clockwise'} Position:
+							✨ Next {angle}° {isCCW ? 'Counter-Clockwise' : 'Clockwise'}{' '}
+							Position:
 						</span>
 						<span className='underline decoration-wavy capitalize'>
 							{target.quadrant ?
