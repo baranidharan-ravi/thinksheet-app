@@ -1,0 +1,487 @@
+import { jsPDF } from 'jspdf';
+
+/**
+ * Strips unsupported emojis or complex unicode surrogates so PDF text renders cleanly
+ */
+function cleanPdfText(text) {
+	if (!text) return '';
+	return String(text)
+		.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '') // Remove 4-byte emojis
+		.replace(/[^\x20-\x7E\xA0-\xFF\n\r\t]/g, '') // Keep standard printable Latin-1
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+/**
+ * Generates and downloads a complete, fully expanded PDF report of the Thinksheet session.
+ * The layout matches the Question Summary page with all 10 questions and answers fully expanded.
+ */
+export function exportSessionToPdf(sessionData, customFilename) {
+	const {
+		studentName = 'Explorer',
+		studentAge = 5,
+		selectedSkill = 'Visual',
+		sheetNumber = 1,
+		date = new Date().toLocaleDateString(),
+		scorePercent = 0,
+		correctCount = 0,
+		totalQuestions = 10,
+		xp = 0,
+		questions = [],
+		history = [],
+	} = sessionData || {};
+
+	const doc = new jsPDF({
+		orientation: 'portrait',
+		unit: 'mm',
+		format: 'a4',
+	});
+
+	const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
+	const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
+	const marginX = 14;
+	const contentWidth = pageWidth - marginX * 2; // 182mm
+	let currentY = 14;
+
+	// Calculate counts
+	const skippedCount = history.filter((h) => h && h.skipped).length;
+	const incorrectCount = totalQuestions - correctCount - skippedCount;
+	const earnedXp = xp || correctCount * 5;
+
+	// Helper to check space & auto-add page
+	const ensureSpace = (neededHeight) => {
+		if (currentY + neededHeight > pageHeight - 16) {
+			doc.addPage();
+			currentY = 16;
+			return true;
+		}
+		return false;
+	};
+
+	// ==========================================
+	// 1. HEADER BANNER (Top of First Page)
+	// ==========================================
+	doc.setFillColor(21, 24, 76); // Dark Cosmic Navy (#15184C)
+	doc.roundedRect(marginX, currentY, contentWidth, 29, 3, 3, 'F');
+
+	doc.setTextColor(255, 255, 255);
+	doc.setFont('helvetica', 'bold');
+	doc.setFontSize(15);
+	doc.text('SKILL THINKSHEET - SESSION REPORT', marginX + 6, currentY + 8);
+
+	doc.setFontSize(9.5);
+	doc.setFont('helvetica', 'bold');
+	doc.setTextColor(147, 197, 253); // Light Cyan/Blue (#93C5FD)
+	doc.text(
+		`Student: ${cleanPdfText(studentName)} (Age ${studentAge})`,
+		marginX + 6,
+		currentY + 16,
+	);
+
+	doc.setFont('helvetica', 'normal');
+	doc.setTextColor(203, 213, 225); // Slate 300
+	doc.text(
+		`Skill: ${cleanPdfText(selectedSkill)}   |   Sheet #${sheetNumber}`,
+		marginX + 80,
+		currentY + 16,
+	);
+
+	doc.setFontSize(8.5);
+	doc.setFont('helvetica', 'bold');
+	doc.setTextColor(254, 240, 138); // Soft Gold (#FEF08A)
+	doc.text(
+		`Date & Time Taken: ${cleanPdfText(date)}`,
+		marginX + 6,
+		currentY + 23.5,
+	);
+
+	currentY += 34;
+
+	// ==========================================
+	// 2. SCORE & PERFORMANCE SUMMARY BAR
+	// ==========================================
+	doc.setFillColor(248, 250, 252); // Soft slate background
+	doc.setDrawColor(203, 213, 225); // Border (#CBD5E1)
+	doc.roundedRect(marginX, currentY, contentWidth, 18, 2.5, 2.5, 'FD');
+
+	// Score badge (Left)
+	doc.setFont('helvetica', 'bold');
+	doc.setFontSize(12);
+	doc.setTextColor(15, 23, 42); // Dark slate
+	doc.text(
+		`Score: ${correctCount}/${totalQuestions} (${scorePercent}%)`,
+		marginX + 5,
+		currentY + 11,
+	);
+
+	// Status Badges (Right side - Color alone, no icons)
+	let badgeX = marginX + 80;
+
+	// Correct Pill (Green color alone)
+	doc.setFillColor(220, 252, 231); // Green tint
+	doc.setDrawColor(34, 197, 94);
+	doc.roundedRect(badgeX, currentY + 4.5, 28, 9, 2, 2, 'FD');
+	doc.setFont('helvetica', 'bold');
+	doc.setFontSize(8.5);
+	doc.setTextColor(21, 128, 61);
+	doc.text(`${correctCount} Correct`, badgeX + 14, currentY + 10.2, {
+		align: 'center',
+	});
+	badgeX += 32;
+
+	// Skipped Pill (Amber color alone)
+	doc.setFillColor(254, 243, 199); // Amber tint
+	doc.setDrawColor(245, 158, 11);
+	doc.roundedRect(badgeX, currentY + 4.5, 28, 9, 2, 2, 'FD');
+	doc.setFont('helvetica', 'bold');
+	doc.setFontSize(8.5);
+	doc.setTextColor(180, 83, 9);
+	doc.text(`${skippedCount} Skipped`, badgeX + 14, currentY + 10.2, {
+		align: 'center',
+	});
+	badgeX += 32;
+
+	// XP Pill (Purple color alone)
+	doc.setFillColor(243, 232, 255); // Purple tint
+	doc.setDrawColor(168, 85, 247);
+	doc.roundedRect(badgeX, currentY + 4.5, 30, 9, 2, 2, 'FD');
+	doc.setFont('helvetica', 'bold');
+	doc.setFontSize(8.5);
+	doc.setTextColor(126, 34, 206);
+	doc.text(`+${earnedXp} XP`, badgeX + 15, currentY + 10.2, {
+		align: 'center',
+	});
+
+	currentY += 23;
+
+	// ==========================================
+	// 3. FULLY EXPANDED QUESTIONS LIST
+	// ==========================================
+	doc.setFont('helvetica', 'bold');
+	doc.setFontSize(11);
+	doc.setTextColor(30, 41, 59);
+	doc.text('QUESTIONS & ANSWERS BREAKDOWN', marginX, currentY);
+	currentY += 4;
+
+	questions.forEach((q, idx) => {
+		const userResult = history[idx] || {};
+		const isCorrect = userResult.isCorrect;
+		const isSkipped = userResult.skipped;
+		const isTimedOut = userResult.timedOut;
+
+		const userOption = (q.options || []).find(
+			(o) => o.id === userResult.selectedOptionId,
+		);
+		const correctOption = (q.options || []).find(
+			(o) => o.id === q.correctAnswerId,
+		);
+
+		// Determine status styling
+		let statusBg = [255, 241, 242]; // Rose 50
+		let statusBorder = [244, 63, 94]; // Rose 500
+		let statusText = [159, 18, 57]; // Rose 900
+
+		if (isCorrect) {
+			statusBg = [236, 253, 245]; // Emerald 50
+			statusBorder = [16, 185, 129]; // Emerald 500
+			statusText = [6, 95, 70]; // Emerald 800
+		} else if (isSkipped) {
+			statusBg = [254, 243, 199]; // Amber 50
+			statusBorder = [245, 158, 11]; // Amber 500
+			statusText = [146, 64, 14]; // Amber 800
+		} else if (isTimedOut) {
+			statusBg = [254, 242, 242];
+			statusBorder = [239, 68, 68];
+			statusText = [153, 27, 27];
+		}
+
+		// Prepare question text and options lines
+		const questionPrompt = cleanPdfText(q.question || q.questionText || '');
+		doc.setFontSize(10);
+		doc.setFont('helvetica', 'bold');
+		const promptLines = doc.splitTextToSize(questionPrompt, contentWidth - 12);
+		const promptHeight = promptLines.length * 4.8;
+
+		// Options list lines (with selection and correctness state)
+		const optionItems = (q.options || []).map((opt) => {
+			const isUserPick = opt.id === userResult.selectedOptionId;
+			const isRight = opt.id === q.correctAnswerId;
+			return {
+				id: opt.id,
+				text: `${opt.id}. ${cleanPdfText(opt.text)}`,
+				isUserPick,
+				isRight,
+			};
+		});
+
+		doc.setFontSize(8.5);
+		doc.setFont('helvetica', 'normal');
+		const optionsHeight = optionItems.length * 6.2;
+
+		// Solution text lines
+		const explanationText = cleanPdfText(q.solutionText || q.solution || '');
+		const explanationLines =
+			explanationText ?
+				doc.splitTextToSize(explanationText, contentWidth - 14)
+			:	[];
+		const explanationHeight =
+			explanationLines.length > 0 ? explanationLines.length * 4.2 + 10 : 0;
+
+		// Total required height for this question card
+		const cardPadding = 26;
+		const totalCardHeight =
+			promptHeight + optionsHeight + 14 + explanationHeight + cardPadding;
+
+		// Ensure space on page
+		ensureSpace(totalCardHeight);
+
+		// Draw Outer Card Container
+		doc.setFillColor(255, 255, 255);
+		doc.setDrawColor(226, 232, 240); // Slate 200
+		doc.roundedRect(
+			marginX,
+			currentY,
+			contentWidth,
+			totalCardHeight,
+			3,
+			3,
+			'FD',
+		);
+
+		// Top Card Status Header Bar (Color alone, no status label before question)
+		doc.setFillColor(statusBg[0], statusBg[1], statusBg[2]);
+		doc.setDrawColor(statusBorder[0], statusBorder[1], statusBorder[2]);
+		doc.roundedRect(
+			marginX + 2,
+			currentY + 2,
+			contentWidth - 4,
+			8.5,
+			2,
+			2,
+			'FD',
+		);
+
+		doc.setFont('helvetica', 'bold');
+		doc.setFontSize(9);
+		doc.setTextColor(statusText[0], statusText[1], statusText[2]);
+		doc.text(
+			`Question ${idx + 1} of ${totalQuestions}   |   Category: ${cleanPdfText(q.category || selectedSkill)}`,
+			marginX + 6,
+			currentY + 7.5,
+		);
+
+		let innerY = currentY + 16;
+
+		// Draw Question Text
+		doc.setFont('helvetica', 'bold');
+		doc.setFontSize(9.5);
+		doc.setTextColor(15, 23, 42); // Dark slate
+		doc.text(promptLines, marginX + 6, innerY);
+		innerY += promptHeight + 2.5;
+
+		// Draw Options List with Color Highlights for User Pick & Correct Answer
+		optionItems.forEach((opt) => {
+			if (opt.isUserPick && opt.isRight) {
+				// User picked correctly: Emerald Green
+				doc.setFillColor(236, 253, 245); // Emerald 50
+				doc.setDrawColor(34, 197, 94); // Emerald 500
+				doc.roundedRect(
+					marginX + 6,
+					innerY - 3.4,
+					contentWidth - 12,
+					5.4,
+					1.2,
+					1.2,
+					'FD',
+				);
+				doc.setTextColor(21, 128, 61); // Emerald 700
+				doc.setFont('helvetica', 'bold');
+			} else if (opt.isUserPick && !opt.isRight) {
+				// User picked wrong: Rose/Red
+				doc.setFillColor(255, 241, 242); // Rose 50
+				doc.setDrawColor(244, 63, 94); // Rose 500
+				doc.roundedRect(
+					marginX + 6,
+					innerY - 3.4,
+					contentWidth - 12,
+					5.4,
+					1.2,
+					1.2,
+					'FD',
+				);
+				doc.setTextColor(190, 24, 93); // Rose 700
+				doc.setFont('helvetica', 'bold');
+			} else if (opt.isRight) {
+				// Correct Answer (not picked by user): Emerald Green
+				doc.setFillColor(240, 253, 244); // Green 50
+				doc.setDrawColor(74, 222, 128); // Green 400
+				doc.roundedRect(
+					marginX + 6,
+					innerY - 3.4,
+					contentWidth - 12,
+					5.4,
+					1.2,
+					1.2,
+					'FD',
+				);
+				doc.setTextColor(22, 101, 52); // Green 800
+				doc.setFont('helvetica', 'bold');
+			} else {
+				// Other choices: Neutral slate
+				doc.setFillColor(248, 250, 252); // Slate 50
+				doc.setDrawColor(226, 232, 240); // Slate 200
+				doc.roundedRect(
+					marginX + 6,
+					innerY - 3.4,
+					contentWidth - 12,
+					5.4,
+					1.2,
+					1.2,
+					'FD',
+				);
+				doc.setTextColor(71, 85, 105); // Slate 600
+				doc.setFont('helvetica', 'normal');
+			}
+			doc.setFontSize(8.2);
+			doc.text(opt.text, marginX + 9, innerY + 0.3);
+			innerY += 6.2;
+		});
+
+		innerY += 2;
+
+		// Answer Comparison Sub-boxes (Side by Side)
+		const boxW = (contentWidth - 16) / 2;
+		const boxH = 11;
+
+		// Your Answer Box
+		doc.setFillColor(statusBg[0], statusBg[1], statusBg[2]);
+		doc.setDrawColor(statusBorder[0], statusBorder[1], statusBorder[2]);
+		doc.roundedRect(marginX + 6, innerY, boxW, boxH, 2, 2, 'FD');
+
+		doc.setFontSize(7.5);
+		doc.setFont('helvetica', 'bold');
+		doc.setTextColor(statusText[0], statusText[1], statusText[2]);
+		doc.text('YOUR ANSWER:', marginX + 8, innerY + 4);
+
+		doc.setFont('helvetica', 'normal');
+		doc.setFontSize(8.5);
+		let yourAnswerStr = 'Not Answered';
+		if (userOption) yourAnswerStr = `${userOption.id}. ${userOption.text}`;
+		else if (isSkipped) yourAnswerStr = 'Skipped Question';
+		else if (isTimedOut) yourAnswerStr = 'Timed Out';
+
+		doc.text(
+			cleanPdfText(yourAnswerStr).substring(0, 36),
+			marginX + 8,
+			innerY + 8.5,
+		);
+
+		// Correct Answer Box
+		doc.setFillColor(236, 253, 245); // Emerald 50
+		doc.setDrawColor(16, 185, 129); // Emerald 500
+		doc.roundedRect(marginX + 10 + boxW, innerY, boxW, boxH, 2, 2, 'FD');
+
+		doc.setFontSize(7.5);
+		doc.setFont('helvetica', 'bold');
+		doc.setTextColor(6, 95, 70);
+		doc.text('CORRECT ANSWER:', marginX + 12 + boxW, innerY + 4);
+
+		doc.setFont('helvetica', 'normal');
+		doc.setFontSize(8.5);
+		const rightAnswerStr =
+			correctOption ? `${correctOption.id}. ${correctOption.text}` : '';
+		doc.text(
+			cleanPdfText(rightAnswerStr).substring(0, 36),
+			marginX + 12 + boxW,
+			innerY + 8.5,
+		);
+
+		innerY += boxH + 3;
+
+		// Solution Explanation Box
+		if (explanationLines.length > 0) {
+			doc.setFillColor(250, 245, 255); // Purple 50
+			doc.setDrawColor(216, 180, 254); // Purple 300
+			doc.roundedRect(
+				marginX + 6,
+				innerY,
+				contentWidth - 12,
+				explanationHeight - 2,
+				2,
+				2,
+				'FD',
+			);
+
+			doc.setFontSize(7.5);
+			doc.setFont('helvetica', 'bold');
+			doc.setTextColor(107, 33, 168); // Purple 800
+			doc.text('SOLUTION & EXPLANATION:', marginX + 8, innerY + 4);
+
+			doc.setFont('helvetica', 'normal');
+			doc.setFontSize(8.2);
+			doc.setTextColor(51, 65, 85);
+			doc.text(explanationLines, marginX + 8, innerY + 8);
+		}
+
+		currentY += totalCardHeight + 5;
+	});
+
+	// ==========================================
+	// 4. RUNNING FOOTERS (Page X of Y)
+	// ==========================================
+	const totalPages = doc.getNumberOfPages();
+	for (let i = 1; i <= totalPages; i++) {
+		doc.setPage(i);
+		doc.setDrawColor(226, 232, 240);
+		doc.line(marginX, pageHeight - 11, pageWidth - marginX, pageHeight - 11);
+
+		doc.setFontSize(8);
+		doc.setFont('helvetica', 'normal');
+		doc.setTextColor(148, 163, 184); // Slate 400
+		doc.text(
+			'Skill Thinksheet | 100% AI-Generated Adaptive Learning for Kids',
+			marginX,
+			pageHeight - 6,
+		);
+
+		doc.text(
+			`Page ${i} of ${totalPages}`,
+			pageWidth - marginX - 18,
+			pageHeight - 6,
+		);
+	}
+
+	// Format date and time for filename
+	const now = new Date();
+	const day = String(now.getDate()).padStart(2, '0');
+	const monthNames = [
+		'Jan',
+		'Feb',
+		'Mar',
+		'Apr',
+		'May',
+		'Jun',
+		'Jul',
+		'Aug',
+		'Sep',
+		'Oct',
+		'Nov',
+		'Dec',
+	];
+	const month = monthNames[now.getMonth()];
+	const year = now.getFullYear();
+	let hours = now.getHours();
+	const ampm = hours >= 12 ? 'PM' : 'AM';
+	hours = hours % 12 || 12;
+	const formattedHours = String(hours).padStart(2, '0');
+	const minutes = String(now.getMinutes()).padStart(2, '0');
+	const timeStampStr = `${day}${month}${year}_${formattedHours}-${minutes}${ampm}`;
+
+	const safeStudentName =
+		cleanPdfText(studentName).replace(/[^\w-]/g, '_') || 'Explorer';
+	const safeFileName =
+		customFilename ||
+		`Thinksheet_${safeStudentName}_Age${studentAge}_${selectedSkill}_Sheet${sheetNumber}_${timeStampStr}.pdf`;
+
+	doc.save(safeFileName);
+}

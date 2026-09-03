@@ -1,5 +1,6 @@
 import {
 	extractShapeSequenceTerms,
+	parseMatrixGridFromQuestion,
 	parseRotationSequence,
 	parseStepShapeCountSequence,
 } from '../utils/shapeGenerator';
@@ -70,10 +71,125 @@ export function setStoredApiKey(key) {
 	}
 }
 
+export const DYNAMIC_MODELS_STORAGE_KEY = 'thinksheet_dynamic_gemini_models_v1';
+
+export function getAvailableGeminiModels() {
+	try {
+		const saved = localStorage.getItem(DYNAMIC_MODELS_STORAGE_KEY);
+		if (saved) {
+			const parsed = JSON.parse(saved);
+			if (Array.isArray(parsed) && parsed.length > 0) {
+				return parsed;
+			}
+		}
+	} catch {}
+	return AVAILABLE_GEMINI_MODELS;
+}
+
+/**
+ * Fetches the latest available Gemini models live from Google's Gemini API
+ */
+export async function fetchOnlineGeminiModels(apiKey) {
+	const cleanedKey = (apiKey || getStoredApiKey() || '').trim();
+	if (!cleanedKey) {
+		throw new Error(
+			'Please enter a Gemini API key first to fetch available models.',
+		);
+	}
+
+	const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(cleanedKey)}`;
+
+	const response = await fetch(url, {
+		method: 'GET',
+		headers: { 'Content-Type': 'application/json' },
+	});
+
+	if (!response.ok) {
+		const errText = await response.text();
+		throw new Error(
+			`Failed to fetch models (${response.status}): ${errText || response.statusText}`,
+		);
+	}
+
+	const data = await response.json();
+	if (!data.models || !Array.isArray(data.models)) {
+		throw new Error('No models found in API response.');
+	}
+
+	// Filter for generative Gemini models supporting generateContent
+	const filtered = data.models
+		.filter((m) => {
+			const id = (m.name || '').replace(/^models\//, '');
+			const methods = m.supportedGenerationMethods || [];
+			return (
+				methods.includes('generateContent') &&
+				id.toLowerCase().includes('gemini') &&
+				!id.includes('embedding') &&
+				!id.includes('aqa') &&
+				!id.includes('imagen') &&
+				!id.includes('computer-use')
+			);
+		})
+		.map((m) => {
+			const id = m.name.replace(/^models\//, '');
+			const isFlash = id.includes('flash');
+			const isPro = id.includes('pro');
+			const isLite = id.includes('lite');
+			const isPreview = id.includes('preview');
+			const isExperimental = id.includes('exp');
+
+			let badge = 'Active';
+			let badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40';
+			let tag = '🤖 Gemini Model';
+
+			if (isLite) {
+				badge = 'Lightweight';
+				badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40';
+				tag = '⚡ Ultra-Fast & Efficient';
+			} else if (isPreview || isExperimental) {
+				badge = 'Preview';
+				badgeColor = 'bg-purple-500/20 text-purple-300 border-purple-400/40';
+				tag = '🔮 Next-Gen Intelligence';
+			} else if (isFlash) {
+				badge = 'Fast';
+				badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-400/40';
+				tag = '🚀 High Speed & Reasoning';
+			} else if (isPro) {
+				badge = 'Frontier';
+				badgeColor = 'bg-indigo-500/20 text-indigo-300 border-indigo-400/40';
+				tag = '🧠 Deep Cognitive Reasoning';
+			}
+
+			return {
+				id,
+				name: m.displayName || id,
+				badge,
+				badgeColor,
+				tag,
+				description:
+					m.description ||
+					`Google Gemini ${id} model for real-time pedagogical generation.`,
+			};
+		});
+
+	if (filtered.length === 0) {
+		throw new Error('No compatible Gemini content generation models found.');
+	}
+
+	try {
+		localStorage.setItem(DYNAMIC_MODELS_STORAGE_KEY, JSON.stringify(filtered));
+	} catch (e) {
+		console.warn('Could not cache models in localStorage', e);
+	}
+
+	return filtered;
+}
+
 export function getStoredSelectedModel() {
 	try {
 		const saved = localStorage.getItem(SELECTED_MODEL_KEY);
-		if (saved && AVAILABLE_GEMINI_MODELS.some((m) => m.id === saved)) {
+		const available = getAvailableGeminiModels();
+		if (saved && available.some((m) => m.id === saved)) {
 			return saved;
 		}
 	} catch {}
@@ -316,6 +432,11 @@ function synchronizeDiagramData(
 		lower.includes('matrix')
 	) {
 		type = 'matrix-grid';
+		const parsedGrid = parseMatrixGridFromQuestion(questionText, correctText);
+		if (parsedGrid) {
+			data.grid = parsedGrid.grid;
+			data.answer = parsedGrid.answer;
+		}
 	} else if (
 		lower.includes('is to') ||
 		questionText.includes('::') ||
@@ -330,12 +451,24 @@ function synchronizeDiagramData(
 	) {
 		type = 'shape-sequence';
 	} else if (
-		lower.includes('happen') ||
-		lower.includes('because') ||
+		lower.includes('odd-one-out') ||
+		lower.includes('odd one out') ||
+		lower.includes('not belong') ||
+		lower.includes('different group') ||
+		lower.includes('states of matter') ||
+		lower.includes('room temperature')
+	) {
+		type = 'odd-one-out';
+		data.target = correctText;
+	} else if (
 		lower.includes('cause') ||
-		lower.includes('if you') ||
-		lower.includes('when') ||
-		selectedSkill === 'Analytical Thinking'
+		lower.includes('effect') ||
+		lower.includes('happen') ||
+		lower.includes('if you leave') ||
+		lower.includes('when heated') ||
+		lower.includes('when cooled') ||
+		lower.includes('melts') ||
+		lower.includes('freeze')
 	) {
 		type = 'cause-effect';
 	} else if (lower.includes('how many') || lower.includes('count')) {
@@ -404,12 +537,18 @@ function synchronizeDiagramData(
 			data.totalCubes = parsedNum || 14;
 		}
 	} else if (type === 'matrix-grid') {
-		data.grid = data.grid || [
-			['Square (Gray)', 'Circle (White)', 'Triangle (White)'],
-			['Square (White)', 'Circle (Gray)', 'Triangle (White)'],
-			['Square (Gray)', 'Circle (White)', '?'],
-		];
-		data.answer = correctText.trim() || 'Triangle (Gray)';
+		const parsedGrid = parseMatrixGridFromQuestion(questionText, correctText);
+		if (parsedGrid) {
+			data.grid = parsedGrid.grid;
+			data.answer = parsedGrid.answer;
+		} else {
+			data.grid = data.grid || [
+				['Square (Gray)', 'Circle (White)', 'Triangle (White)'],
+				['Square (White)', 'Circle (Gray)', 'Triangle (White)'],
+				['Square (Gray)', 'Circle (White)', '?'],
+			];
+			data.answer = correctText.trim() || 'Triangle (Gray)';
+		}
 	} else if (type === 'analogy-map') {
 		const cleanQ = questionText.replace(/\?|\.{2,}/g, '').trim();
 		const isToMatch = cleanQ.match(
@@ -463,12 +602,21 @@ function synchronizeDiagramData(
 			}
 		}
 		data.nextVal = data.nextVal || correctText.trim();
+	} else if (type === 'odd-one-out') {
+		data.target = data.target || correctText.trim();
+		data.rule =
+			data.rule ||
+			'Compare the items to find the one that belongs to a different state or category';
 	} else if (type === 'cause-effect') {
 		const parts = questionText.split(/,|then|what happens/i);
 		data.cause =
 			data.cause ||
 			(parts[0] ? parts[0].trim().replace(/^if\s+/i, '') : 'Event / Condition');
-		data.action = data.action || 'leads to';
+		let act = data.action || 'leads to';
+		if (act.length > 25) {
+			act = act.slice(0, 22) + '...';
+		}
+		data.action = act;
 		data.effect = data.effect || correctText.trim();
 	} else if (type === 'apple-counting') {
 		const count =

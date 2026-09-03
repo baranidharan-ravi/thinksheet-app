@@ -2,6 +2,7 @@ import {
 	CheckCircle2,
 	ChevronDown,
 	ChevronUp,
+	Download,
 	LayoutGrid,
 	Lightbulb,
 	RefreshCw,
@@ -16,6 +17,7 @@ export default function QuestionSummary({
 	questions,
 	history,
 	onStartNextSheet,
+	onDownloadPdf,
 	activeTab,
 	setActiveTab,
 	soundEnabled,
@@ -202,16 +204,28 @@ export default function QuestionSummary({
 			</div>
 
 			{/* Bottom Action Buttons */}
-			<div className='mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-lg'>
+			<div className='mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-2xl'>
 				<button
 					onClick={() => {
 						playButtonPop(soundEnabled);
 						onStartNextSheet();
 					}}
-					className='w-full py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-[#FF5B84] to-[#FF435A] hover:from-[#FF435A] hover:to-[#E11D48] text-white font-extrabold text-sm sm:text-base shadow-[0_10px_25px_rgba(255,91,132,0.4)] flex items-center justify-center gap-2 transform hover:-translate-y-0.5 transition-all'>
+					className='w-full sm:w-auto py-3.5 sm:py-4 px-6 rounded-2xl bg-gradient-to-r from-[#FF5B84] to-[#FF435A] hover:from-[#FF435A] hover:to-[#E11D48] text-white font-extrabold text-sm sm:text-base shadow-[0_10px_25px_rgba(255,91,132,0.4)] flex items-center justify-center gap-2 transform hover:-translate-y-0.5 transition-all cursor-pointer'>
 					<RefreshCw className='w-4 h-4 animate-spin-slow' />
-					<span>Start Next Thinksheet (10 New Questions)</span>
+					<span>Start Next Thinksheet</span>
 				</button>
+
+				{onDownloadPdf && (
+					<button
+						onClick={() => {
+							playButtonPop(soundEnabled);
+							onDownloadPdf();
+						}}
+						className='w-full sm:w-auto py-3.5 sm:py-4 px-6 rounded-2xl bg-[#0F143D] hover:bg-[#1A205E] border-2 border-cyan-400 text-cyan-300 hover:text-white font-extrabold text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5'>
+						<Download className='w-4 h-4' />
+						<span>Download PDF Report 📄</span>
+					</button>
+				)}
 
 				{onBackToDashboard && (
 					<button
@@ -219,9 +233,9 @@ export default function QuestionSummary({
 							playButtonPop(soundEnabled);
 							onBackToDashboard();
 						}}
-						className='w-full sm:w-auto py-3.5 sm:py-4 px-6 rounded-2xl bg-[#1C2263] hover:bg-[#252D80] border border-[#3A45A8] text-cyan-300 hover:text-white font-extrabold text-sm sm:text-base transition-all flex items-center justify-center gap-2'>
+						className='w-full sm:w-auto py-3.5 sm:py-4 px-6 rounded-2xl bg-[#1C2263] hover:bg-[#252D80] border border-[#3A45A8] text-slate-300 hover:text-white font-extrabold text-sm sm:text-base transition-all flex items-center justify-center gap-2 cursor-pointer'>
 						<LayoutGrid className='w-4 h-4' />
-						<span>Back to Skills Hub</span>
+						<span>Skills Hub</span>
 					</button>
 				)}
 			</div>

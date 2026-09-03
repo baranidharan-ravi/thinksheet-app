@@ -1050,13 +1050,55 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 			);
 		}
 
+		case 'odd-one-out': {
+			const target = data.target || data.answer || 'Odd-One-Out Item';
+			const visTarget = getConceptVisual(target);
+
+			return (
+				<div className='flex flex-col items-center justify-center p-3 sm:p-4 my-2 bg-gradient-to-r from-amber-50/90 via-orange-50/80 to-amber-50/90 rounded-2xl border-2 border-amber-300 shadow-sm max-w-xl w-full animate-in fade-in duration-300 overflow-hidden'>
+					<div className='flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase text-amber-900 tracking-wider mb-2.5 bg-amber-200/80 px-3 py-0.5 rounded-full border border-amber-300'>
+						<Sparkles className='w-3.5 h-3.5 text-amber-600' />
+						<span>Classification & Odd-One-Out Analysis</span>
+					</div>
+
+					<div className='w-full bg-white rounded-2xl p-3 sm:p-4 border border-amber-200 shadow-xs flex flex-col items-center text-center gap-2.5'>
+						<span className='text-[11px] sm:text-xs font-bold text-amber-900'>
+							🎯 Clue: Three items share the exact same state of matter or
+							property. One belongs to a different group!
+						</span>
+
+						{isSolution ?
+							<div className='w-full p-3 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white shadow-md flex items-center justify-center gap-3 animate-bounce-short border-2 border-emerald-400'>
+								<div className='w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/20 flex items-center justify-center text-2xl sm:text-3xl shadow-inner flex-shrink-0'>
+									{visTarget.icon}
+								</div>
+								<div className='text-left'>
+									<span className='text-[10px] font-black uppercase text-emerald-100 block tracking-wider'>
+										✓ Odd-One-Out Identified
+									</span>
+									<h4 className='text-sm sm:text-base font-black text-white leading-tight'>
+										{target}
+									</h4>
+								</div>
+							</div>
+						:	<div className='w-full p-2.5 rounded-xl bg-amber-50 border-2 border-dashed border-amber-300 text-amber-900 flex items-center justify-center gap-2 font-black text-xs sm:text-sm'>
+								<span>🔍 Compare: Solid 🧊 vs Liquid 💧 vs Gas 💨</span>
+							</div>
+						}
+					</div>
+				</div>
+			);
+		}
+
 		case 'cause-effect': {
 			const visCause = getConceptVisual(data.cause || 'Initial Event');
 			const visEffect = getConceptVisual(data.effect || 'Outcome');
 			const action = data.action || 'leads to';
+			const cleanAction =
+				action.length > 25 ? action.slice(0, 22) + '...' : action;
 
 			return (
-				<div className='flex flex-col items-center justify-center p-3.5 sm:p-4 my-2 bg-gradient-to-r from-amber-50/90 via-orange-50/80 to-yellow-50/90 rounded-2xl border-2 border-amber-200 shadow-sm max-w-xl w-full animate-in fade-in duration-300'>
+				<div className='flex flex-col items-center justify-center p-3 sm:p-4 my-2 bg-gradient-to-r from-amber-50/90 via-orange-50/80 to-yellow-50/90 rounded-2xl border-2 border-amber-200 shadow-sm max-w-xl w-full animate-in fade-in duration-300 overflow-hidden'>
 					<div className='flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase text-amber-800 tracking-wider mb-2.5 bg-amber-100 px-3 py-0.5 rounded-full border border-amber-300'>
 						<Zap className='w-3.5 h-3.5 text-amber-600' />
 						<span>Process & Cause-and-Effect Chain</span>
@@ -1065,31 +1107,33 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 					<div
 						className={`w-full flex ${
 							isSolution ? 'flex-col' : 'flex-col sm:flex-row'
-						} items-center justify-between gap-2 sm:gap-2.5`}>
-						<div className='w-full flex-1 bg-white border-2 border-amber-300 rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5 sm:gap-3 min-w-0'>
+						} items-stretch sm:items-center justify-between gap-2 sm:gap-2.5`}>
+						<div className='flex-1 min-w-[135px] bg-white border-2 border-amber-300 rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5 sm:gap-3'>
 							<div className='w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-xl sm:text-2xl shadow-inner flex-shrink-0'>
 								{visCause.icon}
 							</div>
 							<div className='flex-1 min-w-0'>
-								<span className='text-[10px] font-bold text-amber-600 uppercase block tracking-wider'>
-									Initial Action / Setup
+								<span className='text-[10px] font-bold text-amber-600 uppercase block tracking-wider truncate'>
+									Initial Setup
 								</span>
-								<h4 className='text-xs sm:text-sm font-black text-slate-900 break-words'>
+								<h4
+									className='text-xs sm:text-sm font-black text-slate-900 line-clamp-2 leading-snug'
+									title={visCause.label}>
 									{visCause.label || 'Setup'}
 								</h4>
 							</div>
 						</div>
 
-						<div className='flex items-center justify-center gap-1 px-3 py-1 rounded-xl bg-amber-100 border border-amber-300 text-amber-900 font-extrabold text-[11px] shadow-xs flex-shrink-0'>
-							<span>
+						<div className='flex items-center justify-center gap-1 px-3 py-1 rounded-xl bg-amber-100 border border-amber-300 text-amber-900 font-extrabold text-[10px] sm:text-[11px] shadow-xs max-w-[170px] sm:max-w-[200px] mx-auto flex-shrink-0'>
+							<span className='truncate'>
 								{isSolution ? '⬇ ' : '➔ '}
-								{action}
+								{cleanAction}
 								{isSolution ? ' ⬇' : ' ➔'}
 							</span>
 						</div>
 
 						<div
-							className={`w-full flex-1 rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5 sm:gap-3 transition-all min-w-0 ${
+							className={`flex-1 min-w-[135px] rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5 sm:gap-3 transition-all ${
 								isSolution ?
 									'bg-gradient-to-tr from-emerald-600 to-teal-600 border-2 border-emerald-400 text-white ring-2 ring-emerald-300 animate-bounce-short'
 								:	'bg-white border-2 border-dashed border-orange-400 text-orange-950'
@@ -1102,15 +1146,16 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 							</div>
 							<div className='flex-1 min-w-0'>
 								<span
-									className={`text-[10px] font-bold uppercase block tracking-wider ${
+									className={`text-[10px] font-bold uppercase block tracking-wider truncate ${
 										isSolution ? 'text-emerald-100' : 'text-orange-500'
 									}`}>
-									{isSolution ? 'Resulting Phenomenon' : 'Result / Phenomenon'}
+									{isSolution ? 'Resulting Phenomenon' : 'Result / Outcome'}
 								</span>
 								<h4
-									className={`text-xs sm:text-sm font-black break-words ${
+									className={`text-xs sm:text-sm font-black line-clamp-2 leading-snug ${
 										isSolution ? 'text-white' : 'text-orange-900'
-									}`}>
+									}`}
+									title={isSolution ? visEffect.label : 'What happens?'}>
 									{isSolution ? visEffect.label || 'Outcome' : 'What happens?'}
 								</h4>
 							</div>
@@ -1198,7 +1243,13 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 										<div className='w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 font-black text-xl'>
 											❓
 										</div>
-									:	<DynamicShapeCard item={isTarget ? answer : cell} />}
+									:	<DynamicShapeCard
+											item={isTarget ? answer : cell}
+											isTarget={isTarget}
+											isSolution={isSolution}
+											index={idx}
+										/>
+									}
 								</div>
 							);
 						})}

@@ -59,10 +59,10 @@ export default function ExitConfirmationModal({
 							</div>
 							<div>
 								<div className='text-sm font-extrabold text-white group-hover:text-cyan-300 transition-colors'>
-									End Sheet & Download 📥
+									End Sheet & Download PDF 📄
 								</div>
 								<div className='text-[11px] font-semibold text-slate-400'>
-									Save your session report and exit
+									Save fully expanded Q&A PDF report and exit
 								</div>
 							</div>
 						</div>

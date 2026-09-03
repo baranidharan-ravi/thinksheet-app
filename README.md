@@ -48,6 +48,10 @@ An engaging, visual-first React.js educational platform designed for early child
   2. `gemini-3.5-flash`
   3. `gemini-3-flash-preview`
   4. `gemini-2.5-flash`
+- **Dynamic Google Gemini Model Fetching (`Fetch Latest Models 🔄`)**:
+  - In Settings, users can click **Fetch Latest Models 🔄** to query Google's live `models.list` API.
+  - Automatically queries `https://generativelanguage.googleapis.com/v1beta/models`, filters compatible content generation models, and presents them in a scrollable, selectable card grid.
+  - Newly discovered frontier and experimental models can be chosen immediately without requiring application updates.
 - **Automatic JSON Sanitizer & Repair**: Automatically cleans parenthesized tuple-style syntax, Python constants (`True`/`False`/`None`), and trailing commas from LLM output.
 
 #### 🧠 Strict 4-Tier Age-Calibrated Pedagogy (Ages 2 to 14)
@@ -67,13 +71,20 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 - **Mathematical Geometric Shape Engine (`shapeGenerator.jsx`)**:
   - **Dynamic Polygon Coordinate Math (`getRegularPolygonPoints`)**: Calculates vertex angles and Cartesian points for any regular polygon ($N \ge 3$):
-    - `Triangle` (3 sides), `Square` (4 sides), `Pentagon` (5 sides), `Hexagon` (6 sides), `Heptagon` (7 sides), `Octagon` (8 sides), `Nonagon` (9 sides), `Decagon` (10 sides), `Circle` (0 sides), `Star`, `Diamond`.
+    - `Triangle` (3 sides), `Square` (4 sides), `Pentagon` (5 sides), `Hexagon` (6 sides), `Heptagon` (7 sides), `Octagon` (8 sides), `Nonagon` (9 sides), `Decagon` (10 sides), `Circle` (0 sides), `Star`, `Moon` (crescent), `Sun` (sunburst), `Diamond`.
   - **Color & Shading Styles**:
     - **White / Outline**: Clean `#FFFFFF` fill with high-contrast `#0F172A` borders.
-    - **Shaded / Hatching**: Crisp SVG vector diagonal hatch pattern (`<pattern id="hatch">`) with dark borders.
+    - **Solid / Filled**: Vibrant solid fills (e.g. Amber `#F59E0B` for sun, Purple `#8B5CF6` for moon, Blue `#3B82F6` for star).
+    - **Striped / Hatching**: Crisp SVG vector diagonal hatch pattern (`<pattern id="...-striped">`).
+    - **Dotted / Polka**: Crisp SVG vector dot pattern (`<pattern id="...-dotted">`).
     - **Vibrant Colors**: _Blue_, _Green_, _Red_, _Cyan_, _Yellow_, _Orange_, _Purple_, _Pink_.
+  - **3x3 Matrix Grid Automatic Parsing (`parseMatrixGridFromQuestion`)**:
+    - Automatically extracts matrix cells from questions describing Row 1, Row 2, and Row 3 (e.g. _Row 1 has a solid star, striped moon, and dotted sun_).
+    - Pairs every cell with the exact shape (`Star`, `Moon`, `Sun`, etc.) and pattern (`Solid`, `Striped`, `Dotted`).
+    - In Question mode: The unknown tile renders a purple dashed cell with `❓`.
+    - In Solution mode: The target tile displays the correct answer tile highlighted in emerald green.
   - **Clean & Uncluttered Visual Cards (`DynamicShapeCard`)**:
-    - Renders the exact geometric shape cleanly without redundant side-count numbers or shading text badges.
+    - Renders the exact geometric shape cleanly with its style tag (e.g. _Solid Star_, _Striped Moon_, _Dotted Sun_).
 - **Dynamic SVG Shapes & Concept Icons in Answer Option Cards (`OptionsGrid.jsx`)**:
   - Each answer option card (A, B, C, D) renders the exact mathematical SVG shape or concept visual icon alongside the answer text.
   - **Automatic Contrast Pedestals**:
@@ -147,7 +158,7 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 - **Distraction-Free Header**: Clean top bar featuring live XP, timer, voice/sound toggles, fullscreen, and an **`Exit` button**.
 - **Interactive Exit Options**: Clicking **Exit** opens a dialog with three choices:
-  1. **📥 End Sheet & Download**: Saves the session progress JSON report and returns to the Skill Selection Hub.
+  1. **📥 End Sheet & Download PDF 📄**: Generates and downloads a complete, fully expanded PDF session report (matching the Question Summary layout) and returns to the Skill Selection Hub.
   2. **🚪 Exit Without Downloading**: Discards the session and returns directly to the Skill Selection Hub.
   3. **🚀 Continue Sheet**: Resumes the current question seamlessly.
 
@@ -182,6 +193,18 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
     - ⏱️ **Timed Out** (`⏱️ Timed Out (Not Answered)` label).
     - 🔴 **Incorrect Answer** (`XCircle` with red card).
 - **Result Overview Card**: Displays `{correctCount} Correct Answers` along with `⏭️ {skippedCount} Skipped` when any questions were skipped.
+- **📄 Download PDF Session Report (`exportSessionToPdf`)**:
+  - Replaces raw JSON exports with a beautifully formatted, multi-page PDF document.
+  - **Timestamped & Personalized Filename**: Includes Child Name, Skill, Sheet #, Date, and Time:
+    `Thinksheet_{ChildName}_Age{Age}_{Skill}_Sheet{SheetNumber}_{DDMonYYYY}_{HH-MM-AM/PM}.pdf`
+    (e.g., `Thinksheet_Shraddha_Age5_Visual_Sheet1_03Sep2026_12-07PM.pdf`).
+  - **Top Header Banner**: Prominently highlights **Child / Student Name**, **Age**, **Selected Skill**, **Sheet #**, and **Exact Date & Time Taken** (e.g. `Thu, Sep 3, 2026, 12:07:15 PM`).
+  - Structure mirrors the Question Summary page with **all questions and answers fully expanded**:
+    - **Header Banner**: Cosmic Thinksheet branding, student name, student age, skill, sheet number, and precise date & time taken.
+    - **Score Bar**: Score percentage, correct/skipped/incorrect counts, and XP badge.
+    - **Color-Coded Options Breakdown**: Multiple-choice options render in distinct rounded cards with color-coded fills and borders (Emerald Green for correct answers, Rose Red for user-selected incorrect answers, and clean Slate for other choices) without cluttering text tags. Includes side-by-side answer comparisons and complete pedagogical solution explanations.
+    - **Running Footers**: Page numbering (`Page X of Y`) and platform watermark.
+  - Accessible via **"Download PDF Report 📄"** on the Result Overview page, Question Summary page, and Exit modal.
 
 ---
 

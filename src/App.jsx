@@ -29,6 +29,7 @@ import {
 	playIncorrectSound,
 	speakText,
 } from './utils/audioSynthesis';
+import { exportSessionToPdf } from './utils/pdfGenerator';
 import {
 	getStoredKidAge,
 	getStoredKidName,
@@ -37,11 +38,7 @@ import {
 	recordCompletedSheet,
 	saveStoredKidProfile,
 } from './utils/progressTracker';
-import {
-	clearSessionState,
-	exportSessionToFile,
-	saveSessionState,
-} from './utils/storage';
+import { clearSessionState, saveSessionState } from './utils/storage';
 
 export default function App() {
 	// Kid Profile & Name State
@@ -505,25 +502,61 @@ export default function App() {
 		}
 	};
 
-	// Download Sheet Progress
+	// Download Sheet Progress as PDF
 	const handleDownloadSheet = () => {
 		playButtonPop(soundEnabled);
-		exportSessionToFile(
+		const now = new Date();
+		const day = String(now.getDate()).padStart(2, '0');
+		const monthNames = [
+			'Jan',
+			'Feb',
+			'Mar',
+			'Apr',
+			'May',
+			'Jun',
+			'Jul',
+			'Aug',
+			'Sep',
+			'Oct',
+			'Nov',
+			'Dec',
+		];
+		const month = monthNames[now.getMonth()];
+		const year = now.getFullYear();
+		let hours = now.getHours();
+		const ampm = hours >= 12 ? 'PM' : 'AM';
+		hours = hours % 12 || 12;
+		const formattedHours = String(hours).padStart(2, '0');
+		const minutes = String(now.getMinutes()).padStart(2, '0');
+		const timeStampStr = `${day}${month}${year}_${formattedHours}-${minutes}${ampm}`;
+
+		const safeKidName =
+			(kidName || 'Explorer').trim().replace(/[^\w-]/g, '_') || 'Explorer';
+		const fullDateTime = now.toLocaleDateString('en-US', {
+			weekday: 'short',
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit',
+		});
+
+		exportSessionToPdf(
 			{
 				studentName: kidName || 'Explorer',
 				studentAge: kidAge || 5,
 				selectedSkill,
 				sheetNumber,
-				date: new Date().toISOString(),
+				date: fullDateTime,
 				scorePercent,
 				correctCount,
 				totalQuestions: questions.length,
-				xp,
+				xp: correctCount * 5,
 				timerSeconds,
 				questions,
 				history,
 			},
-			`Thinksheet_${kidName || 'Explorer'}_Age${kidAge}_${selectedSkill}_Sheet${sheetNumber}_${Date.now()}.json`,
+			`Thinksheet_${safeKidName}_Age${kidAge}_${selectedSkill}_Sheet${sheetNumber}_${timeStampStr}.pdf`,
 		);
 	};
 
@@ -809,6 +842,7 @@ export default function App() {
 								history={history}
 								onStartNextSheet={handleStartNextSheet}
 								onViewSummary={() => setResultTab('summary')}
+								onDownloadPdf={handleDownloadSheet}
 								activeTab={resultTab}
 								setActiveTab={setResultTab}
 								soundEnabled={soundEnabled}
@@ -819,6 +853,7 @@ export default function App() {
 								questions={questions}
 								history={history}
 								onStartNextSheet={handleStartNextSheet}
+								onDownloadPdf={handleDownloadSheet}
 								activeTab={resultTab}
 								setActiveTab={setResultTab}
 								soundEnabled={soundEnabled}

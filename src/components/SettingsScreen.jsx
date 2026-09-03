@@ -11,13 +11,15 @@ import {
 	Key,
 	Minus,
 	Plus,
+	RefreshCw,
 	Rocket,
 	Smile,
 	Sparkles,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
-	AVAILABLE_GEMINI_MODELS,
+	fetchOnlineGeminiModels,
+	getAvailableGeminiModels,
 	getStoredApiKey,
 	getStoredSelectedModel,
 	setStoredApiKey,
@@ -46,7 +48,9 @@ export default function SettingsScreen({
 	const [isCustomAge, setIsCustomAge] = useState(false);
 
 	// Gemini Model selection state
-	const [selectedModel, setSelectedModel] = useState(() => getStoredSelectedModel());
+	const [selectedModel, setSelectedModel] = useState(() =>
+		getStoredSelectedModel(),
+	);
 
 	// Question Timer Challenge state
 	const [timerEnabled, setTimerEnabled] = useState(false);
@@ -62,7 +66,46 @@ export default function SettingsScreen({
 	const [error, setError] = useState('');
 	const [saveSuccess, setSaveSuccess] = useState(false);
 
+	// Dynamic Models State
+	const [modelsList, setModelsList] = useState(() =>
+		getAvailableGeminiModels(),
+	);
+	const [isFetchingModels, setIsFetchingModels] = useState(false);
+	const [fetchModelStatus, setFetchModelStatus] = useState(null);
+
 	const quickAges = [3, 4, 5, 6, 7, 8];
+
+	const handleFetchLiveModels = async () => {
+		playButtonPop(soundEnabled);
+		const targetKey = apiKey.trim() || getStoredApiKey();
+		if (!targetKey) {
+			setFetchModelStatus({
+				type: 'error',
+				text: 'Please enter your Gemini API key in the field above before fetching live models.',
+			});
+			return;
+		}
+
+		setIsFetchingModels(true);
+		setFetchModelStatus(null);
+		try {
+			const liveModels = await fetchOnlineGeminiModels(targetKey);
+			setModelsList(liveModels);
+			setFetchModelStatus({
+				type: 'success',
+				text: `✓ Successfully fetched ${liveModels.length} live Gemini models from Google AI!`,
+			});
+		} catch (err) {
+			setFetchModelStatus({
+				type: 'error',
+				text:
+					err.message ||
+					'Could not fetch models from Google Gemini API. Please check your API key.',
+			});
+		} finally {
+			setIsFetchingModels(false);
+		}
+	};
 
 	useEffect(() => {
 		const existingTimer = getStoredTimerConfig();
@@ -147,7 +190,10 @@ export default function SettingsScreen({
 		playButtonPop(soundEnabled);
 
 		// Validate API Key live against the selected Gemini model
-		const validationResult = await validateGeminiApiKey(trimmedKey, selectedModel);
+		const validationResult = await validateGeminiApiKey(
+			trimmedKey,
+			selectedModel,
+		);
 
 		if (!validationResult.valid) {
 			setIsValidating(false);
@@ -222,7 +268,8 @@ export default function SettingsScreen({
 							<Sparkles className='w-5 h-5 text-amber-300' />
 						</h1>
 						<p className='text-xs text-slate-300 font-semibold'>
-							Configure child profile, Gemini API Key, AI model, and question pacing.
+							Configure child profile, Gemini API Key, AI model, and question
+							pacing.
 						</p>
 					</div>
 				</div>
@@ -416,30 +463,68 @@ export default function SettingsScreen({
 
 				{/* Section 3: Gemini AI Model Engine Selection */}
 				<div className='bg-[#090B24]/80 p-4 sm:p-5 rounded-2xl border border-cyan-500/40 shadow-inner'>
-					<div className='flex items-center justify-between mb-2.5'>
+					<div className='flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5'>
 						<div className='flex items-center gap-2'>
 							<Cpu className='w-4 h-4 text-cyan-400' />
 							<span className='text-xs sm:text-sm font-bold text-white'>
 								Gemini AI Model Engine
 							</span>
 						</div>
-						<span className='text-[10px] font-black px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'>
-							Active: {AVAILABLE_GEMINI_MODELS.find((m) => m.id === selectedModel)?.name || selectedModel}
-						</span>
+						<div className='flex items-center gap-2 flex-wrap'>
+							<button
+								type='button'
+								disabled={isFetchingModels || isValidating}
+								onClick={handleFetchLiveModels}
+								className='flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 text-cyan-300 font-bold text-[11px] shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50'>
+								<RefreshCw
+									className={`w-3.5 h-3.5 ${
+										isFetchingModels ? 'animate-spin text-cyan-200' : ''
+									}`}
+								/>
+								<span>
+									{isFetchingModels ?
+										'Fetching Models...'
+									:	'Fetch Latest Models 🔄'}
+								</span>
+							</button>
+							<span className='text-[10px] font-black px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'>
+								Active:{' '}
+								{modelsList.find((m) => m.id === selectedModel)?.name ||
+									selectedModel}
+							</span>
+						</div>
 					</div>
 
-					<p className='text-xs text-slate-300 mb-3'>
-						Select which Google Gemini AI model generates questions in real time:
+					<p className='text-xs text-slate-300 mb-2'>
+						Select which Google Gemini AI model generates questions in real
+						time:
 					</p>
 
-					<div className='grid grid-cols-1 sm:grid-cols-2 gap-2.5'>
-						{AVAILABLE_GEMINI_MODELS.map((model) => {
+					{fetchModelStatus && (
+						<div
+							className={`mb-3 p-2.5 rounded-xl text-xs font-semibold border flex items-center justify-between gap-2 ${
+								fetchModelStatus.type === 'success' ?
+									'bg-emerald-500/20 border-emerald-400 text-emerald-200'
+								:	'bg-rose-500/20 border-rose-400 text-rose-200'
+							}`}>
+							<span>{fetchModelStatus.text}</span>
+							<button
+								type='button'
+								onClick={() => setFetchModelStatus(null)}
+								className='text-slate-400 hover:text-white text-xs font-black cursor-pointer px-1'>
+								✕
+							</button>
+						</div>
+					)}
+
+					<div className='grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[360px] overflow-y-auto pr-1'>
+						{modelsList.map((model) => {
 							const isSelected = selectedModel === model.id;
 							return (
 								<button
 									key={model.id}
 									type='button'
-									disabled={isValidating}
+									disabled={isValidating || isFetchingModels}
 									onClick={() => {
 										playButtonPop(soundEnabled);
 										setSelectedModel(model.id);
@@ -654,8 +739,10 @@ export default function SettingsScreen({
 											setIsCustomAutoAdvance(false);
 										}}
 										className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all border cursor-pointer ${
-											autoAdvanceSeconds === preset.sec &&
-											!isCustomAutoAdvance ?
+											(
+												autoAdvanceSeconds === preset.sec &&
+												!isCustomAutoAdvance
+											) ?
 												'bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 border-emerald-300 shadow-md font-black'
 											:	'bg-[#0D1030] text-slate-300 border-slate-700 hover:bg-slate-800'
 										}`}>

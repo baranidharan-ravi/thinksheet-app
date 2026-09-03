@@ -265,6 +265,14 @@ export function parseDynamicShape(rawInput) {
 		shape = 'star';
 		sides = 5;
 		shapeName = 'Star';
+	} else if (lower.includes('moon') || lower.includes('crescent')) {
+		shape = 'moon';
+		sides = 0;
+		shapeName = 'Moon';
+	} else if (lower.includes('sun') || lower.includes('sunburst')) {
+		shape = 'sun';
+		sides = 0;
+		shapeName = 'Sun';
 	} else if (lower.includes('diamond') || lower.includes('rhombus')) {
 		shape = 'diamond';
 		sides = 4;
@@ -292,7 +300,25 @@ export function parseDynamicShape(rawInput) {
 		else if (sides === 8) shape = 'octagon';
 	}
 
-	// 3. Determine Fill Style (White, Shaded, or Specific Color)
+	// 3. Determine Fill Style (White, Shaded, Striped, Dotted, Solid, or Specific Color)
+	const isStriped =
+		lower.includes('striped') ||
+		lower.includes('stripe') ||
+		lower.includes('stripes') ||
+		lower.includes('hatch') ||
+		lower.includes('lined');
+
+	const isDotted =
+		lower.includes('dotted') ||
+		lower.includes('dots') ||
+		lower.includes('spotted') ||
+		lower.includes('polka');
+
+	const isSolid =
+		lower.includes('solid') ||
+		lower.includes('filled') ||
+		lower.includes('full');
+
 	const isWhite =
 		lower.includes('white') ||
 		lower.includes('unshaded') ||
@@ -304,8 +330,6 @@ export function parseDynamicShape(rawInput) {
 	const isShaded =
 		lower.includes('shaded') ||
 		lower.includes('dark') ||
-		lower.includes('filled') ||
-		lower.includes('solid') ||
 		lower.includes('grey') ||
 		lower.includes('gray') ||
 		lower.includes('black');
@@ -398,7 +422,10 @@ export function parseDynamicShape(rawInput) {
 	}
 
 	let styleTag = '';
-	if (isWhite) styleTag = 'White';
+	if (isDotted) styleTag = 'Dotted';
+	else if (isStriped) styleTag = 'Striped';
+	else if (isSolid) styleTag = 'Solid';
+	else if (isWhite) styleTag = 'White';
 	else if (isShaded) styleTag = 'Shaded';
 	else if (colorName !== 'Indigo') styleTag = colorName;
 	else if (sidesCount) styleTag = `${sidesCount} sides`;
@@ -412,6 +439,9 @@ export function parseDynamicShape(rawInput) {
 		colorName,
 		isWhite,
 		isShaded,
+		isStriped,
+		isDotted,
+		isSolid,
 		number,
 		shapeName: isQuadrant ? 'Quadrant Square' : shapeName,
 		styleTag,
@@ -438,6 +468,9 @@ export function DynamicSvgShape({
 		color,
 		isWhite,
 		isShaded,
+		isStriped,
+		isDotted,
+		isSolid,
 		number,
 		isQuadrant,
 		quadrant,
@@ -447,10 +480,17 @@ export function DynamicSvgShape({
 	const strokeWidth = 2.8;
 
 	let shapeFill = color || '#3B82F6';
-	if (isShaded || parsed?.isShaded) {
-		shapeFill = `url(#${patternId})`;
+	if (isDotted || parsed?.isDotted) {
+		shapeFill = `url(#${patternId}-dotted)`;
+	} else if (isStriped || parsed?.isStriped || isShaded || parsed?.isShaded) {
+		shapeFill = `url(#${patternId}-striped)`;
 	} else if (isWhite || parsed?.isWhite) {
 		shapeFill = '#FFFFFF';
+	} else if (isSolid || parsed?.isSolid) {
+		if (shape === 'sun') shapeFill = '#F59E0B';
+		else if (shape === 'moon') shapeFill = '#8B5CF6';
+		else if (shape === 'star') shapeFill = '#3B82F6';
+		else shapeFill = color || '#334155';
 	}
 
 	let shapeElement = null;
@@ -562,6 +602,49 @@ export function DynamicSvgShape({
 				strokeWidth={strokeWidth}
 			/>
 		);
+	} else if (shape === 'moon') {
+		const d = `M ${cx} ${cy - r} A ${r} ${r} 0 1 0 ${cx} ${cy + r} A ${r * 0.74} ${r * 0.74} 0 0 1 ${cx} ${cy - r} Z`;
+		shapeElement = (
+			<path
+				d={d}
+				fill={shapeFill}
+				stroke={strokeColor}
+				strokeWidth={strokeWidth}
+				strokeLinejoin='round'
+			/>
+		);
+	} else if (shape === 'sun') {
+		shapeElement = (
+			<g>
+				{[0, 45, 90, 135, 180, 225, 270, 315].map((angle, rayIdx) => {
+					const rad = (angle * Math.PI) / 180;
+					const x1 = cx + Math.cos(rad) * (r * 0.65);
+					const y1 = cy + Math.sin(rad) * (r * 0.65);
+					const x2 = cx + Math.cos(rad) * (r * 1.05);
+					const y2 = cy + Math.sin(rad) * (r * 1.05);
+					return (
+						<line
+							key={rayIdx}
+							x1={x1}
+							y1={y1}
+							x2={x2}
+							y2={y2}
+							stroke={strokeColor}
+							strokeWidth={strokeWidth * 1.1}
+							strokeLinecap='round'
+						/>
+					);
+				})}
+				<circle
+					cx={cx}
+					cy={cy}
+					r={r * 0.62}
+					fill={shapeFill}
+					stroke={strokeColor}
+					strokeWidth={strokeWidth}
+				/>
+			</g>
+		);
 	} else {
 		// Regular polygon for triangle (3), pentagon (5), hexagon (6), heptagon (7), octagon (8), etc.
 		const numSides = sides || 3;
@@ -584,7 +667,48 @@ export function DynamicSvgShape({
 			viewBox={`0 0 ${size} ${size}`}
 			className='w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 drop-shadow-md'>
 			<defs>
-				{/* Diagonal Hatch Shading Pattern */}
+				{/* Diagonal Striped Hatch Pattern */}
+				<pattern
+					id={`${patternId}-striped`}
+					width='8'
+					height='8'
+					patternTransform='rotate(45 0 0)'
+					patternUnits='userSpaceOnUse'>
+					<rect
+						width='8'
+						height='8'
+						fill='#F8FAFC'
+					/>
+					<line
+						x1='0'
+						y1='0'
+						x2='0'
+						y2='8'
+						stroke='#1E293B'
+						strokeWidth='3.2'
+					/>
+				</pattern>
+
+				{/* Polka Dot Pattern */}
+				<pattern
+					id={`${patternId}-dotted`}
+					width='8'
+					height='8'
+					patternUnits='userSpaceOnUse'>
+					<rect
+						width='8'
+						height='8'
+						fill='#F8FAFC'
+					/>
+					<circle
+						cx='4'
+						cy='4'
+						r='2'
+						fill='#1E293B'
+					/>
+				</pattern>
+
+				{/* Fallback patternId */}
 				<pattern
 					id={patternId}
 					width='8'
@@ -681,7 +805,9 @@ export function DynamicShapeCard({
 
 			<div className='flex flex-col items-center mt-1.5 text-center w-full'>
 				<h5 className='text-xs sm:text-sm font-black text-slate-900 leading-tight'>
-					{parsed.shapeName}
+					{parsed.styleTag ?
+						`${parsed.styleTag} ${parsed.shapeName}`
+					:	parsed.shapeName}
 				</h5>
 			</div>
 		</div>
@@ -1065,4 +1191,57 @@ export function parseRotationSequence(questionText, correctText = '') {
 			isShaded: true,
 		},
 	};
+}
+
+/**
+ * Accurately parses a 3x3 matrix grid from question text
+ */
+export function parseMatrixGridFromQuestion(questionText, correctText = '') {
+	if (!questionText) return null;
+
+	const r1 = questionText.match(
+		/(?:row\s*1|first\s*row)\s*(?:has|contains|:)?\s*([^.]+?)(?:\.|$|row\s*2|second\s*row)/i,
+	);
+	const r2 = questionText.match(
+		/(?:row\s*2|second\s*row)\s*(?:has|contains|:)?\s*([^.]+?)(?:\.|$|row\s*3|third\s*row)/i,
+	);
+	const r3 = questionText.match(
+		/(?:row\s*3|third\s*row)\s*(?:has|contains|:)?\s*([^.]+?)(?:\.|\?|$)/i,
+	);
+
+	const splitRowItems = (str) => {
+		if (!str) return [];
+		return str
+			.replace(/\band\b/gi, ',')
+			.split(',')
+			.map((s) =>
+				s
+					.trim()
+					.replace(/^a\s+/i, '')
+					.replace(/^an\s+/i, ''),
+			)
+			.filter(
+				(s) =>
+					s.length > 0 && !/which|missing|what|tile|find|determine/i.test(s),
+			);
+	};
+
+	if (r1 && r2 && r3) {
+		const row1 = splitRowItems(r1[1]);
+		const row2 = splitRowItems(r2[1]);
+		const row3 = splitRowItems(r3[1]);
+
+		if (row1.length >= 2 && row2.length >= 2) {
+			while (row1.length < 3) row1.push('Circle');
+			while (row2.length < 3) row2.push('Circle');
+			while (row3.length < 2) row3.push('Circle');
+
+			return {
+				grid: [row1.slice(0, 3), row2.slice(0, 3), [row3[0], row3[1], '?']],
+				answer: correctText ? correctText.trim() : 'Answer',
+			};
+		}
+	}
+
+	return null;
 }

@@ -1,5 +1,5 @@
 import confetti from 'canvas-confetti';
-import { Award, LayoutGrid, RefreshCw } from 'lucide-react';
+import { Award, Download, LayoutGrid, RefreshCw } from 'lucide-react';
 import { useEffect } from 'react';
 import { LEADERBOARD_DATA } from '../data/leaderboardData';
 import {
@@ -15,6 +15,7 @@ export default function ResultOverview({
 	earnedXp,
 	onStartNextSheet,
 	onViewSummary,
+	onDownloadPdf,
 	activeTab,
 	setActiveTab,
 	soundEnabled,
@@ -236,10 +237,23 @@ export default function ResultOverview({
 								playButtonPop(soundEnabled);
 								onStartNextSheet();
 							}}
-							className='mt-6 w-full py-4 rounded-2xl bg-gradient-to-r from-[#FF5B84] to-[#FF435A] hover:from-[#FF435A] hover:to-[#E11D48] text-white font-extrabold text-base sm:text-lg shadow-[0_10px_25px_rgba(255,91,132,0.4)] hover:shadow-[0_12px_30px_rgba(255,91,132,0.6)] transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2'>
+							className='mt-6 w-full py-4 rounded-2xl bg-gradient-to-r from-[#FF5B84] to-[#FF435A] hover:from-[#FF435A] hover:to-[#E11D48] text-white font-extrabold text-base sm:text-lg shadow-[0_10px_25px_rgba(255,91,132,0.4)] hover:shadow-[0_12px_30px_rgba(255,91,132,0.6)] transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 cursor-pointer'>
 							<RefreshCw className='w-5 h-5 animate-spin-slow' />
 							<span>Start Next Thinksheet (10 New Questions)</span>
 						</button>
+
+						{/* Download PDF Report Button */}
+						{onDownloadPdf && (
+							<button
+								onClick={() => {
+									playButtonPop(soundEnabled);
+									onDownloadPdf();
+								}}
+								className='mt-3 w-full py-3.5 rounded-2xl bg-[#0F143D] hover:bg-[#1A205E] border-2 border-cyan-400 text-cyan-300 hover:text-white font-extrabold text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5'>
+								<Download className='w-5 h-5' />
+								<span>Download PDF Report 📄</span>
+							</button>
+						)}
 
 						{/* Back to Skills Hub Button */}
 						{onBackToDashboard && (
@@ -248,9 +262,9 @@ export default function ResultOverview({
 									playButtonPop(soundEnabled);
 									onBackToDashboard();
 								}}
-								className='mt-3 w-full py-3 rounded-2xl bg-[#1C2263] hover:bg-[#252D80] border border-[#3A45A8] text-cyan-300 hover:text-white font-extrabold text-sm sm:text-base transition-all flex items-center justify-center gap-2'>
+								className='mt-3 w-full py-3 rounded-2xl bg-[#1C2263] hover:bg-[#252D80] border border-[#3A45A8] text-slate-300 hover:text-white font-extrabold text-sm sm:text-base transition-all flex items-center justify-center gap-2 cursor-pointer'>
 								<LayoutGrid className='w-4 h-4' />
-								<span>Back to Skills Hub (Choose Skill)</span>
+								<span>Back to Skills Hub</span>
 							</button>
 						)}
 					</div>
