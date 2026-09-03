@@ -122,12 +122,20 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 - **3x3 Matrix Grid Shape Progression (`matrix-grid`)**: Full $3\times3$ geometric matrix with dynamic SVG shapes and missing target solution reveals.
 - **Object Counting (`apple-counting`)**: High-contrast, friendly countable item arrays.
 - **Scale Balance (`scale-balance`)**: Physics lever scales showing heavier/lighter weights.
-- **On-Demand AI Image Request Pipeline (`generateAiVisualImage`)**:
-  - **Direct AI Generation**: When a question loads and visual diagrams are enabled, an asynchronous request is dispatched to Google Gemini's image generation endpoint (`imagen-3.0-generate-002` / `gemini-2.5-flash-image`).
+- **On-Demand AI Image Request Pipeline & Automatic Free API Failover (`generateAiVisualImage`)**:
+  - **Multi-Provider AI Image Engine**: Supports an automated failover chain across multiple image generation endpoints:
+    1. `Google Imagen 3` (`imagen-3.0-generate-002:predict`)
+    2. `Gemini 2.5 Flash Native Image` (`gemini-2.5-flash-image:generateContent`)
+    3. `Pollinations AI Flux` (Free, keyless high-fidelity diffusion generator)
+    4. `Pollinations AI Turbo` (Free, keyless high-speed generator)
+  - **Automatic `RESOURCE_EXHAUSTED` / Quota Failover**:
+    - When any provider returns `RESOURCE_EXHAUSTED`, HTTP 429, or quota limits, the engine automatically catches the error and switches to the next free API image generator without disrupting the user.
+  - **Persistent Provider Retention**:
+    - Once switched to a working free API, that provider is persisted in browser storage (`localStorage`) and kept active for all subsequent image generations. If that provider ever reaches quota limits, it seamlessly transitions to the next free generator in the sequence.
   - **Kid-Friendly Vector Prompting**: Formulates focused educational prompts tailored for early learners on crisp white backgrounds.
   - **Cosmic Shimmer Status Badge**: Displays an animated `✨ Generating AI Visual Illustration...` badge during synthesis.
   - **In-Memory Image Caching**: Caches generated base64 image URIs in an in-memory session map to prevent duplicate API requests.
-  - **Zero-Disruption Fallback**: If an image request times out or the Gemini API key lacks Imagen quota, the card automatically falls back to procedural SVG diagrams so the learner's quest is never delayed or broken.
+  - **Zero-Disruption Fallback**: If an image request times out or all providers are unavailable, the card automatically falls back to procedural SVG diagrams so the learner's quest is never delayed or broken.
 - **Lazy Image Loading (`loading="lazy"`)**:
   - Direct image diagrams load asynchronously using native browser lazy loading (`loading="lazy"` and `decoding="async"`).
   - Features an animated skeleton shimmer placeholder and smooth fade-in transitions on load for optimal rendering performance and zero layout shift.
