@@ -1425,7 +1425,10 @@ const aiImageCache = new Map();
  * First tries Imagen 3.0 via REST predict API, then Gemini Flash Image via generateContent.
  * Returns base64 data URI (data:image/png;base64,...) or null on failure.
  */
-export async function generateAiVisualImage(promptDescription, customKey = null) {
+export async function generateAiVisualImage(
+	promptDescription,
+	customKey = null,
+) {
 	const apiKey = customKey || getStoredApiKey();
 	if (!apiKey || !promptDescription) return null;
 
@@ -1514,7 +1517,11 @@ export async function getAiImageForQuestion(question, apiKey = null) {
 /**
  * Fetch an AI-generated image for a specific option choice
  */
-export async function getAiImageForOption(questionText, optionText, apiKey = null) {
+export async function getAiImageForOption(
+	questionText,
+	optionText,
+	apiKey = null,
+) {
 	if (!optionText) return null;
 	const promptText = `${optionText} (for: ${questionText || ''})`;
 	return generateAiVisualImage(promptText, apiKey);

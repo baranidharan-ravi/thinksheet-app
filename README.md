@@ -15,7 +15,8 @@ An engaging, visual-first React.js educational platform designed for early child
   4. **Gemini AI Model Selection** _(Selectable 🤖)_: Choose between `gemini-3.5-flash-lite` _(Recommended)_, `gemini-3.5-flash`, `gemini-3-flash-preview`, and `gemini-2.5-flash`.
   5. **Per-Question Time Limit** _(Optional ⏱️)_: Toggle ON/OFF, select preset limits (`45s`, `60s`, `90s`, `2m`, `3m`), or set a custom duration (`15s`–`300s`).
   6. **Next Question Auto-Advance Delay** _(Optional ⏩)_: Toggle Auto-Advance ON/OFF, select preset delay (`3s`, `5s`, `7s Default`, `10s`, `15s`), or set a custom delay (`2s`–`30s`).
-  7. **Visual Diagrams & Clues Display** _(Optional 👁️)_: Toggle ON/OFF (`👁️ Shown` / `🙈 Hidden`) to choose whether interactive geometric diagrams, 3x3 matrices, sequence patterns, and STEM illustrations appear alongside questions.
+  7. **Visual Diagrams & Clues Display** _(Optional 👁️)_: Toggle ON/OFF (`👁️ Shown` / `🙈 Hidden`) to choose whether interactive geometric diagrams, 3x3 matrices, sequence patterns, and STEM illustrations appear alongside questions **and** inside answer option cards. When disabled, option cards cleanly hide all shape containers and render full-width text choices.
+  8. **Dynamic Visual Synthesis Notice**: Displays an informative amber alert in Settings explaining that visual diagrams and option shapes are dynamically generated via cognitive models and AI prompts, so minor visual variations may occasionally occur.
 - **Live Verification on Save**: When clicking **"Save & Launch 🚀"**, the app sends an asynchronous test ping to Google Gemini API. If the key is invalid or expired, a clear red error is shown and the settings page remains open until a valid key is provided.
 - **Skill Selection Auto-Launch Flow**: If a user clicks a skill card without having entered an API key, the app transitions directly to the Settings page while remembering the targeted skill. Upon successful validation, it immediately launches the selected skill quest.
 
@@ -121,6 +122,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 - **3x3 Matrix Grid Shape Progression (`matrix-grid`)**: Full $3\times3$ geometric matrix with dynamic SVG shapes and missing target solution reveals.
 - **Object Counting (`apple-counting`)**: High-contrast, friendly countable item arrays.
 - **Scale Balance (`scale-balance`)**: Physics lever scales showing heavier/lighter weights.
+- **On-Demand AI Image Request Pipeline (`generateAiVisualImage`)**:
+  - **Direct AI Generation**: When a question loads and visual diagrams are enabled, an asynchronous request is dispatched to Google Gemini's image generation endpoint (`imagen-3.0-generate-002` / `gemini-2.5-flash-image`).
+  - **Kid-Friendly Vector Prompting**: Formulates focused educational prompts tailored for early learners on crisp white backgrounds.
+  - **Cosmic Shimmer Status Badge**: Displays an animated `✨ Generating AI Visual Illustration...` badge during synthesis.
+  - **In-Memory Image Caching**: Caches generated base64 image URIs in an in-memory session map to prevent duplicate API requests.
+  - **Zero-Disruption Fallback**: If an image request times out or the Gemini API key lacks Imagen quota, the card automatically falls back to procedural SVG diagrams so the learner's quest is never delayed or broken.
 - **Lazy Image Loading (`loading="lazy"`)**:
   - Direct image diagrams load asynchronously using native browser lazy loading (`loading="lazy"` and `decoding="async"`).
   - Features an animated skeleton shimmer placeholder and smooth fade-in transitions on load for optimal rendering performance and zero layout shift.
@@ -155,13 +162,14 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 7. 🚪 Exit Confirmation Workflow
+### 7. 🚪 Streamlined Exit Confirmation Workflow
 
-- **Distraction-Free Header**: Clean top bar featuring live XP, timer, voice/sound toggles, fullscreen, and an **`Exit` button**.
-- **Interactive Exit Options**: Clicking **Exit** opens a dialog with three choices:
-  1. **📥 End Sheet & Download PDF 📄**: Generates and downloads a complete, fully expanded PDF session report (matching the Question Summary layout) and returns to the Skill Selection Hub.
-  2. **🚪 Exit Without Downloading**: Discards the session and returns directly to the Skill Selection Hub.
-  3. **🚀 Continue Sheet**: Resumes the current question seamlessly.
+- **Distraction-Free Top Bar**: Features clean question progress, active timer, sound/speech toggles, fullscreen, and a dedicated **`Exit` button**.
+- **Streamlined Mid-Quiz Exit Dialog (`ExitConfirmationModal.jsx`)**:
+  - To prevent incomplete or partial session reports, the premature PDF download option has been removed from the exit dialog.
+  - Presents an uncluttered, child-safe confirmation prompt:
+    1. **🚀 Continue AstroQuest**: Instantly dismisses the modal and resumes the active question without losing flow.
+    2. **🚪 Exit Without Saving**: Clears the temporary session cache and safely returns the explorer to the Skills Hub.
 
 ---
 
@@ -207,7 +215,34 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
     - **Integrated Score & Status Badges**: Top-right overall score percentage (`Score: X/10 (Y%)`) accompanied by 3 color-coded performance pills (`Correct`, `Wrong`, and `Skipped`) directly inside the top header banner—eliminating redundant sections and saving vertical space.
     - **Color-Coded Options Breakdown**: Multiple-choice options render in distinct rounded cards with color-coded fills and borders (Emerald Green for correct answers, Rose Red for user-selected incorrect answers, and clean Slate for other choices) without cluttering text tags. Includes side-by-side answer comparisons and complete pedagogical solution explanations.
     - **Running Footers**: Page numbering (`Page X of Y`) and platform watermark.
-  - Accessible via **"Download PDF Report 📄"** on the Result Overview page, Question Summary page, and Exit modal.
+  - Accessible via **"Download PDF Report 📄"** on both the Result Overview page and Question Summary page.
+
+---
+
+### 11. 🛡️ Cosmic Error Boundary & Instant Debugging (`ErrorBoundary.jsx`)
+
+- **Comprehensive Exception Shield**: Wraps the entire application tree to intercept and catch runtime errors without collapsing into a blank screen.
+- **Friendly Kid-Themed Fallback Interface**: Displays an encouraging recovery screen (*"Cosmic Bump Detected! AstroQuest hit a little stardust! Don't worry, your progress and settings are safe."*) featuring:
+  - **`🔄 Refresh & Continue 🚀`**: Re-mounts the app with a single click.
+  - **`🧹 Reset Session Cache & Restart`**: Clears corrupted local session storage keys and reloads cleanly.
+- **Interactive Technical Error Drawer**: Expandable developer drawer displaying the exact error message and React component stack trace.
+- **One-Click Clipboard Copy (`📋 Copy Error Details`)**: Features an automated copy button that writes the complete error trace to the user's clipboard and toggles to `✅ Copied to Clipboard!` for effortless debugging.
+
+---
+
+### 12. ⚡ Advanced React Performance Optimization & Code Splitting
+
+- **On-Demand PDF Engine Loading (`~400 kB` Startup Savings)**:
+  - Dynamically imports `jspdf` and `html2canvas` only when the user clicks **"Download PDF Report"**, eliminating heavy libraries from the initial page payload.
+- **~80% Main Bundle Reduction**:
+  - The critical initial application bundle shrank from `753.61 kB` down to **`157.42 kB`** (gzipped: `45.53 kB`).
+- **Route & Screen Code-Splitting (`React.lazy` + `Suspense`)**:
+  - Secondary screens (`SettingsScreen`, `ResultOverview`, and `QuestionSummary`) are bundled into separate on-demand chunks paired with a cosmic spinner fallback (`ScreenLoadingFallback`).
+- **Granular Component Memoization (`React.memo` & `useCallback`)**:
+  - Memoized `Header`, `VisualDiagrams`, `QuestionCard`, `OptionsGrid`, `SolutionPanel`, `ZoomModal`, and modal dialogs.
+  - Decouples the 1-second active timer ticks from re-rendering heavy SVG graphics and cards, resulting in 0 unnecessary re-renders.
+- **Vendor Chunking Architecture (Vite 6 / Rollup)**:
+  - Isolated `vendor-react` (`react`, `react-dom`) and `vendor-icons` (`lucide-react`) into standalone, long-term cacheable bundles with zero chunk-size warnings.
 
 ---
 
@@ -301,14 +336,15 @@ src/
 │   │   ├── SolutionPanel.jsx                 # Solution review & next button panel
 │   │   ├── HintModal.jsx                     # Cognitive hint modal
 │   │   ├── AskDoubtModal.jsx                 # AI tutor doubt explanation modal
-│   │   └── ExitConfirmationModal.jsx         # Exit modal with PDF download option
+│   │   └── ExitConfirmationModal.jsx         # Streamlined exit modal without incomplete PDF download
 │   └── results/                              # Session results & performance breakdown
 │       ├── ResultOverview.jsx                # Session results & performance breakdown
 │       └── QuestionSummary.jsx               # Question-by-question review accordion
 ├── services/                                 # AI generation & external API communication
-│   ├── aiGenerator.js                        # Google Gemini AI generation engine & live model discovery
+│   ├── aiGenerator.js                        # Google Gemini & Imagen 3 AI generation engine & live model discovery
 │   └── questionService.js                    # Question session pipeline & prompt orchestration
 ├── utils/                                    # Common utility logic & shared components
+│   ├── ErrorBoundary.jsx                     # Cosmic error boundary & clipboard error copy tool
 │   ├── Header.jsx                            # Shared top navigation & progress bar component
 │   ├── VisualDiagrams.jsx                    # Shared visual diagram rendering component
 │   ├── ZoomModal.jsx                         # Shared visual diagram zoom modal component
@@ -328,7 +364,7 @@ src/
 
 - **React 18** (Modern functional components, hooks, `React.lazy`, `Suspense`, `React.memo`, & `useCallback`)
 - **Performance & Code Splitting** (Rollup vendor chunking, dynamic on-demand PDF loading cutting main bundle by ~80% from 753 kB to 157 kB)
-- **Google Gemini API** (`gemini-3.5-flash-lite`, `gemini-3.5-flash`, `gemini-3-flash-preview`, `gemini-2.5-flash` via browser-native REST API with live key validation & dynamic model discovery)
+- **Google Gemini & Imagen API** (`gemini-3.5-flash-lite`, `gemini-3.5-flash`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `imagen-3.0-generate-002`, `gemini-2.5-flash-image` via browser-native REST API with live key validation & dynamic model discovery)
 - **Vite 6** (Blazing fast HMR and optimized production build tool)
 - **Tailwind CSS 3** (Custom space theme palette, animations, and responsive design)
 - **jsPDF 4 & html2canvas** (On-demand client-side multi-page PDF generation engine with color-coded options & headers)

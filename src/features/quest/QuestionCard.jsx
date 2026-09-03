@@ -152,7 +152,10 @@ const QuestionCard = memo(function QuestionCard({
 								</div>
 								<VisualDiagram
 									type='image'
-									data={{ imageUrl: aiImageUrl, alt: question.question || 'Question Diagram' }}
+									data={{
+										imageUrl: aiImageUrl,
+										alt: question.question || 'Question Diagram',
+									}}
 								/>
 							</div>
 						:	<VisualDiagram

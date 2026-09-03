@@ -24,11 +24,13 @@ const OptionsGrid = memo(function OptionsGrid({
 				const isCorrect = opt.id === correctAnswerId;
 				const text = String(opt.text || '');
 
-				const isShapeOption = showVisualDiagrams && hasShapeOrVisualConcept(text);
+				const isShapeOption =
+					showVisualDiagrams && hasShapeOrVisualConcept(text);
 				const parsedShape = isShapeOption ? parseDynamicShape(text) : null;
 				const conceptVisual =
 					showVisualDiagrams && !parsedShape ? getConceptVisual(text) : null;
-				const optionImage = showVisualDiagrams ? (opt.imageUrl || opt.image || null) : null;
+				const optionImage =
+					showVisualDiagrams ? opt.imageUrl || opt.image || null : null;
 
 				// Distinct Card Background & Ring State
 				let cardStyle =
