@@ -24,9 +24,22 @@ app.use(express.json({ limit: '10mb' }));
  * Helper to resolve the active Gemini API Key
  */
 function resolveApiKey(req) {
+	// 1. Prefer server-configured secret key from server/.env
+	const cleanServerKey = (SERVER_GEMINI_KEY || '').replace(/^["']|["']$/g, '').trim();
+	if (cleanServerKey && !cleanServerKey.startsWith('enc:v1:')) {
+		return cleanServerKey;
+	}
+
 	const headerKey = req.headers['x-gemini-key'];
 	const bodyKey = req.body?.apiKey;
-	return SERVER_GEMINI_KEY || headerKey || bodyKey || '';
+	const clientKey = (headerKey || bodyKey || '').replace(/^["']|["']$/g, '').trim();
+
+	// Reject any encrypted ciphertext string
+	if (clientKey.startsWith('enc:v1:')) {
+		return cleanServerKey || '';
+	}
+
+	return clientKey || cleanServerKey || '';
 }
 
 /**

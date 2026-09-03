@@ -1,209 +1,153 @@
 /**
  * cryptoStorage.js
- * High-security client-side encryption module using the browser's native Web Crypto API (AES-GCM 256-bit).
+ * Client-side cryptographic storage module.
  * Encrypts sensitive keys (e.g. Google Gemini API Key) before storing in localStorage,
  * preventing plain-text exposure in DevTools Application tab.
+ *
+ * Implements a synchronous salted keystream vault cipher so that getters and setters
+ * return real decrypted credentials instantaneously to synchronous React components,
+ * while writing scrambled ciphertext payloads to localStorage.
  */
 
 const ENCRYPTION_PREFIX = 'enc:v1:';
-const APP_SALT = new Uint8Array([
-	0x61, 0x73, 0x74, 0x72, 0x6f, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2d, 0x63, 0x6f,
-	0x73, 0x6d, 0x69,
-]); // "astroquest-cosmi"
+const VAULT_PREFIX = 'enc:v1:vault:';
+const B64_PREFIX = 'enc:v1:b64:';
+const VAULT_SALT = 'astroquest_cosmic_key_vault_98721';
 
-// Cached derived CryptoKey
-let cachedCryptoKey = null;
-
-/**
- * Derive an AES-GCM 256-bit CryptoKey using PBKDF2
- */
-async function getDerivedKey() {
-	if (cachedCryptoKey) return cachedCryptoKey;
-
-	if (
-		typeof window === 'undefined' ||
-		!window.crypto ||
-		!window.crypto.subtle
-	) {
-		return null;
-	}
-
-	try {
-		// Base seed derived from origin and application scope
-		const basePassphrase = `${window.location?.hostname || 'astroquest'}-app-secure-vault`;
-		const enc = new TextEncoder();
-		const keyMaterial = await window.crypto.subtle.importKey(
-			'raw',
-			enc.encode(basePassphrase),
-			{ name: 'PBKDF2' },
-			false,
-			['deriveKey'],
-		);
-
-		cachedCryptoKey = await window.crypto.subtle.deriveKey(
-			{
-				name: 'PBKDF2',
-				salt: APP_SALT,
-				iterations: 100000,
-				hash: 'SHA-256',
-			},
-			keyMaterial,
-			{ name: 'AES-GCM', length: 256 },
-			false,
-			['encrypt', 'decrypt'],
-		);
-
-		return cachedCryptoKey;
-	} catch (err) {
-		console.warn('WebCrypto key derivation fallback:', err);
-		return null;
-	}
-}
+// In-memory decrypted cache for instantaneous zero-latency reads
+const memoryVault = new Map();
 
 /**
- * Encrypt a plaintext string to an encrypted ciphertext payload
- * Format: "enc:v1:<iv_hex>:<ciphertext_hex>"
+ * Synchronous salted XOR cipher
  */
-export async function encryptValue(plainText) {
-	if (!plainText || typeof plainText !== 'string') return '';
-
+function encryptPayload(text) {
+	if (!text || typeof text !== 'string') return '';
 	try {
-		const key = await getDerivedKey();
-		if (!key) {
-			// Fallback base64 obfuscation if WebCrypto subtle is unsupported
-			return `${ENCRYPTION_PREFIX}b64:${btoa(encodeURIComponent(plainText))}`;
+		let xored = '';
+		for (let i = 0; i < text.length; i++) {
+			xored += String.fromCharCode(
+				text.charCodeAt(i) ^ VAULT_SALT.charCodeAt(i % VAULT_SALT.length),
+			);
 		}
-
-		const enc = new TextEncoder();
-		const iv = window.crypto.getRandomValues(new Uint8Array(12)); // 96-bit IV for AES-GCM
-		const cipherBuffer = await window.crypto.subtle.encrypt(
-			{ name: 'AES-GCM', iv },
-			key,
-			enc.encode(plainText),
-		);
-
-		const ivHex = Array.from(iv)
-			.map((b) => b.toString(16).padStart(2, '0'))
-			.join('');
-		const cipherHex = Array.from(new Uint8Array(cipherBuffer))
-			.map((b) => b.toString(16).padStart(2, '0'))
-			.join('');
-
-		return `${ENCRYPTION_PREFIX}${ivHex}:${cipherHex}`;
+		return `${VAULT_PREFIX}${btoa(encodeURIComponent(xored))}`;
 	} catch (err) {
-		console.warn('Encryption error, saving obfuscated fallback:', err);
-		return `${ENCRYPTION_PREFIX}b64:${btoa(encodeURIComponent(plainText))}`;
+		console.warn('Vault encryption fallback to b64:', err);
+		return `${B64_PREFIX}${btoa(encodeURIComponent(text))}`;
 	}
 }
 
 /**
- * Decrypt a ciphertext payload back to plaintext
+ * Synchronous salted XOR decipher
  */
-export async function decryptValue(encryptedValue) {
-	if (!encryptedValue || typeof encryptedValue !== 'string') return '';
+function decryptPayload(cipher) {
+	if (!cipher || typeof cipher !== 'string') return '';
 
-	// If value is not encrypted, it's legacy plaintext
-	if (!encryptedValue.startsWith(ENCRYPTION_PREFIX)) {
-		return encryptedValue;
+	// Legacy unencrypted plaintext
+	if (!cipher.startsWith(ENCRYPTION_PREFIX)) {
+		return cipher;
 	}
 
-	const payload = encryptedValue.slice(ENCRYPTION_PREFIX.length);
-
-	// Fallback base64 decode
-	if (payload.startsWith('b64:')) {
+	// 1. Salted Vault format
+	if (cipher.startsWith(VAULT_PREFIX)) {
 		try {
-			return decodeURIComponent(atob(payload.slice(4)));
+			const b64 = cipher.slice(VAULT_PREFIX.length);
+			const xored = decodeURIComponent(atob(b64));
+			let result = '';
+			for (let i = 0; i < xored.length; i++) {
+				result += String.fromCharCode(
+					xored.charCodeAt(i) ^ VAULT_SALT.charCodeAt(i % VAULT_SALT.length),
+				);
+			}
+			return result;
+		} catch (err) {
+			console.warn('Vault decryption failed:', err);
+			return '';
+		}
+	}
+
+	// 2. Base64 format
+	if (cipher.startsWith(B64_PREFIX)) {
+		try {
+			return decodeURIComponent(atob(cipher.slice(B64_PREFIX.length)));
 		} catch (_) {
 			return '';
 		}
 	}
 
-	try {
-		const parts = payload.split(':');
-		if (parts.length !== 2) return '';
-
-		const [ivHex, cipherHex] = parts;
-		const iv = new Uint8Array(
-			ivHex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)),
-		);
-		const cipherBuffer = new Uint8Array(
-			cipherHex.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)),
-		);
-
-		const key = await getDerivedKey();
-		if (!key) return '';
-
-		const decryptedBuffer = await window.crypto.subtle.decrypt(
-			{ name: 'AES-GCM', iv },
-			key,
-			cipherBuffer,
-		);
-
-		const dec = new TextDecoder();
-		return dec.decode(decryptedBuffer);
-	} catch (err) {
-		console.warn(
-			'Decryption failed, key might be invalid or from another origin:',
-			err,
-		);
-		return '';
-	}
+	// 3. If an incompatible asynchronous hex ciphertext was saved, discard and return empty
+	return '';
 }
 
 /**
- * Synchronous read with automatic decryption and legacy migration
+ * Synchronous read from secure storage
+ * Returns decrypted plaintext API key
  */
 export function getSecureStorageItem(storageKey) {
+	// Check in-memory cache first
+	if (memoryVault.has(storageKey)) {
+		const cached = memoryVault.get(storageKey);
+		if (cached && !cached.startsWith(ENCRYPTION_PREFIX)) {
+			return cached;
+		}
+	}
+
 	try {
 		const raw = localStorage.getItem(storageKey);
 		if (!raw) return '';
 
-		// If it's already encrypted with base64 or AES
+		// If it's encrypted, decrypt it
 		if (raw.startsWith(ENCRYPTION_PREFIX)) {
-			// For instantaneous synchronous initialization, if base64:
-			if (raw.startsWith(`${ENCRYPTION_PREFIX}b64:`)) {
-				try {
-					return decodeURIComponent(
-						atob(raw.slice(`${ENCRYPTION_PREFIX}b64:`.length)),
-					);
-				} catch (_) {}
+			const decrypted = decryptPayload(raw);
+			if (decrypted) {
+				memoryVault.set(storageKey, decrypted);
+				return decrypted;
 			}
-			return raw;
+			// If decryption returned empty (e.g. incompatible previous hex string), clear broken item
+			localStorage.removeItem(storageKey);
+			return '';
 		}
 
 		// Legacy plaintext: migrate automatically to encrypted storage
-		encryptValue(raw).then((enc) => {
-			if (enc) {
-				try {
-					localStorage.setItem(storageKey, enc);
-				} catch (_) {}
-			}
-		});
-
+		const encrypted = encryptPayload(raw);
+		localStorage.setItem(storageKey, encrypted);
+		memoryVault.set(storageKey, raw);
 		return raw;
-	} catch (_) {
+	} catch (err) {
+		console.warn('Secure storage read error:', err);
 		return '';
 	}
 }
 
 /**
- * Save an item with AES encryption into localStorage
+ * Synchronous write to secure storage
+ * Saves encrypted ciphertext in localStorage, caches decrypted in memory
  */
-export async function setSecureStorageItem(storageKey, value) {
-	if (!value) {
-		localStorage.removeItem(storageKey);
+export function setSecureStorageItem(storageKey, plainValue) {
+	if (!plainValue) {
+		memoryVault.delete(storageKey);
+		try {
+			localStorage.removeItem(storageKey);
+		} catch (_) {}
 		return;
 	}
 
+	const strVal = String(plainValue).trim();
+	memoryVault.set(storageKey, strVal);
+
 	try {
-		const encrypted = await encryptValue(String(value));
+		const encrypted = encryptPayload(strVal);
 		localStorage.setItem(storageKey, encrypted);
 	} catch (err) {
-		console.warn('Failed to set secure storage item:', err);
-		// Obfuscation fallback
-		localStorage.setItem(
-			storageKey,
-			`${ENCRYPTION_PREFIX}b64:${btoa(encodeURIComponent(String(value)))}`,
-		);
+		console.warn('Secure storage write error:', err);
 	}
+}
+
+/**
+ * Remove item from storage and memory
+ */
+export function removeSecureStorageItem(storageKey) {
+	memoryVault.delete(storageKey);
+	try {
+		localStorage.removeItem(storageKey);
+	} catch (_) {}
 }

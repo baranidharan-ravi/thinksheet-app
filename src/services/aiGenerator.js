@@ -80,14 +80,20 @@ export const AVAILABLE_GEMINI_MODELS = [
 ];
 
 export function getStoredApiKey() {
-	let key =
-		getSecureStorageItem(AI_KEY_STORAGE) ||
-		import.meta.env.VITE_GEMINI_API_KEY ||
-		'';
+	let key = getSecureStorageItem(AI_KEY_STORAGE);
+	if (!key || key.startsWith('enc:v1:')) {
+		key = import.meta.env.VITE_GEMINI_API_KEY || '';
+	}
 
 	if (typeof key === 'string') {
 		key = key.replace(/^["']|["']$/g, '').trim();
 	}
+
+	// Defensive check: NEVER return encrypted ciphertext as a usable API key!
+	if (key.startsWith('enc:v1:')) {
+		return '';
+	}
+
 	return key;
 }
 
