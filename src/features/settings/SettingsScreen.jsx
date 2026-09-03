@@ -1,4 +1,5 @@
 import {
+	AlertTriangle,
 	ArrowLeft,
 	Calendar,
 	Check,
@@ -834,8 +835,17 @@ const SettingsScreen = memo(function SettingsScreen({
 
 					<p className='text-xs text-slate-300 leading-relaxed'>
 						Choose whether interactive visual diagrams, 3x3 matrices, sequence
-						patterns, and STEM illustrations appear alongside questions.
+						patterns, and STEM illustrations appear alongside questions and option choices.
 					</p>
+
+					{/* Warning Notice for Dynamic Visual Generation */}
+					<div className='mt-3 p-3 rounded-xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex items-start gap-2.5'>
+						<AlertTriangle className='w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5' />
+						<div className='leading-relaxed'>
+							<span className='font-bold text-amber-300'>Note on Dynamic Visual Generation:</span>{' '}
+							Visual diagrams and option shapes are dynamically synthesized based on algorithmic models and AI prompts. Occasional visual discrepancies or slight mismatches between the text and rendered shapes may occur.
+						</div>
+					</div>
 				</div>
 
 				{/* Error Alert */}

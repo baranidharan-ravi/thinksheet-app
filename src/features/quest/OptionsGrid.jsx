@@ -15,6 +15,7 @@ const OptionsGrid = memo(function OptionsGrid({
 	isSubmitted,
 	correctAnswerId,
 	soundEnabled,
+	showVisualDiagrams = true,
 }) {
 	return (
 		<div className='grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4.5 p-1 flex-1 h-full w-full'>
@@ -23,9 +24,11 @@ const OptionsGrid = memo(function OptionsGrid({
 				const isCorrect = opt.id === correctAnswerId;
 				const text = String(opt.text || '');
 
-				const isShapeOption = hasShapeOrVisualConcept(text);
+				const isShapeOption = showVisualDiagrams && hasShapeOrVisualConcept(text);
 				const parsedShape = isShapeOption ? parseDynamicShape(text) : null;
-				const conceptVisual = !parsedShape ? getConceptVisual(text) : null;
+				const conceptVisual =
+					showVisualDiagrams && !parsedShape ? getConceptVisual(text) : null;
+				const optionImage = showVisualDiagrams ? (opt.imageUrl || opt.image || null) : null;
 
 				// Distinct Card Background & Ring State
 				let cardStyle =
@@ -90,8 +93,18 @@ const OptionsGrid = memo(function OptionsGrid({
 							:	opt.id}
 						</div>
 
-						{/* Dynamic Visual Shape or Concept Icon */}
-						{parsedShape ?
+						{/* Option Image, Dynamic Visual Shape, or Concept Icon */}
+						{optionImage ?
+							<div
+								className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all overflow-hidden ${contrastBoxStyle}`}>
+								<img
+									src={optionImage}
+									alt={`Option ${opt.id}`}
+									className='w-full h-full object-contain p-1'
+									loading='lazy'
+								/>
+							</div>
+						: parsedShape ?
 							<div
 								className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all ${contrastBoxStyle}`}>
 								<DynamicSvgShape

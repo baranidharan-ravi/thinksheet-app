@@ -1416,3 +1416,106 @@ export async function generateAIQuestions(
 	// Strictly deliver exactly 10 questions
 	return uniqueQuestions.slice(0, 10);
 }
+
+// In-memory cache for AI-generated visual images
+const aiImageCache = new Map();
+
+/**
+ * Request an AI-generated image for an educational prompt.
+ * First tries Imagen 3.0 via REST predict API, then Gemini Flash Image via generateContent.
+ * Returns base64 data URI (data:image/png;base64,...) or null on failure.
+ */
+export async function generateAiVisualImage(promptDescription, customKey = null) {
+	const apiKey = customKey || getStoredApiKey();
+	if (!apiKey || !promptDescription) return null;
+
+	const cacheKey = String(promptDescription).trim().toLowerCase();
+	if (aiImageCache.has(cacheKey)) {
+		return aiImageCache.get(cacheKey);
+	}
+
+	const cleanedPrompt = `Clean educational puzzle illustration for elementary kids, vector illustration style, simple geometric and logical objects on crisp white background: ${promptDescription.slice(0, 300)}`;
+
+	// 1. Try Google Imagen 3 via predict API
+	try {
+		const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${encodeURIComponent(apiKey)}`;
+		const response = await fetch(imagenUrl, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				instances: [{ prompt: cleanedPrompt }],
+				parameters: {
+					sampleCount: 1,
+					aspectRatio: '1:1',
+				},
+			}),
+		});
+
+		if (response.ok) {
+			const data = await response.json();
+			const base64Bytes = data?.predictions?.[0]?.bytesBase64Encoded;
+			if (base64Bytes) {
+				const dataUri = `data:image/png;base64,${base64Bytes}`;
+				aiImageCache.set(cacheKey, dataUri);
+				return dataUri;
+			}
+		}
+	} catch (err) {
+		console.warn('Imagen generation attempt failed:', err?.message || err);
+	}
+
+	// 2. Try Gemini 2.5 Flash Native Image generation via generateContent
+	try {
+		const flashUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
+		const flashResp = await fetch(flashUrl, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				contents: [{ parts: [{ text: cleanedPrompt }] }],
+				generationConfig: {
+					responseModalities: ['IMAGE'],
+				},
+			}),
+		});
+
+		if (flashResp.ok) {
+			const flashData = await flashResp.json();
+			const part = flashData?.candidates?.[0]?.content?.parts?.[0];
+			if (part?.inlineData?.data) {
+				const mime = part.inlineData.mimeType || 'image/png';
+				const dataUri = `data:${mime};base64,${part.inlineData.data}`;
+				aiImageCache.set(cacheKey, dataUri);
+				return dataUri;
+			}
+		}
+	} catch (err) {
+		console.warn('Gemini flash image attempt failed:', err?.message || err);
+	}
+
+	// Cache failure as null to avoid spamming the API repeatedly for the same prompt
+	aiImageCache.set(cacheKey, null);
+	return null;
+}
+
+/**
+ * Fetch an AI-generated image for a specific question diagram
+ */
+export async function getAiImageForQuestion(question, apiKey = null) {
+	if (!question) return null;
+	const promptText =
+		question.diagramData?.prompt ||
+		question.question ||
+		question.questionText ||
+		'';
+	if (!promptText) return null;
+	return generateAiVisualImage(promptText, apiKey);
+}
+
+/**
+ * Fetch an AI-generated image for a specific option choice
+ */
+export async function getAiImageForOption(questionText, optionText, apiKey = null) {
+	if (!optionText) return null;
+	const promptText = `${optionText} (for: ${questionText || ''})`;
+	return generateAiVisualImage(promptText, apiKey);
+}

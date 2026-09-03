@@ -772,6 +772,7 @@ export default function App() {
 											isSubmitted={false}
 											correctAnswerId={currentQuestion.correctAnswerId}
 											soundEnabled={soundEnabled}
+											showVisualDiagrams={showVisualDiagrams}
 										/>
 									</div>
 
@@ -853,6 +854,7 @@ export default function App() {
 										isSubmitted={true}
 										correctAnswerId={currentQuestion.correctAnswerId}
 										soundEnabled={soundEnabled}
+										showVisualDiagrams={showVisualDiagrams}
 									/>
 								</div>
 

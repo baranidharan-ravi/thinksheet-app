@@ -1,5 +1,6 @@
-import { Brain, Eye, Volume2, ZoomIn } from 'lucide-react';
-import { memo, useState } from 'react';
+import { Brain, Eye, Sparkles, Volume2, ZoomIn } from 'lucide-react';
+import { memo, useEffect, useState } from 'react';
+import { getAiImageForQuestion } from '../../services/aiGenerator';
 import { playButtonPop, speakText } from '../../utils/audioSynthesis';
 import VisualDiagram from '../../utils/VisualDiagrams';
 
@@ -13,6 +14,33 @@ const QuestionCard = memo(function QuestionCard({
 	showVisualDiagrams = true,
 }) {
 	const [isSpeaking, setIsSpeaking] = useState(false);
+	const [aiImageUrl, setAiImageUrl] = useState(null);
+	const [isGeneratingAiImage, setIsGeneratingAiImage] = useState(false);
+
+	useEffect(() => {
+		let isMounted = true;
+		setAiImageUrl(null);
+
+		if (showVisualDiagrams && question) {
+			setIsGeneratingAiImage(true);
+			getAiImageForQuestion(question)
+				.then((imgUri) => {
+					if (isMounted) {
+						if (imgUri) setAiImageUrl(imgUri);
+						setIsGeneratingAiImage(false);
+					}
+				})
+				.catch(() => {
+					if (isMounted) setIsGeneratingAiImage(false);
+				});
+		} else {
+			setIsGeneratingAiImage(false);
+		}
+
+		return () => {
+			isMounted = false;
+		};
+	}, [question?.id, showVisualDiagrams]);
 
 	const handleListenQuestion = () => {
 		playButtonPop(soundEnabled);
@@ -107,13 +135,31 @@ const QuestionCard = memo(function QuestionCard({
 					</button>
 				</div>
 
-				{/* Visual Diagram (If Enabled & Question has Diagram) */}
-				{showVisualDiagrams && question.diagramType && (
-					<div className='flex justify-center items-center py-2'>
-						<VisualDiagram
-							type={question.diagramType}
-							data={question.diagramData}
-						/>
+				{/* Visual Diagram (If Enabled & Question has Diagram or AI Image) */}
+				{showVisualDiagrams && (question.diagramType || aiImageUrl) && (
+					<div className='flex flex-col justify-center items-center py-2'>
+						{isGeneratingAiImage && !aiImageUrl && (
+							<div className='flex items-center gap-1.5 px-3 py-1 mb-2 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[11px] font-bold animate-pulse shadow-sm'>
+								<Sparkles className='w-3 h-3 text-indigo-500 animate-spin' />
+								<span>Generating AI Visual Illustration...</span>
+							</div>
+						)}
+						{aiImageUrl ?
+							<div className='relative group flex flex-col items-center'>
+								<div className='absolute -top-2.5 right-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-md z-10 flex items-center gap-1'>
+									<Sparkles className='w-2.5 h-2.5 fill-white' />
+									<span>AI Image</span>
+								</div>
+								<VisualDiagram
+									type='image'
+									data={{ imageUrl: aiImageUrl, alt: question.question || 'Question Diagram' }}
+								/>
+							</div>
+						:	<VisualDiagram
+								type={question.diagramType}
+								data={question.diagramData}
+							/>
+						}
 					</div>
 				)}
 			</div>
