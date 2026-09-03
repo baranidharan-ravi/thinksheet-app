@@ -135,42 +135,44 @@ const QuestionCard = memo(function QuestionCard({
 					</button>
 				</div>
 
-				{/* Visual Diagram (If Enabled & Question has Diagram or AI Image) */}
-				{showVisualDiagrams && (question.diagramType || aiImageUrl) && (
-					<div className='flex flex-col justify-center items-center py-2'>
-						{isGeneratingAiImage && !aiImageUrl && (
-							<div className='flex items-center gap-1.5 px-3 py-1 mb-2 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[11px] font-bold animate-pulse shadow-sm'>
-								<Sparkles className='w-3 h-3 text-indigo-500 animate-spin' />
-								<span>Generating AI Visual Illustration...</span>
-							</div>
-						)}
-						{aiImageUrl ?
-							<div className='relative group flex flex-col items-center'>
-								<div className='absolute -top-2.5 right-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-md z-10 flex items-center gap-1'>
-									<Sparkles className='w-2.5 h-2.5 fill-white' />
-									<span>AI Image</span>
+				{/* Visual Diagram (If Enabled & Question has Diagram, AI Image, or is Generating) */}
+				{showVisualDiagrams &&
+					(question.diagramType || isGeneratingAiImage || aiImageUrl) && (
+						<div className='flex flex-col justify-center items-center py-2'>
+							{isGeneratingAiImage && !aiImageUrl && (
+								<div className='flex items-center gap-1.5 px-3 py-1 mb-2 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[11px] font-bold animate-pulse shadow-sm'>
+									<Sparkles className='w-3 h-3 text-indigo-500 animate-spin' />
+									<span>Generating AI Visual Illustration...</span>
 								</div>
+							)}
+							{aiImageUrl ?
+								<div className='relative group flex flex-col items-center'>
+									<div className='absolute -top-2.5 right-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-md z-10 flex items-center gap-1'>
+										<Sparkles className='w-2.5 h-2.5 fill-white' />
+										<span>AI Image</span>
+									</div>
+									<VisualDiagram
+										type='image'
+										data={{
+											imageUrl: aiImageUrl,
+											alt: question.question || 'Question Diagram',
+											onError: () => {
+												console.warn(
+													'[AI Image] Load failed, falling back to procedural SVG diagram.',
+												);
+												setAiImageUrl(null);
+											},
+										}}
+									/>
+								</div>
+							: question.diagramType ?
 								<VisualDiagram
-									type='image'
-									data={{
-										imageUrl: aiImageUrl,
-										alt: question.question || 'Question Diagram',
-										onError: () => {
-											console.warn(
-												'[AI Image] Load failed or rate-limited, smoothly falling back to procedural SVG diagram.',
-											);
-											setAiImageUrl(null);
-										},
-									}}
+									type={question.diagramType}
+									data={question.diagramData}
 								/>
-							</div>
-						:	<VisualDiagram
-								type={question.diagramType}
-								data={question.diagramData}
-							/>
-						}
-					</div>
-				)}
+							: null}
+						</div>
+					)}
 			</div>
 
 			{/* Footer cue */}

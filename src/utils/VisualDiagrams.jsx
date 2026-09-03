@@ -215,6 +215,11 @@ export function LazyVisualImage({ src, alt, caption = '', onError = null }) {
 	const [loaded, setLoaded] = useState(false);
 	const [error, setError] = useState(false);
 
+	useEffect(() => {
+		setLoaded(false);
+		setError(false);
+	}, [src]);
+
 	const handleImgError = () => {
 		setError(true);
 		if (onError) onError();
@@ -242,12 +247,10 @@ export function LazyVisualImage({ src, alt, caption = '', onError = null }) {
 			<img
 				src={src}
 				alt={alt || 'Question Visual Clue'}
-				loading='lazy'
-				decoding='async'
 				onLoad={() => setLoaded(true)}
 				onError={handleImgError}
-				className={`max-h-52 w-auto max-w-full rounded-2xl object-contain shadow-md border-2 border-slate-200 transition-all duration-500 ${
-					loaded ? 'opacity-100 block' : 'opacity-0 hidden'
+				className={`max-h-52 w-auto max-w-full rounded-2xl object-contain shadow-md border-2 border-slate-200 transition-opacity duration-300 ${
+					loaded ? 'opacity-100 block' : 'opacity-0 absolute -z-10 pointer-events-none'
 				}`}
 			/>
 			{caption && loaded && (
