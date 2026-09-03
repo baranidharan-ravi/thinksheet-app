@@ -250,7 +250,9 @@ export function LazyVisualImage({ src, alt, caption = '', onError = null }) {
 				onLoad={() => setLoaded(true)}
 				onError={handleImgError}
 				className={`max-h-52 w-auto max-w-full rounded-2xl object-contain shadow-md border-2 border-slate-200 transition-opacity duration-300 ${
-					loaded ? 'opacity-100 block' : 'opacity-0 absolute -z-10 pointer-events-none'
+					loaded ? 'opacity-100 block' : (
+						'opacity-0 absolute -z-10 pointer-events-none'
+					)
 				}`}
 			/>
 			{caption && loaded && (

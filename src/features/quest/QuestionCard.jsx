@@ -170,7 +170,7 @@ const QuestionCard = memo(function QuestionCard({
 									type={question.diagramType}
 									data={question.diagramData}
 								/>
-							: null}
+							:	null}
 						</div>
 					)}
 			</div>
