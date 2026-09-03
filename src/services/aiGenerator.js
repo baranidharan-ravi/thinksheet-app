@@ -1599,34 +1599,79 @@ async function generateWithGeminiFlash(prompt, apiKey) {
 	return `data:${mime};base64,${part.inlineData.data}`;
 }
 
-// 3. Free Provider: Pollinations AI (Flux) - Zero-key direct image URL
-async function generateWithPollinationsFlux(prompt) {
-	const seed = Math.floor(Math.random() * 100000);
-	const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=400&height=400&nologo=true&seed=${seed}&model=flux`;
+/**
+ * Sanitize prompt for URL and image model safety: converts emojis to descriptive words
+ */
+function sanitizePromptForImage(text) {
+	return String(text || '')
+		.replace(/⭐/g, ' star ')
+		.replace(/🌙/g, ' moon ')
+		.replace(/☀️/g, ' sun ')
+		.replace(/🔴/g, ' red circle ')
+		.replace(/🔵/g, ' blue circle ')
+		.replace(/🔷/g, ' blue diamond ')
+		.replace(/🟩/g, ' green square ')
+		.replace(/🔺/g, ' red triangle ')
+		.replace(/🍎/g, ' apple ')
+		.replace(/🧊/g, ' ice cube ')
+		.replace(/💧/g, ' water drop ')
+		.replace(/🔬/g, ' microscope ')
+		.replace(/🔭/g, ' telescope ')
+		.replace(/🌌/g, ' galaxy ')
+		.replace(/[^\w\s.,?!:;-]/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim()
+		.slice(0, 160);
+}
 
-	// Pre-validate via native browser Image loader to bypass AJAX/fetch extension interceptors
+// 3. Free Provider: Pollinations AI (Turbo Fast) - Highest availability, zero 429 errors
+async function generateWithPollinationsTurbo(prompt) {
+	const clean = sanitizePromptForImage(prompt);
+	const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(clean)}?width=400&height=400&nologo=true&model=turbo`;
+
 	if (typeof window !== 'undefined' && typeof Image !== 'undefined') {
 		try {
 			await new Promise((resolve) => {
 				const img = new Image();
 				img.onload = () => resolve(url);
-				img.onerror = () => resolve(url); // gracefully resolve URL for <img> rendering
+				img.onerror = () => resolve(url);
 				img.src = url;
-				setTimeout(() => resolve(url), 5000);
+				setTimeout(() => resolve(url), 4000);
 			});
 			return url;
 		} catch (_) {
 			return url;
 		}
 	}
-
 	return url;
 }
 
-// 4. Free Provider: Pollinations AI (Turbo) - Zero-key direct image URL
-async function generateWithPollinationsTurbo(prompt) {
-	const seed = Math.floor(Math.random() * 100000);
-	const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=400&height=400&nologo=true&seed=${seed}&model=turbo`;
+// 4. Free Provider: Pollinations AI (Standard)
+async function generateWithPollinationsDefault(prompt) {
+	const clean = sanitizePromptForImage(prompt);
+	const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(clean)}?width=400&height=400&nologo=true`;
+
+	if (typeof window !== 'undefined' && typeof Image !== 'undefined') {
+		try {
+			await new Promise((resolve) => {
+				const img = new Image();
+				img.onload = () => resolve(url);
+				img.onerror = () => resolve(url);
+				img.src = url;
+				setTimeout(() => resolve(url), 4000);
+			});
+			return url;
+		} catch (_) {
+			return url;
+		}
+	}
+	return url;
+}
+
+// 5. Free Provider: Pollinations AI (Flux)
+async function generateWithPollinationsFlux(prompt) {
+	const clean = sanitizePromptForImage(prompt);
+	const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(clean)}?width=400&height=400&nologo=true&model=flux`;
 
 	if (typeof window !== 'undefined' && typeof Image !== 'undefined') {
 		try {
@@ -1642,11 +1687,10 @@ async function generateWithPollinationsTurbo(prompt) {
 			return url;
 		}
 	}
-
 	return url;
 }
 
-// Ordered list of AI Image Generation Providers
+// Ordered list of AI Image Generation Providers (Fast & reliable first)
 export const IMAGE_PROVIDERS = [
 	{
 		id: 'gemini_imagen',
@@ -1661,16 +1705,22 @@ export const IMAGE_PROVIDERS = [
 		handler: generateWithGeminiFlash,
 	},
 	{
-		id: 'pollinations_flux',
-		name: 'Pollinations AI (Flux Free)',
-		type: 'free',
-		handler: generateWithPollinationsFlux,
-	},
-	{
 		id: 'pollinations_turbo',
 		name: 'Pollinations AI (Turbo Free)',
 		type: 'free',
 		handler: generateWithPollinationsTurbo,
+	},
+	{
+		id: 'pollinations_default',
+		name: 'Pollinations AI (Standard Free)',
+		type: 'free',
+		handler: generateWithPollinationsDefault,
+	},
+	{
+		id: 'pollinations_flux',
+		name: 'Pollinations AI (Flux Free)',
+		type: 'free',
+		handler: generateWithPollinationsFlux,
 	},
 ];
 
@@ -1717,7 +1767,8 @@ export async function generateAiVisualImage(
 		return aiImageCache.get(cacheKey);
 	}
 
-	const cleanedPrompt = `Clean educational puzzle illustration for elementary kids, vector illustration style, simple geometric and logical objects on crisp white background: ${promptDescription.slice(0, 300)}`;
+	const cleanedDesc = sanitizePromptForImage(promptDescription);
+	const cleanedPrompt = `Clean educational puzzle illustration for elementary kids, vector style, simple geometric and logical objects on crisp white background: ${cleanedDesc}`;
 
 	// 1. Try secure Node.js Express proxy first (Zero API key in Network tab!)
 	const hasProxy = await checkProxyAvailability();

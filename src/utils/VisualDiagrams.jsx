@@ -211,9 +211,14 @@ export function getConceptVisual(text) {
 /**
  * Lazy-loaded visual image component with skeleton placeholder
  */
-export function LazyVisualImage({ src, alt, caption = '' }) {
+export function LazyVisualImage({ src, alt, caption = '', onError = null }) {
 	const [loaded, setLoaded] = useState(false);
 	const [error, setError] = useState(false);
+
+	const handleImgError = () => {
+		setError(true);
+		if (onError) onError();
+	};
 
 	if (!src || error) {
 		return (
@@ -240,7 +245,7 @@ export function LazyVisualImage({ src, alt, caption = '' }) {
 				loading='lazy'
 				decoding='async'
 				onLoad={() => setLoaded(true)}
-				onError={() => setError(true)}
+				onError={handleImgError}
 				className={`max-h-52 w-auto max-w-full rounded-2xl object-contain shadow-md border-2 border-slate-200 transition-all duration-500 ${
 					loaded ? 'opacity-100 block' : 'opacity-0 hidden'
 				}`}
@@ -329,6 +334,7 @@ const VisualDiagram = memo(function VisualDiagram({
 				src={imgSrc}
 				alt={data?.alt || 'Question Diagram'}
 				caption={data?.caption}
+				onError={data?.onError}
 			/>
 		);
 	}
