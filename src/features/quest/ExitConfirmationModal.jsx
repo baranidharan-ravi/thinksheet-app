@@ -1,12 +1,11 @@
-import { ArrowRight, Download, LogOut, Play, X } from 'lucide-react';
+import { LogOut, Play, X } from 'lucide-react';
 import { memo } from 'react';
 import { playButtonPop } from '../../utils/audioSynthesis';
 
 const ExitConfirmationModal = memo(function ExitConfirmationModal({
 	isOpen,
 	onClose,
-	onEndAndDownload,
-	onExitWithoutDownload,
+	onConfirmExit,
 	currentIndex = 0,
 	totalQuestions = 10,
 	selectedSkill = 'Visual',
@@ -38,72 +37,46 @@ const ExitConfirmationModal = memo(function ExitConfirmationModal({
 					<h2 className='text-xl sm:text-2xl font-black text-white tracking-wide'>
 						Exit AstroQuest?
 					</h2>
-					<p className='text-xs font-semibold text-slate-300 mt-1'>
-						You are on Question {currentIndex + 1} of {totalQuestions} in{' '}
-						<span className='text-cyan-300 font-bold'>{selectedSkill}</span>.
+					<p className='text-xs sm:text-sm font-semibold text-slate-300 mt-2 leading-relaxed'>
+						You are currently on Question{' '}
+						<span className='text-cyan-300 font-extrabold'>
+							{currentIndex + 1}
+						</span>{' '}
+						of {totalQuestions} in{' '}
+						<span className='text-pink-300 font-extrabold'>
+							{selectedSkill}
+						</span>
+						.
+					</p>
+					<p className='text-xs text-amber-200/90 font-medium mt-1.5 bg-amber-950/40 border border-amber-500/30 rounded-xl px-3 py-1.5'>
+						⚠️ Thinksheet is in progress. If you exit now, progress will not be saved.
 					</p>
 				</div>
 
-				{/* Options Selection */}
-				<div className='flex flex-col gap-3'>
-					{/* Option 1: End Sheet and Download Report */}
-					<button
-						type='button'
-						onClick={() => {
-							playButtonPop(soundEnabled);
-							onEndAndDownload();
-						}}
-						className='w-full p-3.5 rounded-2xl bg-[#0F143D] hover:bg-[#1A205E] border-2 border-cyan-500/50 hover:border-cyan-400 text-left transition-all shadow-md group cursor-pointer flex items-center justify-between'>
-						<div className='flex items-center gap-3'>
-							<div className='w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform'>
-								<Download className='w-5 h-5' />
-							</div>
-							<div>
-								<div className='text-sm font-extrabold text-white group-hover:text-cyan-300 transition-colors'>
-									End Sheet & Download PDF 📄
-								</div>
-								<div className='text-[11px] font-semibold text-slate-400'>
-									Save fully expanded Q&A PDF report and exit
-								</div>
-							</div>
-						</div>
-						<ArrowRight className='w-4 h-4 text-slate-400 group-hover:text-cyan-300 transition-colors' />
-					</button>
-
-					{/* Option 2: Exit Without Downloading */}
-					<button
-						type='button'
-						onClick={() => {
-							playButtonPop(soundEnabled);
-							onExitWithoutDownload();
-						}}
-						className='w-full p-3.5 rounded-2xl bg-[#0F143D] hover:bg-[#1A205E] border-2 border-rose-500/50 hover:border-rose-400 text-left transition-all shadow-md group cursor-pointer flex items-center justify-between'>
-						<div className='flex items-center gap-3'>
-							<div className='w-10 h-10 rounded-xl bg-rose-500/20 text-rose-300 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform'>
-								<LogOut className='w-5 h-5' />
-							</div>
-							<div>
-								<div className='text-sm font-extrabold text-white group-hover:text-rose-300 transition-colors'>
-									Exit Without Downloading 🚪
-								</div>
-								<div className='text-[11px] font-semibold text-slate-400'>
-									Return directly to Skill Selection
-								</div>
-							</div>
-						</div>
-						<ArrowRight className='w-4 h-4 text-slate-400 group-hover:text-rose-300 transition-colors' />
-					</button>
-
-					{/* Option 3: Continue Thinksheet */}
+				{/* Action Buttons */}
+				<div className='flex flex-col gap-2.5 mt-2'>
+					{/* Primary: Continue Quest */}
 					<button
 						type='button'
 						onClick={() => {
 							playButtonPop(soundEnabled);
 							onClose();
 						}}
-						className='w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold text-sm tracking-wide shadow-lg transform hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2 mt-1'>
+						className='w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold text-sm sm:text-base tracking-wide shadow-lg transform hover:scale-[1.01] active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2'>
 						<Play className='w-4 h-4 fill-white' />
 						<span>Continue AstroQuest 🚀</span>
+					</button>
+
+					{/* Secondary: Exit to Skills Hub */}
+					<button
+						type='button'
+						onClick={() => {
+							playButtonPop(soundEnabled);
+							onConfirmExit();
+						}}
+						className='w-full py-3 rounded-2xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/50 hover:border-rose-400 text-rose-200 hover:text-white font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-2'>
+						<LogOut className='w-4 h-4' />
+						<span>Exit Without Saving 🚪</span>
 					</button>
 				</div>
 			</div>

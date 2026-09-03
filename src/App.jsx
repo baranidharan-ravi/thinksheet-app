@@ -615,16 +615,8 @@ export default function App() {
 		history,
 	]);
 
-	// Exit and Download
-	const handleExitAndDownload = () => {
-		handleDownloadSheet();
-		clearSessionState();
-		setIsExitModalOpen(false);
-		setCurrentScreen('dashboard');
-	};
-
-	// Exit without downloading
-	const handleExitWithoutDownload = () => {
+	// Confirm Exit from active quest
+	const handleConfirmExit = () => {
 		clearSessionState();
 		setIsExitModalOpen(false);
 		setCurrentScreen('dashboard');
@@ -944,8 +936,7 @@ export default function App() {
 			<ExitConfirmationModal
 				isOpen={isExitModalOpen}
 				onClose={() => setIsExitModalOpen(false)}
-				onEndAndDownload={handleExitAndDownload}
-				onExitWithoutDownload={handleExitWithoutDownload}
+				onConfirmExit={handleConfirmExit}
 				currentIndex={currentIndex}
 				totalQuestions={questions.length}
 				selectedSkill={selectedSkill}
