@@ -49,7 +49,8 @@ const ExitConfirmationModal = memo(function ExitConfirmationModal({
 						.
 					</p>
 					<p className='text-xs text-amber-200/90 font-medium mt-1.5 bg-amber-950/40 border border-amber-500/30 rounded-xl px-3 py-1.5'>
-						⚠️ Thinksheet is in progress. If you exit now, progress will not be saved.
+						⚠️ Thinksheet is in progress. If you exit now, progress will not be
+						saved.
 					</p>
 				</div>
 
