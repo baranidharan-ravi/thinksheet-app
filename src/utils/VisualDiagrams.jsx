@@ -9,7 +9,7 @@ import {
 	Sparkles,
 	Zap,
 } from 'lucide-react';
-import { Fragment, memo, useEffect, useState } from 'react';
+import { Fragment, memo, useEffect, useRef, useState } from 'react';
 import {
 	DynamicShapeCard,
 	DynamicSvgShape,
@@ -214,11 +214,20 @@ export function getConceptVisual(text) {
 export function LazyVisualImage({ src, alt, caption = '', onError = null }) {
 	const [loaded, setLoaded] = useState(false);
 	const [error, setError] = useState(false);
+	const imgRef = useRef(null);
 
 	useEffect(() => {
 		setLoaded(false);
 		setError(false);
 	}, [src]);
+
+	// After resetting loaded, check if browser already has the image decoded
+	// (common for base64 data URIs — onLoad won't re-fire for cached images)
+	useEffect(() => {
+		if (!loaded && imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
+			setLoaded(true);
+		}
+	});
 
 	const handleImgError = () => {
 		setError(true);
@@ -245,14 +254,13 @@ export function LazyVisualImage({ src, alt, caption = '', onError = null }) {
 				</div>
 			)}
 			<img
+				ref={imgRef}
 				src={src}
 				alt={alt || 'Question Visual Clue'}
 				onLoad={() => setLoaded(true)}
 				onError={handleImgError}
 				className={`max-h-52 w-auto max-w-full rounded-2xl object-contain shadow-md border-2 border-slate-200 transition-opacity duration-300 ${
-					loaded ? 'opacity-100 block' : (
-						'opacity-0 absolute -z-10 pointer-events-none'
-					)
+					loaded ? 'opacity-100 block' : 'opacity-0 absolute -z-10 pointer-events-none'
 				}`}
 			/>
 			{caption && loaded && (
