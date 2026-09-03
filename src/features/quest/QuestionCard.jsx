@@ -1,9 +1,9 @@
 import { Brain, Eye, Volume2, ZoomIn } from 'lucide-react';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { playButtonPop, speakText } from '../../utils/audioSynthesis';
 import VisualDiagram from '../../utils/VisualDiagrams';
 
-export default function QuestionCard({
+const QuestionCard = memo(function QuestionCard({
 	question,
 	currentIndex,
 	totalQuestions,
@@ -124,4 +124,6 @@ export default function QuestionCard({
 			</div>
 		</div>
 	);
-}
+});
+
+export default QuestionCard;

@@ -9,11 +9,11 @@ import {
 	SkipForward,
 	XCircle,
 } from 'lucide-react';
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { playButtonPop } from '../../utils/audioSynthesis';
 import VisualDiagram from '../../utils/VisualDiagrams';
 
-export default function QuestionSummary({
+const QuestionSummary = memo(function QuestionSummary({
 	questions,
 	history,
 	onStartNextSheet,
@@ -26,10 +26,13 @@ export default function QuestionSummary({
 }) {
 	const [expandedIndex, setExpandedIndex] = useState(null);
 
-	const toggleExpand = (idx) => {
-		playButtonPop(soundEnabled);
-		setExpandedIndex(expandedIndex === idx ? null : idx);
-	};
+	const toggleExpand = useCallback(
+		(idx) => {
+			playButtonPop(soundEnabled);
+			setExpandedIndex((prev) => (prev === idx ? null : idx));
+		},
+		[soundEnabled],
+	);
 
 	return (
 		<div className='w-full max-w-5xl mx-auto px-4 py-6 flex flex-col items-center select-none animate-in fade-in zoom-in-95 duration-500'>
@@ -242,4 +245,6 @@ export default function QuestionSummary({
 			</div>
 		</div>
 	);
-}
+});
+
+export default QuestionSummary;

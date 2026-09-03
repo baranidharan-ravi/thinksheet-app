@@ -326,12 +326,13 @@ src/
 
 ## 🛠️ Tech Stack
 
-- **React 18** (Modern functional components & hooks)
+- **React 18** (Modern functional components, hooks, `React.lazy`, `Suspense`, `React.memo`, & `useCallback`)
+- **Performance & Code Splitting** (Rollup vendor chunking, dynamic on-demand PDF loading cutting main bundle by ~80% from 753 kB to 157 kB)
 - **Google Gemini API** (`gemini-3.5-flash-lite`, `gemini-3.5-flash`, `gemini-3-flash-preview`, `gemini-2.5-flash` via browser-native REST API with live key validation & dynamic model discovery)
-- **Vite 6** (Blazing fast HMR and build tool)
+- **Vite 6** (Blazing fast HMR and optimized production build tool)
 - **Tailwind CSS 3** (Custom space theme palette, animations, and responsive design)
-- **jsPDF 4** (Client-side multi-page PDF generation engine with color-coded options & headers)
-- **Lucide Icons** (Clean, child-friendly iconography)
+- **jsPDF 4 & html2canvas** (On-demand client-side multi-page PDF generation engine with color-coded options & headers)
+- **Lucide Icons** (Clean, child-friendly iconography in isolated vendor chunk)
 - **Canvas Confetti** (Celebratory particle effects)
 - **Web Audio API & Web Speech API** (Zero-asset sound synthesis and sanitized voice narration)
 

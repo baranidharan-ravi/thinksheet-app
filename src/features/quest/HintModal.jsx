@@ -1,7 +1,13 @@
 import { X, Zap } from 'lucide-react';
+import { memo } from 'react';
 import { playButtonPop } from '../../utils/audioSynthesis';
 
-export default function HintModal({ hintText, isOpen, onClose, soundEnabled }) {
+const HintModal = memo(function HintModal({
+	hintText,
+	isOpen,
+	onClose,
+	soundEnabled,
+}) {
 	if (!isOpen) return null;
 
 	return (
@@ -50,4 +56,6 @@ export default function HintModal({ hintText, isOpen, onClose, soundEnabled }) {
 			</div>
 		</div>
 	);
-}
+});
+
+export default HintModal;

@@ -16,7 +16,7 @@ import {
 	Smile,
 	Sparkles,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import {
 	fetchOnlineGeminiModels,
 	getAvailableGeminiModels,
@@ -37,7 +37,7 @@ import {
 	saveStoredTimerConfig,
 } from '../../utils/progressTracker';
 
-export default function SettingsScreen({
+const SettingsScreen = memo(function SettingsScreen({
 	onSaveAndReturn,
 	onBack,
 	soundEnabled = true,
@@ -889,4 +889,6 @@ export default function SettingsScreen({
 			</div>
 		</div>
 	);
-}
+});
+
+export default SettingsScreen;

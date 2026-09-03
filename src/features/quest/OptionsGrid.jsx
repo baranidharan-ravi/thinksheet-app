@@ -1,4 +1,5 @@
 import { Check, X as XIcon } from 'lucide-react';
+import { memo } from 'react';
 import { playButtonPop } from '../../utils/audioSynthesis';
 import {
 	DynamicSvgShape,
@@ -7,7 +8,7 @@ import {
 } from '../../utils/shapeGenerator';
 import { getConceptVisual } from '../../utils/VisualDiagrams';
 
-export default function OptionsGrid({
+const OptionsGrid = memo(function OptionsGrid({
 	options,
 	selectedOptionId,
 	onSelectOption,
@@ -120,4 +121,6 @@ export default function OptionsGrid({
 			})}
 		</div>
 	);
-}
+});
+
+export default OptionsGrid;

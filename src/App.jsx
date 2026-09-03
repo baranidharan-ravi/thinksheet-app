@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import SkillSelectionDashboard from './features/dashboard/SkillSelectionDashboard';
 import AskDoubtModal from './features/quest/AskDoubtModal';
 import ExitConfirmationModal from './features/quest/ExitConfirmationModal';
@@ -6,11 +6,24 @@ import HintModal from './features/quest/HintModal';
 import OptionsGrid from './features/quest/OptionsGrid';
 import QuestionCard from './features/quest/QuestionCard';
 import SolutionPanel from './features/quest/SolutionPanel';
-import QuestionSummary from './features/results/QuestionSummary';
-import ResultOverview from './features/results/ResultOverview';
-import SettingsScreen from './features/settings/SettingsScreen';
 import Header from './utils/Header';
 import ZoomModal from './utils/ZoomModal';
+
+// Code-split screens loaded on demand
+const SettingsScreen = lazy(() => import('./features/settings/SettingsScreen'));
+const ResultOverview = lazy(() => import('./features/results/ResultOverview'));
+const QuestionSummary = lazy(() => import('./features/results/QuestionSummary'));
+
+function ScreenLoadingFallback() {
+	return (
+		<div className='min-h-screen bg-[#0A0C27] flex flex-col items-center justify-center p-4 text-white select-none'>
+			<div className='w-12 h-12 rounded-full border-4 border-cyan-400 border-t-transparent animate-spin mb-4 shadow-[0_0_20px_rgba(34,211,238,0.5)]' />
+			<p className='text-sm font-bold text-cyan-200 tracking-wider uppercase animate-pulse'>
+				Loading AstroQuest...
+			</p>
+		</div>
+	);
+}
 
 import confetti from 'canvas-confetti';
 import {
@@ -29,7 +42,6 @@ import {
 	playIncorrectSound,
 	speakText,
 } from './utils/audioSynthesis';
-import { exportSessionToPdf } from './utils/pdfGenerator';
 import {
 	getStoredKidAge,
 	getStoredKidName,
@@ -356,11 +368,25 @@ export default function App() {
 		startSkillSession(skill, kidAge);
 	};
 
+	// Stable Toggle Callbacks
+	const handleToggleSound = useCallback(
+		() => setSoundEnabled((prev) => !prev),
+		[],
+	);
+	const handleToggleSpeech = useCallback(
+		() => setSpeechEnabled((prev) => !prev),
+		[],
+	);
+	const handleOpenExitModal = useCallback(() => setIsExitModalOpen(true), []);
+
 	// Handle Option Select
-	const handleSelectOption = (optionId) => {
-		if (isSubmitted || isTimedOut) return;
-		setSelectedOptionId(optionId);
-	};
+	const handleSelectOption = useCallback(
+		(optionId) => {
+			if (isSubmitted || isTimedOut) return;
+			setSelectedOptionId(optionId);
+		},
+		[isSubmitted, isTimedOut],
+	);
 
 	// Handle Submit
 	const handleSubmit = () => {
@@ -515,7 +541,7 @@ export default function App() {
 	};
 
 	// Download Sheet Progress as PDF
-	const handleDownloadSheet = () => {
+	const handleDownloadSheet = useCallback(async () => {
 		playButtonPop(soundEnabled);
 		const now = new Date();
 		const day = String(now.getDate()).padStart(2, '0');
@@ -553,6 +579,7 @@ export default function App() {
 			minute: '2-digit',
 		});
 
+		const { exportSessionToPdf } = await import('./utils/pdfGenerator');
 		exportSessionToPdf(
 			{
 				studentName: kidName || 'Explorer',
@@ -569,7 +596,18 @@ export default function App() {
 			},
 			`AstroQuest_${safeKidName}_Age${kidAge}_${selectedSkill}_Sheet${sheetNumber}_${timeStampStr}.pdf`,
 		);
-	};
+	}, [
+		soundEnabled,
+		kidName,
+		kidAge,
+		selectedSkill,
+		sheetNumber,
+		scorePercent,
+		correctCount,
+		questions,
+		timerSeconds,
+		history,
+	]);
 
 	// Exit and Download
 	const handleExitAndDownload = () => {
@@ -596,15 +634,17 @@ export default function App() {
 	// Render Dedicated Settings Screen
 	if (currentScreen === 'settings') {
 		return (
-			<SettingsScreen
-				onSaveAndReturn={handleSaveKidProfile}
-				onBack={() => {
-					setPendingSkill(null);
-					setCurrentScreen('dashboard');
-				}}
-				soundEnabled={soundEnabled}
-				pendingSkill={pendingSkill}
-			/>
+			<Suspense fallback={<ScreenLoadingFallback />}>
+				<SettingsScreen
+					onSaveAndReturn={handleSaveKidProfile}
+					onBack={() => {
+						setPendingSkill(null);
+						setCurrentScreen('dashboard');
+					}}
+					soundEnabled={soundEnabled}
+					pendingSkill={pendingSkill}
+				/>
+			</Suspense>
 		);
 	}
 
@@ -640,10 +680,10 @@ export default function App() {
 				timerConfig={timerConfig}
 				questionTimeRemaining={questionTimeRemaining}
 				soundEnabled={soundEnabled}
-				onToggleSound={() => setSoundEnabled((prev) => !prev)}
+				onToggleSound={handleToggleSound}
 				speechEnabled={speechEnabled}
-				onToggleSpeech={() => setSpeechEnabled((prev) => !prev)}
-				onExitClick={() => setIsExitModalOpen(true)}
+				onToggleSpeech={handleToggleSpeech}
+				onExitClick={handleOpenExitModal}
 			/>
 
 			{/* Main Screen Body */}
@@ -845,33 +885,39 @@ export default function App() {
 					</div>
 				:	/* Completion & Summary View */
 					<div className='w-full'>
-						{resultTab === 'overview' ?
-							<ResultOverview
-								scorePercent={scorePercent}
-								correctCount={correctCount}
-								totalCount={questions.length}
-								history={history}
-								onStartNextSheet={handleStartNextSheet}
-								onViewSummary={() => setResultTab('summary')}
-								onDownloadPdf={handleDownloadSheet}
-								activeTab={resultTab}
-								setActiveTab={setResultTab}
-								soundEnabled={soundEnabled}
-								onBackToDashboard={() => setCurrentScreen('dashboard')}
-								kidName={kidName}
-							/>
-						:	<QuestionSummary
-								questions={questions}
-								history={history}
-								onStartNextSheet={handleStartNextSheet}
-								onDownloadPdf={handleDownloadSheet}
-								activeTab={resultTab}
-								setActiveTab={setResultTab}
-								soundEnabled={soundEnabled}
-								onBackToDashboard={() => setCurrentScreen('dashboard')}
-								showVisualDiagrams={showVisualDiagrams}
-							/>
-						}
+						<Suspense fallback={<ScreenLoadingFallback />}>
+							{resultTab === 'overview' ?
+								<ResultOverview
+									scorePercent={scorePercent}
+									correctCount={correctCount}
+									totalCount={questions.length}
+									history={history}
+									onStartNextSheet={handleStartNextSheet}
+									onViewSummary={() => setResultTab('summary')}
+									onDownloadPdf={handleDownloadSheet}
+									activeTab={resultTab}
+									setActiveTab={setResultTab}
+									soundEnabled={soundEnabled}
+									onBackToDashboard={() =>
+										setCurrentScreen('dashboard')
+									}
+									kidName={kidName}
+								/>
+							:	<QuestionSummary
+									questions={questions}
+									history={history}
+									onStartNextSheet={handleStartNextSheet}
+									onDownloadPdf={handleDownloadSheet}
+									activeTab={resultTab}
+									setActiveTab={setResultTab}
+									soundEnabled={soundEnabled}
+									onBackToDashboard={() =>
+										setCurrentScreen('dashboard')
+									}
+									showVisualDiagrams={showVisualDiagrams}
+								/>
+							}
+						</Suspense>
 					</div>
 				}
 			</main>

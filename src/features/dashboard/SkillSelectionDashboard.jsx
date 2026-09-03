@@ -1,7 +1,9 @@
 import { Clock, Edit2, Info, Settings, Sparkles, Timer } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { getStoredApiKey } from '../../services/aiGenerator';
 import { playButtonPop } from '../../utils/audioSynthesis';
+
+const SkillSelectionDashboard = memo(function SkillSelectionDashboard({
 	onSelectSkill,
 	soundEnabled,
 	kidName,
@@ -348,4 +350,6 @@ import { playButtonPop } from '../../utils/audioSynthesis';
 			)}
 		</div>
 	);
-}
+});
+
+export default SkillSelectionDashboard;

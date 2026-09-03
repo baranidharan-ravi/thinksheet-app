@@ -1,7 +1,8 @@
 import { HelpCircle, Sparkles, Volume2, X } from 'lucide-react';
+import { memo } from 'react';
 import { playButtonPop, speakText } from '../../utils/audioSynthesis';
 
-export default function AskDoubtModal({
+const AskDoubtModal = memo(function AskDoubtModal({
 	question,
 	isOpen,
 	onClose,
@@ -83,4 +84,6 @@ export default function AskDoubtModal({
 			</div>
 		</div>
 	);
-}
+});
+
+export default AskDoubtModal;

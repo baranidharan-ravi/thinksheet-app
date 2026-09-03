@@ -8,10 +8,11 @@ import {
 	Volume2,
 	XCircle,
 } from 'lucide-react';
+import { memo } from 'react';
 import { playButtonPop, speakText } from '../../utils/audioSynthesis';
 import VisualDiagram from '../../utils/VisualDiagrams';
 
-export default function SolutionPanel({
+const SolutionPanel = memo(function SolutionPanel({
 	isCorrect,
 	isTimedOut = false,
 	autoAdvanceCountdown = null,
@@ -150,4 +151,6 @@ export default function SolutionPanel({
 			)}
 		</div>
 	);
-}
+});
+
+export default SolutionPanel;

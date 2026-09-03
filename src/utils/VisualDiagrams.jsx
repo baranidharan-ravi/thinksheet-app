@@ -9,7 +9,7 @@ import {
 	Sparkles,
 	Zap,
 } from 'lucide-react';
-import { Fragment, useState } from 'react';
+import { Fragment, memo, useState } from 'react';
 import {
 	DynamicShapeCard,
 	DynamicSvgShape,
@@ -317,10 +317,11 @@ function render3DIsoCube({ gx, gy, gz, size = 20, color = 'blue', key = '' }) {
 	);
 }
 
-/**
- * Renders custom SVG graphical puzzles, rich analogy cards, optics light dispersion, 3D isometric block pyramids, and sequence ladders.
- */
-export default function VisualDiagram({ type, data = {}, isSolution = false }) {
+const VisualDiagram = memo(function VisualDiagram({
+	type,
+	data = {},
+	isSolution = false,
+}) {
 	if (type === 'image' || data?.imageUrl || data?.src) {
 		const imgSrc = data?.imageUrl || data?.src || '';
 		return (
@@ -1505,4 +1506,6 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 		default:
 			return null;
 	}
-}
+});
+
+export default VisualDiagram;

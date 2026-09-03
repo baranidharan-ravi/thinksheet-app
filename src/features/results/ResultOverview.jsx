@@ -1,13 +1,13 @@
 import confetti from 'canvas-confetti';
 import { Download, LayoutGrid, RefreshCw } from 'lucide-react';
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import {
 	playButtonPop,
 	playStarSound,
 	playVictoryFanfare,
 } from '../../utils/audioSynthesis';
 
-export default function ResultOverview({
+const ResultOverview = memo(function ResultOverview({
 	scorePercent,
 	correctCount,
 	totalCount,
@@ -232,4 +232,6 @@ export default function ResultOverview({
 			</div>
 		</div>
 	);
-}
+});
+
+export default ResultOverview;

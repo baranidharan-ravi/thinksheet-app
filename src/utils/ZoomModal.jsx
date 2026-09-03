@@ -3,7 +3,7 @@ import React from 'react';
 import { playButtonPop } from './audioSynthesis';
 import VisualDiagram from './VisualDiagrams';
 
-export default function ZoomModal({
+const ZoomModal = React.memo(function ZoomModal({
 	diagramType,
 	diagramData,
 	isOpen,
@@ -74,4 +74,6 @@ export default function ZoomModal({
 			</div>
 		</div>
 	);
-}
+});
+
+export default ZoomModal;

@@ -1,7 +1,8 @@
 import { ArrowRight, Download, LogOut, Play, X } from 'lucide-react';
+import { memo } from 'react';
 import { playButtonPop } from '../../utils/audioSynthesis';
 
-export default function ExitConfirmationModal({
+const ExitConfirmationModal = memo(function ExitConfirmationModal({
 	isOpen,
 	onClose,
 	onEndAndDownload,
@@ -108,4 +109,6 @@ export default function ExitConfirmationModal({
 			</div>
 		</div>
 	);
-}
+});
+
+export default ExitConfirmationModal;

@@ -11,7 +11,7 @@ import {
 import React from 'react';
 import { playButtonPop } from './audioSynthesis';
 
-export default function Header({
+const Header = React.memo(function Header({
 	questionIndex,
 	totalQuestions,
 	history,
@@ -200,4 +200,6 @@ export default function Header({
 			</div>
 		</header>
 	);
-}
+});
+
+export default Header;
