@@ -542,6 +542,13 @@ export default function App() {
 		}
 	};
 
+	// Calculate score
+	const correctCount = history.filter((h) => h && h.isCorrect).length;
+	const scorePercent =
+		questions.length > 0 ?
+			Math.round((correctCount / questions.length) * 100)
+		:	0;
+
 	// Download Sheet Progress as PDF
 	const handleDownloadSheet = useCallback(async () => {
 		playButtonPop(soundEnabled);
@@ -625,13 +632,6 @@ export default function App() {
 		setIsExitModalOpen(false);
 		setCurrentScreen('dashboard');
 	};
-
-	// Calculate score
-	const correctCount = history.filter((h) => h && h.isCorrect).length;
-	const scorePercent =
-		questions.length > 0 ?
-			Math.round((correctCount / questions.length) * 100)
-		:	0;
 
 	// Render Dedicated Settings Screen
 	if (currentScreen === 'settings') {
