@@ -774,6 +774,7 @@ export default function App() {
 											correctAnswerId={currentQuestion.correctAnswerId}
 											soundEnabled={soundEnabled}
 											showVisualDiagrams={showVisualDiagrams}
+											question={currentQuestion}
 										/>
 									</div>
 
@@ -856,6 +857,7 @@ export default function App() {
 										correctAnswerId={currentQuestion.correctAnswerId}
 										soundEnabled={soundEnabled}
 										showVisualDiagrams={showVisualDiagrams}
+										question={currentQuestion}
 									/>
 								</div>
 

@@ -224,7 +224,11 @@ export function LazyVisualImage({ src, alt, caption = '', onError = null }) {
 	// After resetting loaded, check if browser already has the image decoded
 	// (common for base64 data URIs — onLoad won't re-fire for cached images)
 	useEffect(() => {
-		if (!loaded && imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
+		if (
+			!loaded &&
+			imgRef.current?.complete &&
+			imgRef.current?.naturalWidth > 0
+		) {
 			setLoaded(true);
 		}
 	});
@@ -260,7 +264,9 @@ export function LazyVisualImage({ src, alt, caption = '', onError = null }) {
 				onLoad={() => setLoaded(true)}
 				onError={handleImgError}
 				className={`max-h-52 w-auto max-w-full rounded-2xl object-contain shadow-md border-2 border-slate-200 transition-opacity duration-300 ${
-					loaded ? 'opacity-100 block' : 'opacity-0 absolute -z-10 pointer-events-none'
+					loaded ? 'opacity-100 block' : (
+						'opacity-0 absolute -z-10 pointer-events-none'
+					)
 				}`}
 			/>
 			{caption && loaded && (
