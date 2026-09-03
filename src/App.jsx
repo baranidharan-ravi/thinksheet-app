@@ -396,7 +396,6 @@ export default function App() {
 
 		if (isCorrect) {
 			playCorrectSound(soundEnabled);
-			setXp((prev) => prev + 5);
 
 			// Trigger Confetti Celebration
 			try {
