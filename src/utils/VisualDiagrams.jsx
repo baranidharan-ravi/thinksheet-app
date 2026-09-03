@@ -9,7 +9,7 @@ import {
 	Sparkles,
 	Zap,
 } from 'lucide-react';
-import { Fragment, memo, useState } from 'react';
+import { Fragment, memo, useEffect, useState } from 'react';
 import {
 	DynamicShapeCard,
 	DynamicSvgShape,
