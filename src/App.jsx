@@ -12,7 +12,9 @@ import ZoomModal from './utils/ZoomModal';
 // Code-split screens loaded on demand
 const SettingsScreen = lazy(() => import('./features/settings/SettingsScreen'));
 const ResultOverview = lazy(() => import('./features/results/ResultOverview'));
-const QuestionSummary = lazy(() => import('./features/results/QuestionSummary'));
+const QuestionSummary = lazy(
+	() => import('./features/results/QuestionSummary'),
+);
 
 function ScreenLoadingFallback() {
 	return (
@@ -898,9 +900,7 @@ export default function App() {
 									activeTab={resultTab}
 									setActiveTab={setResultTab}
 									soundEnabled={soundEnabled}
-									onBackToDashboard={() =>
-										setCurrentScreen('dashboard')
-									}
+									onBackToDashboard={() => setCurrentScreen('dashboard')}
 									kidName={kidName}
 								/>
 							:	<QuestionSummary
@@ -911,9 +911,7 @@ export default function App() {
 									activeTab={resultTab}
 									setActiveTab={setResultTab}
 									soundEnabled={soundEnabled}
-									onBackToDashboard={() =>
-										setCurrentScreen('dashboard')
-									}
+									onBackToDashboard={() => setCurrentScreen('dashboard')}
 									showVisualDiagrams={showVisualDiagrams}
 								/>
 							}
