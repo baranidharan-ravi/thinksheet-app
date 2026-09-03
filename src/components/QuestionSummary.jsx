@@ -5,6 +5,7 @@ import {
 	LayoutGrid,
 	Lightbulb,
 	RefreshCw,
+	SkipForward,
 	XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -83,6 +84,12 @@ export default function QuestionSummary({
 									{/* Status Icon */}
 									{isCorrect ?
 										<CheckCircle2 className='w-6 h-6 text-[#00D166] flex-shrink-0' />
+									: userResult.skipped ?
+										<div
+											className='w-6 h-6 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center flex-shrink-0'
+											title='Question Skipped'>
+											<SkipForward className='w-3.5 h-3.5 text-amber-400' />
+										</div>
 									:	<XCircle className='w-6 h-6 text-[#FF435A] flex-shrink-0' />}
 
 									{/* Question Index & Text */}
@@ -91,6 +98,11 @@ export default function QuestionSummary({
 											<span className='text-xs font-black text-slate-400'>
 												Q{idx + 1}/{questions.length}
 											</span>
+											{userResult.skipped && (
+												<span className='text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-900/60 text-amber-300 border border-amber-500/50'>
+													Skipped
+												</span>
+											)}
 											<span className='text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-[#202766] text-cyan-300 border border-[#313C96]'>
 												{q.category}
 											</span>
@@ -109,17 +121,17 @@ export default function QuestionSummary({
 								</div>
 							</button>
 
-							{/* Accordion Body (Expanded View) */}
+							{/* Accordion Body */}
 							{isExpanded && (
-								<div className='p-5 bg-white text-slate-800 border-t-2 border-slate-200 flex flex-col gap-4 animate-in fade-in duration-200'>
-									{/* Full Question Text */}
-									<div className='font-extrabold text-base sm:text-lg text-slate-900'>
+								<div className='p-4 sm:p-6 bg-[#0E1238] border-t border-[#29317D] flex flex-col gap-4'>
+									{/* Question Full Text */}
+									<p className='text-base sm:text-lg font-bold text-white leading-relaxed'>
 										{q.question || q.questionText}
-									</div>
+									</p>
 
-									{/* Question Visual if any */}
+									{/* Visual Diagram Preview */}
 									{q.diagramType && (
-										<div className='bg-slate-50 p-3 rounded-2xl border border-slate-200 flex justify-center'>
+										<div className='w-full flex justify-center py-2'>
 											<VisualDiagram
 												type={q.diagramType}
 												data={q.diagramData}
@@ -133,6 +145,8 @@ export default function QuestionSummary({
 											className={`p-3.5 rounded-xl border-2 ${
 												isCorrect ?
 													'bg-emerald-50 border-emerald-400 text-emerald-900'
+												: userResult.skipped ?
+													'bg-amber-50 border-amber-400 text-amber-900'
 												:	'bg-rose-50 border-rose-400 text-rose-900'
 											}`}>
 											<span className='text-xs font-black uppercase tracking-wider block mb-1'>
@@ -141,6 +155,8 @@ export default function QuestionSummary({
 											<span className='font-bold text-sm sm:text-base'>
 												{userOption ?
 													`${userOption.id}. ${userOption.text}`
+												: userResult.skipped ?
+													'⏭️ Skipped (Not Answered)'
 												: userResult.timedOut ?
 													'⏱️ Timed Out (Not Answered)'
 												:	'Not answered'}

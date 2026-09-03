@@ -1062,9 +1062,12 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 						<span>Process & Cause-and-Effect Chain</span>
 					</div>
 
-					<div className='w-full flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3'>
-						<div className='flex-1 w-full bg-white border-2 border-amber-300 rounded-2xl p-3 shadow-md flex items-center gap-3'>
-							<div className='w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-2xl shadow-inner flex-shrink-0'>
+					<div
+						className={`w-full flex ${
+							isSolution ? 'flex-col' : 'flex-col sm:flex-row'
+						} items-center justify-between gap-2 sm:gap-2.5`}>
+						<div className='w-full flex-1 bg-white border-2 border-amber-300 rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5 sm:gap-3 min-w-0'>
+							<div className='w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-xl sm:text-2xl shadow-inner flex-shrink-0'>
 								{visCause.icon}
 							</div>
 							<div className='flex-1 min-w-0'>
@@ -1077,18 +1080,22 @@ export default function VisualDiagram({ type, data = {}, isSolution = false }) {
 							</div>
 						</div>
 
-						<div className='flex items-center gap-1 px-3 py-1 rounded-xl bg-amber-100 border border-amber-300 text-amber-900 font-extrabold text-[11px] shadow-sm flex-shrink-0'>
-							<span>➔ {action} ➔</span>
+						<div className='flex items-center justify-center gap-1 px-3 py-1 rounded-xl bg-amber-100 border border-amber-300 text-amber-900 font-extrabold text-[11px] shadow-xs flex-shrink-0'>
+							<span>
+								{isSolution ? '⬇ ' : '➔ '}
+								{action}
+								{isSolution ? ' ⬇' : ' ➔'}
+							</span>
 						</div>
 
 						<div
-							className={`flex-1 w-full rounded-2xl p-3 shadow-md flex items-center gap-3 transition-all ${
+							className={`w-full flex-1 rounded-2xl p-2.5 sm:p-3 shadow-md flex items-center gap-2.5 sm:gap-3 transition-all min-w-0 ${
 								isSolution ?
 									'bg-gradient-to-tr from-emerald-600 to-teal-600 border-2 border-emerald-400 text-white ring-2 ring-emerald-300 animate-bounce-short'
 								:	'bg-white border-2 border-dashed border-orange-400 text-orange-950'
 							}`}>
 							<div
-								className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl shadow-inner flex-shrink-0 ${
+								className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center text-xl sm:text-2xl shadow-inner flex-shrink-0 ${
 									isSolution ? 'bg-white/20' : 'bg-orange-100 text-orange-600'
 								}`}>
 								{isSolution ? visEffect.icon : '❓'}

@@ -13,7 +13,14 @@ import SolutionPanel from './components/SolutionPanel';
 import ZoomModal from './components/ZoomModal';
 
 import confetti from 'canvas-confetti';
-import { ArrowLeft, Key, RefreshCw, Sparkles, Zap } from 'lucide-react';
+import {
+	ArrowLeft,
+	Key,
+	RefreshCw,
+	SkipForward,
+	Sparkles,
+	Zap,
+} from 'lucide-react';
 import { getStoredApiKey } from './services/aiGenerator';
 import { getFreshThinksheetSession } from './services/questionService';
 import {
@@ -393,6 +400,50 @@ export default function App() {
 		setHistory(newHistory);
 	};
 
+	// Handle Skip Question
+	const handleSkip = () => {
+		if (isSubmitted || isTimedOut) return;
+		playButtonPop(soundEnabled);
+
+		if (speechEnabled) {
+			speakText('Question skipped.');
+		}
+
+		setIsTimedOut(false);
+		setAutoAdvanceCountdown(null);
+		setQuestionTimeRemaining(timerConfig.secondsPerQuestion || 90);
+
+		// Record in history as skipped
+		const newHistory = [...history];
+		newHistory[currentIndex] = {
+			questionId: currentQuestion.id,
+			selectedOptionId: null,
+			isCorrect: false,
+			skipped: true,
+			timedOut: false,
+			timestamp: Date.now(),
+		};
+		setHistory(newHistory);
+
+		// Move directly to next question
+		if (currentIndex + 1 < questions.length) {
+			setCurrentIndex((prev) => prev + 1);
+			setSelectedOptionId(null);
+			setIsSubmitted(false);
+		} else {
+			// Completed all 10 questions!
+			const correctCount = newHistory.filter((h) => h && h.isCorrect).length;
+			const score = Math.round((correctCount / questions.length) * 100);
+
+			// Update and record profile stats
+			const updatedProfile = recordCompletedSheet(selectedSkill, score);
+			setProfileStats(updatedProfile);
+
+			setIsCompleted(true);
+			setResultTab('overview');
+		}
+	};
+
 	// Handle Next Question
 	const handleNext = () => {
 		playButtonPop(soundEnabled);
@@ -651,23 +702,34 @@ export default function App() {
 									</div>
 
 									{/* Action Bar aligned at the bottom */}
-									<div className='flex items-center justify-end gap-3 pt-3 mt-auto select-none border-t border-white/10'>
-										{/* Power-up Hint Button */}
-										<button
-											onClick={() => {
-												playButtonPop(soundEnabled);
-												setIsHintOpen(true);
-											}}
-											className='w-12 h-12 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 hover:scale-110 active:scale-95 text-white flex items-center justify-center shadow-lg transition-all border-2 border-white/40 flex-shrink-0 cursor-pointer'
-											title='Hint Clue'>
-											<Zap className='w-6 h-6 fill-white' />
-										</button>
+									<div className='flex items-center justify-between gap-3 pt-3 mt-auto select-none border-t border-white/10'>
+										<div className='flex items-center gap-2 sm:gap-3'>
+											{/* Power-up Hint Button */}
+											<button
+												onClick={() => {
+													playButtonPop(soundEnabled);
+													setIsHintOpen(true);
+												}}
+												className='w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 hover:scale-110 active:scale-95 text-white flex items-center justify-center shadow-lg transition-all border-2 border-white/40 flex-shrink-0 cursor-pointer'
+												title='Hint Clue'>
+												<Zap className='w-5 h-5 sm:w-6 sm:h-6 fill-white' />
+											</button>
+
+											{/* Skip Question Button */}
+											<button
+												onClick={handleSkip}
+												className='px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-full font-black text-xs sm:text-sm tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-1.5 sm:gap-2 bg-[#1A1D54] hover:bg-[#252A74] text-slate-300 hover:text-white border-2 border-indigo-400/40 hover:border-indigo-300 hover:scale-105 active:scale-95 cursor-pointer'
+												title='Skip this question'>
+												<SkipForward className='w-4 h-4 text-amber-400' />
+												<span>Skip</span>
+											</button>
+										</div>
 
 										{/* Submit Button */}
 										<button
 											disabled={!selectedOptionId}
 											onClick={handleSubmit}
-											className={`px-8 sm:px-12 py-3.5 sm:py-4 rounded-full font-black text-sm sm:text-lg tracking-wider uppercase transition-all shadow-xl flex items-center justify-center gap-2.5 ${
+											className={`px-7 sm:px-11 py-3.5 sm:py-4 rounded-full font-black text-sm sm:text-lg tracking-wider uppercase transition-all shadow-xl flex items-center justify-center gap-2.5 ${
 												selectedOptionId ?
 													'bg-[#FF5B84] hover:bg-[#FF435A] text-white hover:scale-105 active:scale-95 shadow-[0_8px_20px_rgba(255,91,132,0.4)] cursor-pointer'
 												:	'bg-slate-700 text-slate-400 cursor-not-allowed opacity-60'
@@ -720,7 +782,7 @@ export default function App() {
 								</div>
 
 								{/* Right Column: Solution & Feedback Panel with NEXT BUTTON right below solution! */}
-								<div className='lg:col-span-5 flex flex-col'>
+								<div className='lg:col-span-5 flex flex-col min-w-0'>
 									<SolutionPanel
 										isCorrect={
 											selectedOptionId === currentQuestion.correctAnswerId
@@ -744,6 +806,7 @@ export default function App() {
 								correctCount={correctCount}
 								totalCount={questions.length}
 								earnedXp={correctCount * 5}
+								history={history}
 								onStartNextSheet={handleStartNextSheet}
 								onViewSummary={() => setResultTab('summary')}
 								activeTab={resultTab}

@@ -28,9 +28,16 @@ An engaging, visual-first React.js educational platform designed for early child
     - **Visual**: _Visual observation, recognizing geometric & color pattern progressions (AB, AAB, ABC), spatial rotations, object counting, missing grid tiles, isometric 3D block projections, and balance scale weight logic._
     - **Analytical Thinking**: _Logical deduction, relational analogies (A : B :: C : D), everyday cause-and-effect science & nature riddles, categorical classification (odd-one-out), deductive logic riddles, and multi-step critical thinking._
   - Questions in Batch 1 (Q1–Q5) and Batch 2 (Q6–Q10) are assigned distinct sub-topic domains to guarantee high cognitive variety.
-- **Strict Non-Repetition & De-duplication**:
+- **Strict Non-Repetition & Guaranteed 10-Question Delivery**:
   - Normalized string matching (`normalizeText`) ensures all 10 questions in a thinksheet are 100% distinct with zero duplicates in concept, wording, or numbers.
+  - **Guaranteed 10 Questions (Zero Shortfalls)**:
+    - Initial batches request 6 questions per batch (12 total) to provide a resilient buffer against API dropouts.
+    - If deduplication or formatting causes the count to be 8 or 9, an automated top-up pass immediately fetches the missing questions.
+    - An emergency fill pool guarantees that every thinksheet session delivers **strictly 10 questions**, 100% of the time.
   - Seen question signatures are tracked in browser storage across consecutive sessions to prevent repetition.
+- **Skip Question Option (`SkipForward ⏭️`)**:
+  - Allows students to skip challenging or unfamiliar questions directly from the question screen.
+  - Skipped questions are marked with an amber indicator in the top progress bar and recorded in the Question Summary and Result Overview (`{correctCount} Correct • {skippedCount} Skipped`).
 
 ---
 
@@ -121,11 +128,14 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 6. 📐 Symmetrical Layout & Live Timer on Submit Button
+### 6. 📐 Symmetrical Layout, Skip Option & Live Timer on Submit
 
 - **Equal-Height Cards**: The left Question Card and right Options Section share identical vertical heights (`items-stretch` & `h-full`), keeping prompts and visual diagrams neatly centered.
 - **Expanding Options Grid**: Option buttons dynamically expand (`flex-1 h-full`) to fill available vertical space.
-- **Bottom-Anchored Submit Button with Live Countdown**: The Submit button and Hint power-up are anchored to the bottom of the card/page (`mt-auto border-t border-white/10`).
+- **Bottom-Anchored Action Bar**:
+  - **Power-up Hint Button (`Zap ⚡`)**: Opens age-appropriate cognitive hints.
+  - **Skip Question Button (`SkipForward ⏭️`)**: Lets the student skip the current question anytime. It plays a friendly confirmation tone, announces `"Question skipped"`, and advances directly to the next question.
+  - **Submit Button with Live Countdown**: Anchored at the bottom-right (`mt-auto border-t border-white/10`).
 - **Real-Time Countdown on Submit**: When the timer challenge is active, the Submit button displays the remaining countdown badge (e.g. `Submit ⏱️ 01:30`) with animated color urgency alerts:
   - **Normal (> 15s)**: Dark translucent pill (`bg-black/30 text-white/90`).
   - **Warning (<= 15s)**: Pulsating amber alert (`bg-amber-950/80 text-amber-300`).
@@ -164,7 +174,14 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 ### 10. 🏆 Space Cadet Leaderboard & Results System
 
 - **Celebratory Feedback**: 3D `COMPLETED` ribbon banner, glowing star ratings (1 to 3 stars), and confetti particle bursts.
-- **Question Summary Breakdown**: Detailed accordion review comparing the child's selected answers against correct solutions, with clear `⏱️ Timed Out` indicators for unanswered questions.
+- **Detailed Question Summary Accordion**:
+  - Detailed review comparing the child's selected answers against correct solutions.
+  - **Status Indicators**:
+    - 🟢 **Correct Answer** (`CheckCircle2` with green card).
+    - 🟡 **Skipped Question** (`SkipForward ⏭️` with amber card and `⏭️ Skipped (Not Answered)` label).
+    - ⏱️ **Timed Out** (`⏱️ Timed Out (Not Answered)` label).
+    - 🔴 **Incorrect Answer** (`XCircle` with red card).
+- **Result Overview Card**: Displays `{correctCount} Correct Answers` along with `⏭️ {skippedCount} Skipped` when any questions were skipped.
 
 ---
 

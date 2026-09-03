@@ -25,7 +25,8 @@ export default function SolutionPanel({
 		speakText(question.solutionText);
 	};
 
-	const hasCountdown = autoAdvanceCountdown !== null && autoAdvanceCountdown >= 0;
+	const hasCountdown =
+		autoAdvanceCountdown !== null && autoAdvanceCountdown >= 0;
 
 	return (
 		<div className='flex flex-col gap-3.5 sm:gap-4 animate-in fade-in slide-in-from-right-4 duration-300'>
@@ -78,13 +79,14 @@ export default function SolutionPanel({
 							`Great thinking! You got it right.${hasCountdown ? ` Moving to next in ${autoAdvanceCountdown}s...` : ''}`
 						: isTimedOut ?
 							`No answer was selected. See the correct solution below!${hasCountdown ? ` Moving to next in ${autoAdvanceCountdown}s...` : ''}`
-						:	`Don't worry, see the solution to know why!${hasCountdown ? ` Moving to next in ${autoAdvanceCountdown}s...` : ''}`}
+						:	`Don't worry, see the solution to know why!${hasCountdown ? ` Moving to next in ${autoAdvanceCountdown}s...` : ''}`
+						}
 					</p>
 				</div>
 			</div>
 
 			{/* Solution Card */}
-			<div className='bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-slate-800 shadow-xl border-4 border-white/90 flex flex-col justify-between'>
+			<div className='bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-slate-800 shadow-xl border-4 border-white/90 flex flex-col justify-between overflow-hidden'>
 				<div>
 					{/* Header */}
 					<div className='flex items-center justify-between mb-2 pb-2 border-b border-slate-100'>
@@ -106,10 +108,10 @@ export default function SolutionPanel({
 					</p>
 
 					{/* Solution Visual Diagram */}
-					{question.solutionDiagramType && (
-						<div className='bg-slate-50 rounded-2xl p-2 flex justify-center items-center border border-slate-200/80 my-2'>
+					{(question.solutionDiagramType || question.diagramType) && (
+						<div className='bg-slate-50 rounded-2xl p-2 sm:p-3 flex justify-center items-center border border-slate-200/80 my-2 w-full overflow-hidden'>
 							<VisualDiagram
-								type={question.solutionDiagramType}
+								type={question.solutionDiagramType || question.diagramType}
 								data={question.solutionDiagramData || question.diagramData}
 								isSolution={true}
 							/>

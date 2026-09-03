@@ -19,7 +19,8 @@ export default function ResultOverview({
 	setActiveTab,
 	soundEnabled,
 	onBackToDashboard,
-	kidName = ''
+	kidName = '',
+	history = [],
 }) {
 	// Determine star count based on score
 	const starCount =
@@ -140,9 +141,16 @@ export default function ResultOverview({
 					<div className='bg-white text-slate-800 rounded-2xl p-4 sm:p-5 flex items-center justify-between shadow-xl border-2 border-white'>
 						<div className='flex items-center gap-3'>
 							<span className='text-2xl sm:text-3xl'>🎉</span>
-							<span className='font-extrabold text-sm sm:text-lg text-slate-800'>
-								{correctCount} Correct Answers
-							</span>
+							<div>
+								<span className='font-extrabold text-sm sm:text-lg text-slate-800 block leading-tight'>
+									{correctCount} Correct Answers
+								</span>
+								{history?.some((h) => h?.skipped) && (
+									<span className='text-xs font-bold text-amber-600 block mt-0.5'>
+										⏭️ {history.filter((h) => h?.skipped).length} Skipped
+									</span>
+								)}
+							</div>
 						</div>
 						<div className='bg-cyan-50 text-cyan-700 font-black text-sm sm:text-lg px-4 py-1.5 rounded-xl border border-cyan-200'>
 							+{earnedXp} XP
@@ -195,7 +203,11 @@ export default function ResultOverview({
 
 											{/* Name */}
 											<span className='font-bold text-white text-xs sm:text-sm'>
-												{player.isUser ? (kidName ? `${kidName} (You)` : 'You') : player.name}
+												{player.isUser ?
+													kidName ?
+														`${kidName} (You)`
+													:	'You'
+												:	player.name}
 											</span>
 										</div>
 

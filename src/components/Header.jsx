@@ -1,12 +1,12 @@
 import {
 	Clock,
+	LogOut,
 	Maximize,
 	Mic,
 	MicOff,
 	Minimize,
 	Volume2,
 	VolumeX,
-	LogOut,
 } from 'lucide-react';
 import React from 'react';
 import { playButtonPop } from '../utils/audioSynthesis';
@@ -75,6 +75,9 @@ export default function Header({
 						if (item.isCorrect) {
 							bgClass =
 								'bg-gradient-to-r from-[#00D166] to-[#10B981] shadow-[0_0_8px_#00D166]';
+						} else if (item.skipped) {
+							bgClass =
+								'bg-gradient-to-r from-[#F59E0B] to-[#D97706] shadow-[0_0_8px_#F59E0B]';
 						} else {
 							bgClass =
 								'bg-gradient-to-r from-[#FF435A] to-[#F43F5E] shadow-[0_0_8px_#FF435A]';
@@ -111,9 +114,8 @@ export default function Header({
 							'bg-rose-950/90 border-rose-500 text-rose-300 animate-bounce'
 						: isUrgent ?
 							'bg-amber-950/80 border-amber-400 text-amber-300 animate-pulse'
-						: isTimerMode ?
-							'bg-[#121644] border-cyan-500/50 text-cyan-300'
-						:	'bg-[#121644] border-[#29307A] text-pink-300'
+						: isTimerMode ? 'bg-[#121644] border-cyan-500/50 text-cyan-300'
+						: 'bg-[#121644] border-[#29307A] text-pink-300'
 					}`}
 					title={
 						isTimerMode ?
