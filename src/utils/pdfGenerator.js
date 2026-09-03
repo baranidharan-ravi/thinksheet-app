@@ -26,7 +26,6 @@ export function exportSessionToPdf(sessionData, customFilename) {
 		scorePercent = 0,
 		correctCount = 0,
 		totalQuestions = 10,
-		xp = 0,
 		questions = [],
 		history = [],
 	} = sessionData || {};
@@ -110,7 +109,7 @@ export function exportSessionToPdf(sessionData, customFilename) {
 		currentY + 20.5,
 	);
 
-	// Row 4: Performance Badges (Correct, Wrong, Skipped, XP)
+	// Row 4: Performance Badges (Correct, Wrong, Skipped)
 	let badgeX = marginX + 6;
 	const badgeY = currentY + 24.5;
 	const badgeHeight = 7.5;

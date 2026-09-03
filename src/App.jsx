@@ -124,7 +124,6 @@ export default function App() {
 				selectedOptionId,
 				isSubmitted,
 				history,
-				xp,
 				timerSeconds,
 				isCompleted,
 			});
@@ -138,7 +137,6 @@ export default function App() {
 		selectedOptionId,
 		isSubmitted,
 		history,
-		xp,
 		timerSeconds,
 		isCompleted,
 		isLoadingSheet,
