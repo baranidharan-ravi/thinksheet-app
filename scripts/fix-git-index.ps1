@@ -15,7 +15,7 @@ $isCorrupted = ($null -eq $indexFile -or $indexFile.Length -lt 12)
 if ($isCorrupted) {
     $currentBytes = if ($indexFile) { $indexFile.Length } else { 0 }
     Write-Host "Detected corrupted or 0-byte index file ($currentBytes bytes). Healing index..." -ForegroundColor Yellow
-    
+
     # Check if a clean backup exists for instant restoration
     $backup = Get-Item .git/index.clean_bak -ErrorAction SilentlyContinue
     if ($backup -and $backup.Length -ge 12) {
@@ -24,7 +24,7 @@ if ($isCorrupted) {
     } else {
         Remove-Item -Force .git/index -ErrorAction SilentlyContinue
     }
-    
+
     # Rebuild from HEAD
     git reset
 } else {
