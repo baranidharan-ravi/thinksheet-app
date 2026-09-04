@@ -4,6 +4,7 @@ import {
 } from '../utils/cryptoStorage';
 import {
 	extractShapeSequenceTerms,
+	hasShapeOrVisualConcept,
 	parseMatrixGridFromQuestion,
 	parseRotationSequence,
 	parseStepShapeCountSequence,
@@ -436,7 +437,11 @@ function synchronizeDiagramData(
 	selectedSkill = 'Visual',
 ) {
 	let type = diagramType;
-	const data = { ...rawData };
+	const data = {
+		...rawData,
+		questionText,
+		correctAnswerText: correctText,
+	};
 
 	const lower = questionText.toLowerCase();
 
@@ -501,7 +506,11 @@ function synchronizeDiagramData(
 		lower.includes('next number') ||
 		/\d+,\s*\d+,\s*\d+/.test(questionText)
 	) {
-		type = 'shape-sequence';
+		const isShape =
+			hasShapeOrVisualConcept(questionText) ||
+			lower.includes('shape') ||
+			lower.includes('figure');
+		type = isShape ? 'shape-sequence' : 'sequence-ladder';
 	} else if (
 		lower.includes('odd-one-out') ||
 		lower.includes('odd one out') ||
@@ -626,44 +635,18 @@ function synchronizeDiagramData(
 			data.itemC = data.itemC || 'Concept C';
 			data.itemD = data.itemD || correctText.trim();
 		}
-	} else if (type === 'sequence-ladder' || type === 'shape-sequence') {
-		const bracketMatches = questionText.match(/\[[^\]]+\]/g);
-		const shapeTerms = extractShapeSequenceTerms(questionText);
-
-		if (shapeTerms && shapeTerms.length >= 2) {
-			data.sequence = shapeTerms;
-			type = 'shape-sequence';
-		} else if (bracketMatches && bracketMatches.length >= 2) {
+	} else if (type === 'sequence-ladder') {
+		const numbersInQ = questionText.match(/-?\d+(?:\.\d+)?/g);
+		if (numbersInQ && numbersInQ.length >= 2) {
 			data.steps =
 				data.steps && data.steps.length > 0 ?
 					data.steps
-				:	bracketMatches.map((s) => s.trim());
-			type = 'shape-sequence';
+				:	numbersInQ.map((n) => n.trim());
 		} else {
-			const numbersInQ = questionText.match(/-?\d+(?:\.\d+)?/g);
-			if (numbersInQ && numbersInQ.length >= 2) {
-				data.steps =
-					data.steps && data.steps.length > 0 ?
-						data.steps
-					:	numbersInQ.map((n) => n.trim());
-			} else {
-				data.steps =
-					data.steps && data.steps.length > 0 ?
-						data.steps
-					:	['1st', '2nd', '3rd', '4th'];
-			}
-		}
-
-		if (Array.isArray(data.sequence)) {
-			data.sequence = data.sequence
-				.map((s) => (typeof s === 'string' ? s.trim() : s))
-				.filter(
-					(s) =>
-						s &&
-						s !== '?' &&
-						!String(s).includes('?') &&
-						!/^(what|which|how|find|comes)\b/i.test(String(s)),
-				);
+			data.steps =
+				data.steps && data.steps.length > 0 ?
+					data.steps
+				:	['1st', '2nd', '3rd', '4th'];
 		}
 		data.nextVal = data.nextVal || correctText.trim();
 	} else if (type === 'odd-one-out') {
@@ -703,12 +686,12 @@ function synchronizeDiagramData(
 			data.sequence.length < 2
 		) {
 			const emojis = questionText.match(
-				/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,
+				/(?:[🔺🔻▲▼△▽▶◀]|[\u{1F7E0}-\u{1F7EB}]|[🔴🔵🟡🟢🟣🟠🟤⚫⚪●○■□◆◇⬛⬜]|(?:[🔷🔶🔹🔸💎💠])|(?:[⭐🌟✨★☆])|(?:[❤️💙💚💛💜🧡🤍🖤🤎]))/gu,
 			);
 			data.sequence =
 				emojis && emojis.length >= 2 ?
 					emojis
-				:	['Triangle (3 sides, white)', 'Square (4 sides, shaded)'];
+				:	['Triangle (white)', 'Square (shaded)', 'Triangle (white)', 'Square (shaded)'];
 		}
 
 		if (Array.isArray(data.sequence)) {

@@ -31,7 +31,10 @@ export function hasShapeOrVisualConcept(text) {
 		lower.includes('purple') ||
 		lower.includes('pink') ||
 		lower.includes('[') ||
-		/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(
+		/(?:[🔺🔻▲▼△▽▶◀]|[\u{1F7E0}-\u{1F7EB}]|[🔴🔵🟡🟢🟣🟠🟤⚫⚪●○■□◆◇⬛⬜]|(?:[🔷🔶🔹🔸💎💠])|(?:[⭐🌟✨★☆])|(?:[❤️💙💚💛💜🧡🤍🖤🤎]))/u.test(
+			text,
+		) ||
+		/[\u{1F300}-\u{1F6FF}\u{1F780}-\u{1F7FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2B00}-\u{2BFF}]/u.test(
 			text,
 		)
 	);
@@ -62,19 +65,7 @@ export function getRegularPolygonPoints(sides, cx = 36, cy = 36, r = 28) {
  */
 export function parseDynamicShape(rawInput) {
 	if (!rawInput) {
-		return {
-			shape: 'circle',
-			sides: 0,
-			color: '#3B82F6',
-			colorName: 'Blue',
-			isWhite: false,
-			isShaded: false,
-			number: null,
-			sidesCount: null,
-			shapeName: 'Circle',
-			styleTag: '',
-			raw: '',
-		};
+		return null;
 	}
 
 	const text = String(rawInput)
@@ -82,9 +73,157 @@ export function parseDynamicShape(rawInput) {
 		.replace(/^\((.+)\)$/, '$1')
 		.trim();
 
+	if (!text) return null;
+
 	const lower = text.toLowerCase();
 
 	// Check if this is an emoji or unicode shape
+	if (text.includes('🔺') || text.includes('🔻'))
+		return {
+			shape: 'triangle',
+			sides: 3,
+			color: '#EF4444',
+			colorName: 'Red',
+			shapeName: 'Triangle',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Red',
+			raw: text,
+		};
+	if (text.includes('▲') || text.includes('▼'))
+		return {
+			shape: 'triangle',
+			sides: 3,
+			color: '#1E293B',
+			colorName: 'Black',
+			shapeName: 'Triangle',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Black',
+			raw: text,
+		};
+	if (text.includes('△') || text.includes('▽'))
+		return {
+			shape: 'triangle',
+			sides: 3,
+			color: '#3B82F6',
+			colorName: 'White',
+			shapeName: 'Triangle',
+			isWhite: true,
+			isShaded: false,
+			styleTag: 'White',
+			raw: text,
+		};
+
+	if (text.includes('🟩'))
+		return {
+			shape: 'square',
+			sides: 4,
+			color: '#10B981',
+			colorName: 'Green',
+			shapeName: 'Square',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Green',
+			raw: text,
+		};
+	if (text.includes('🟥'))
+		return {
+			shape: 'square',
+			sides: 4,
+			color: '#EF4444',
+			colorName: 'Red',
+			shapeName: 'Square',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Red',
+			raw: text,
+		};
+	if (text.includes('🟦'))
+		return {
+			shape: 'square',
+			sides: 4,
+			color: '#3B82F6',
+			colorName: 'Blue',
+			shapeName: 'Square',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Blue',
+			raw: text,
+		};
+	if (text.includes('🟨'))
+		return {
+			shape: 'square',
+			sides: 4,
+			color: '#F59E0B',
+			colorName: 'Yellow',
+			shapeName: 'Square',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Yellow',
+			raw: text,
+		};
+	if (text.includes('🟪'))
+		return {
+			shape: 'square',
+			sides: 4,
+			color: '#8B5CF6',
+			colorName: 'Purple',
+			shapeName: 'Square',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Purple',
+			raw: text,
+		};
+	if (text.includes('🟧'))
+		return {
+			shape: 'square',
+			sides: 4,
+			color: '#F97316',
+			colorName: 'Orange',
+			shapeName: 'Square',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Orange',
+			raw: text,
+		};
+	if (text.includes('🟫'))
+		return {
+			shape: 'square',
+			sides: 4,
+			color: '#78350F',
+			colorName: 'Brown',
+			shapeName: 'Square',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Brown',
+			raw: text,
+		};
+	if (text.includes('⬛') || text.includes('■'))
+		return {
+			shape: 'square',
+			sides: 4,
+			color: '#1E293B',
+			colorName: 'Black',
+			shapeName: 'Square',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Black',
+			raw: text,
+		};
+	if (text.includes('⬜') || text.includes('□'))
+		return {
+			shape: 'square',
+			sides: 4,
+			color: '#3B82F6',
+			colorName: 'White',
+			shapeName: 'Square',
+			isWhite: true,
+			isShaded: false,
+			styleTag: 'White',
+			raw: text,
+		};
+
 	if (text.includes('🔴'))
 		return {
 			shape: 'circle',
@@ -133,43 +272,68 @@ export function parseDynamicShape(rawInput) {
 			styleTag: 'Green',
 			raw: text,
 		};
-	if (text.includes('▲'))
-		return {
-			shape: 'triangle',
-			sides: 3,
-			color: '#6366F1',
-			colorName: 'Indigo',
-			shapeName: 'Triangle',
-			isWhite: false,
-			isShaded: false,
-			styleTag: '3 sides',
-			raw: text,
-		};
-	if (text.includes('■'))
-		return {
-			shape: 'square',
-			sides: 4,
-			color: '#6366F1',
-			colorName: 'Indigo',
-			shapeName: 'Square',
-			isWhite: false,
-			isShaded: false,
-			styleTag: '4 sides',
-			raw: text,
-		};
-	if (text.includes('●'))
+	if (text.includes('🟣'))
 		return {
 			shape: 'circle',
 			sides: 0,
-			color: '#6366F1',
-			colorName: 'Indigo',
+			color: '#8B5CF6',
+			colorName: 'Purple',
 			shapeName: 'Circle',
 			isWhite: false,
 			isShaded: false,
-			styleTag: 'Circle',
+			styleTag: 'Purple',
 			raw: text,
 		};
-	if (text.includes('🔷'))
+	if (text.includes('🟠'))
+		return {
+			shape: 'circle',
+			sides: 0,
+			color: '#F97316',
+			colorName: 'Orange',
+			shapeName: 'Circle',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Orange',
+			raw: text,
+		};
+	if (text.includes('🟤'))
+		return {
+			shape: 'circle',
+			sides: 0,
+			color: '#78350F',
+			colorName: 'Brown',
+			shapeName: 'Circle',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Brown',
+			raw: text,
+		};
+	if (text.includes('⚫') || text.includes('●'))
+		return {
+			shape: 'circle',
+			sides: 0,
+			color: '#1E293B',
+			colorName: 'Black',
+			shapeName: 'Circle',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Black',
+			raw: text,
+		};
+	if (text.includes('⚪') || text.includes('○'))
+		return {
+			shape: 'circle',
+			sides: 0,
+			color: '#3B82F6',
+			colorName: 'White',
+			shapeName: 'Circle',
+			isWhite: true,
+			isShaded: false,
+			styleTag: 'White',
+			raw: text,
+		};
+
+	if (text.includes('🔷') || text.includes('🔹'))
 		return {
 			shape: 'diamond',
 			sides: 4,
@@ -178,10 +342,47 @@ export function parseDynamicShape(rawInput) {
 			shapeName: 'Diamond',
 			isWhite: false,
 			isShaded: false,
-			styleTag: 'Diamond',
+			styleTag: 'Blue',
 			raw: text,
 		};
-	if (text.includes('⭐'))
+	if (text.includes('🔶') || text.includes('🔸'))
+		return {
+			shape: 'diamond',
+			sides: 4,
+			color: '#F97316',
+			colorName: 'Orange',
+			shapeName: 'Diamond',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Orange',
+			raw: text,
+		};
+	if (text.includes('◆'))
+		return {
+			shape: 'diamond',
+			sides: 4,
+			color: '#1E293B',
+			colorName: 'Black',
+			shapeName: 'Diamond',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Black',
+			raw: text,
+		};
+	if (text.includes('◇'))
+		return {
+			shape: 'diamond',
+			sides: 4,
+			color: '#3B82F6',
+			colorName: 'White',
+			shapeName: 'Diamond',
+			isWhite: true,
+			isShaded: false,
+			styleTag: 'White',
+			raw: text,
+		};
+
+	if (text.includes('⭐') || text.includes('🌟') || text.includes('✨'))
 		return {
 			shape: 'star',
 			sides: 5,
@@ -190,14 +391,111 @@ export function parseDynamicShape(rawInput) {
 			shapeName: 'Star',
 			isWhite: false,
 			isShaded: false,
-			styleTag: 'Star',
+			styleTag: 'Gold',
+			raw: text,
+		};
+	if (text.includes('★'))
+		return {
+			shape: 'star',
+			sides: 5,
+			color: '#1E293B',
+			colorName: 'Black',
+			shapeName: 'Star',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Black',
+			raw: text,
+		};
+	if (text.includes('☆'))
+		return {
+			shape: 'star',
+			sides: 5,
+			color: '#3B82F6',
+			colorName: 'White',
+			shapeName: 'Star',
+			isWhite: true,
+			isShaded: false,
+			styleTag: 'White',
 			raw: text,
 		};
 
-	// 1. Determine Shape and Side Count
-	let shape = 'circle';
+	if (text.includes('❤️'))
+		return {
+			shape: 'heart',
+			sides: 0,
+			color: '#EF4444',
+			colorName: 'Red',
+			shapeName: 'Heart',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Red',
+			raw: text,
+		};
+	if (text.includes('💙'))
+		return {
+			shape: 'heart',
+			sides: 0,
+			color: '#3B82F6',
+			colorName: 'Blue',
+			shapeName: 'Heart',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Blue',
+			raw: text,
+		};
+	if (text.includes('💚'))
+		return {
+			shape: 'heart',
+			sides: 0,
+			color: '#10B981',
+			colorName: 'Green',
+			shapeName: 'Heart',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Green',
+			raw: text,
+		};
+	if (text.includes('💛'))
+		return {
+			shape: 'heart',
+			sides: 0,
+			color: '#F59E0B',
+			colorName: 'Yellow',
+			shapeName: 'Heart',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Yellow',
+			raw: text,
+		};
+	if (text.includes('💜'))
+		return {
+			shape: 'heart',
+			sides: 0,
+			color: '#8B5CF6',
+			colorName: 'Purple',
+			shapeName: 'Heart',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Purple',
+			raw: text,
+		};
+	if (text.includes('🧡'))
+		return {
+			shape: 'heart',
+			sides: 0,
+			color: '#F97316',
+			colorName: 'Orange',
+			shapeName: 'Heart',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Orange',
+			raw: text,
+		};
+
+	// 1. Determine Shape and Side Count from text keywords
+	let shape = null;
 	let sides = 0;
-	let shapeName = 'Circle';
+	let shapeName = '';
 
 	if (
 		lower.includes('triangle') ||
@@ -290,14 +588,33 @@ export function parseDynamicShape(rawInput) {
 		: sides > 0 ? sides
 		: null;
 
-	if (sidesCount && sidesCount >= 3 && shape === 'circle') {
+	if (sidesCount && sidesCount >= 3 && !shape) {
 		sides = sidesCount;
-		if (sides === 3) shape = 'triangle';
-		else if (sides === 4) shape = 'square';
-		else if (sides === 5) shape = 'pentagon';
-		else if (sides === 6) shape = 'hexagon';
-		else if (sides === 7) shape = 'heptagon';
-		else if (sides === 8) shape = 'octagon';
+		if (sides === 3) {
+			shape = 'triangle';
+			shapeName = 'Triangle';
+		} else if (sides === 4) {
+			shape = 'square';
+			shapeName = 'Square';
+		} else if (sides === 5) {
+			shape = 'pentagon';
+			shapeName = 'Pentagon';
+		} else if (sides === 6) {
+			shape = 'hexagon';
+			shapeName = 'Hexagon';
+		} else if (sides === 7) {
+			shape = 'heptagon';
+			shapeName = 'Heptagon';
+		} else if (sides === 8) {
+			shape = 'octagon';
+			shapeName = 'Octagon';
+		} else if (sides === 9) {
+			shape = 'nonagon';
+			shapeName = 'Nonagon';
+		} else if (sides === 10) {
+			shape = 'decagon';
+			shapeName = 'Decagon';
+		}
 	}
 
 	// 3. Determine Fill Style (White, Shaded, Striped, Dotted, Solid, or Specific Color)
@@ -429,6 +746,15 @@ export function parseDynamicShape(rawInput) {
 	else if (isShaded) styleTag = 'Shaded';
 	else if (colorName !== 'Indigo') styleTag = colorName;
 	else if (sidesCount) styleTag = `${sidesCount} sides`;
+
+	if (!shape && isQuadrant) {
+		shape = 'quadrant-square';
+		shapeName = 'Quadrant Square';
+	}
+
+	if (!shape) {
+		return null;
+	}
 
 	return {
 		raw: text,
@@ -797,6 +1123,26 @@ export function DynamicShapeCard({
 		);
 	}
 
+	if (!parsed || !parsed.shape) {
+		return (
+			<div
+				className={`flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border-2 transition-transform hover:scale-105 min-w-[80px] sm:min-w-[95px] ${
+					isSolution ?
+						'bg-gradient-to-tr from-emerald-50 to-teal-50 border-emerald-400 ring-2 ring-emerald-300 shadow-lg'
+					:	'bg-white border-slate-200 shadow-md'
+				}`}>
+				<div className='w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-700 font-extrabold text-base sm:text-lg'>
+					{String(item || '')}
+				</div>
+				<div className='flex flex-col items-center mt-1.5 text-center w-full'>
+					<h5 className='text-xs sm:text-sm font-black text-slate-900 leading-tight'>
+						{String(item || '')}
+					</h5>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<div
 			className={`flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border-2 transition-transform hover:scale-105 min-w-[80px] sm:min-w-[95px] ${
@@ -844,31 +1190,50 @@ export function extractShapeSequenceTerms(questionText, defaultTerms = []) {
 		return parenMatches;
 	}
 
-	// 3. Split by colon after sequence prompt e.g. "progression: A, B, C, D, ?"
-	const colonSplit = questionText.split(/:\s*/);
-	const candidate = colonSplit.length > 1 ? colonSplit[1] : questionText;
+	// 3. Extract shape & symbol emojis if 2 or more are present!
+	const SHAPE_EMOJI_REGEX =
+		/(?:[🔺🔻▲▼△▽▶◀]|[\u{1F7E0}-\u{1F7EB}]|[🔴🔵🟡🟢🟣🟠🟤⚫⚪●○■□◆◇⬛⬜]|(?:[🔷🔶🔹🔸💎💠])|(?:[⭐🌟✨★☆])|(?:[❤️💙💚💛💜🧡🤍🖤🤎]))/gu;
+	const emojiMatches = questionText.match(SHAPE_EMOJI_REGEX);
+	if (emojiMatches && emojiMatches.length >= 2) {
+		return emojiMatches;
+	}
 
-	// Isolate the sequence part before any '?', '___', or question starter ("What", "Which", "How", "Find")
-	const cleanSequenceText = candidate.split(
-		/\s*\?|\s*_{2,}|\b(?:what|which|how|find)\b/i,
-	)[0];
+	// 4. Split by arrow (➔, ->, →) or comma
+	const candidate = questionText.split(/:\s*/).pop();
+	const cleaned = candidate
+		.replace(/\?.*$/, '')
+		.replace(
+			/^(?:what|which|how|find|identify|look at).*?\b(?:pattern|sequence|progression)\b[:\s]*/i,
+			'',
+		)
+		.trim();
 
-	if (cleanSequenceText) {
-		const items = cleanSequenceText
-			.split(/,\s*(?![^()]*\))/)
-			.map((s) => s.trim())
-			.filter((s) => {
-				if (!s) return false;
-				if (s === '?' || s.includes('?')) return false;
-				if (/^(_+|\.\.\.+)$/.test(s)) return false;
-				if (/^(what|which|how|find|comes|pattern|sequence|look)\b/i.test(s))
-					return false;
-				return true;
-			});
+	const arrowSplit = cleaned.split(/\s*(?:➔|->|→)\s*/);
+	if (arrowSplit.length >= 2) {
+		const valid = arrowSplit.filter(
+			(s) => s && s !== '?' && !s.startsWith('?'),
+		);
+		if (valid.length >= 2) return valid;
+	}
 
-		if (items.length >= 2) {
-			return items;
-		}
+	const commaSplit = cleaned.split(/,\s*(?![^()]*\))/);
+	if (commaSplit.length >= 2) {
+		const valid = commaSplit.filter(
+			(s) =>
+				s &&
+				s !== '?' &&
+				!s.startsWith('?') &&
+				!/^(what|which|how|find|comes)\b/i.test(s),
+		);
+		if (valid.length >= 2) return valid;
+	}
+
+	// 5. Check if question contains sequences separated by spaces or dashes
+	const spaceTokens = cleaned
+		.split(/[\s-]+/)
+		.filter((t) => hasShapeOrVisualConcept(t));
+	if (spaceTokens.length >= 2) {
+		return spaceTokens;
 	}
 
 	return defaultTerms;

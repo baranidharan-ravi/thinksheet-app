@@ -913,8 +913,16 @@ const VisualDiagram = memo(function VisualDiagram({
 			: Array.isArray(data.steps) ? data.steps
 			: [];
 
-		if (rawItems.length === 0 && data.raw) {
-			rawItems = extractShapeSequenceTerms(data.raw);
+		const qSource = data.question || data.questionText || data.raw || '';
+		if (
+			(rawItems.length === 0 ||
+				rawItems.every((it) => /^\d+(st|nd|rd|th)$/i.test(String(it).trim()))) &&
+			qSource
+		) {
+			const extracted = extractShapeSequenceTerms(qSource);
+			if (extracted && extracted.length >= 2) {
+				rawItems = extracted;
+			}
 		}
 
 		// Filter out any trailing question sentences, question marks, or placeholders
@@ -934,10 +942,16 @@ const VisualDiagram = memo(function VisualDiagram({
 			});
 
 		if (items.length === 0) {
-			items = ['Triangle (3 sides, white)', 'Square (4 sides, shaded)'];
+			items = ['Triangle (white)', 'Square (shaded)', 'Triangle (white)', 'Square (shaded)'];
 		}
 
-		const nextItem = data.nextItem || data.nextVal || '?';
+		const nextItem =
+			data.nextItem ||
+			data.nextVal ||
+			data.correctAnswer ||
+			data.correctAnswerText ||
+			items[0] ||
+			'?';
 
 		return (
 			<div className='flex flex-col items-center justify-center p-3 sm:p-4 my-2 bg-gradient-to-br from-indigo-50/90 via-sky-50/80 to-purple-50/90 rounded-2xl border-2 border-indigo-200 shadow-sm max-w-xl w-full animate-in fade-in duration-300'>

@@ -23,12 +23,18 @@ const OptionsGrid = memo(function OptionsGrid({
 				const isSelected = selectedOptionId === opt.id;
 				const isCorrect = opt.id === correctAnswerId;
 				const text = String(opt.text || '');
+				const isPureEmoji =
+					/^[\p{Emoji}\s\u200d\ufe0e\ufe0f\u25A0-\u25FF\u2B50-\u2B55\u2600-\u26FF\u{1F780}-\u{1F7FF}]+$/u.test(
+						text.trim(),
+					);
 
 				const isShapeOption =
-					showVisualDiagrams && hasShapeOrVisualConcept(text);
+					showVisualDiagrams && !isPureEmoji && hasShapeOrVisualConcept(text);
 				const parsedShape = isShapeOption ? parseDynamicShape(text) : null;
 				const conceptVisual =
-					showVisualDiagrams && !parsedShape ? getConceptVisual(text) : null;
+					showVisualDiagrams && !isPureEmoji && !parsedShape ?
+						getConceptVisual(text)
+					:	null;
 				const optionImage =
 					showVisualDiagrams ? opt.imageUrl || opt.image || null : null;
 
@@ -122,10 +128,13 @@ const OptionsGrid = memo(function OptionsGrid({
 						:	null}
 
 						{/* Option Content Text */}
-						<div className='flex flex-col justify-center flex-1 min-w-0'>
+						<div
+							className={`flex flex-col justify-center flex-1 min-w-0 ${isPureEmoji ? 'items-center text-center' : ''}`}>
 							<span
-								className={`text-sm sm:text-base md:text-lg font-black tracking-tight leading-snug break-words ${
-									isSelected && !isSubmitted ? 'text-white' : ''
+								className={`font-black tracking-tight leading-snug break-words ${
+									isPureEmoji ?
+										'text-3xl sm:text-4xl filter drop-shadow-sm select-none'
+									:	`text-sm sm:text-base md:text-lg ${isSelected && !isSubmitted ? 'text-white' : ''}`
 								}`}>
 								{text}
 							</span>
