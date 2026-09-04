@@ -662,7 +662,12 @@ export default function App() {
 
 	// Render Active Thinksheet Session
 	return (
-		<div className='min-h-screen lg:h-screen lg:overflow-hidden space-background flex flex-col justify-between text-white font-sans overflow-x-clip relative'>
+		<div
+			className={`min-h-screen space-background flex flex-col text-white font-sans overflow-x-clip relative ${
+				!isCompleted ?
+					'lg:h-screen lg:overflow-hidden justify-between'
+				:	'overflow-y-auto'
+			}`}>
 			{/* Top Header */}
 			<Header
 				questionIndex={currentIndex}
@@ -679,7 +684,12 @@ export default function App() {
 			/>
 
 			{/* Main Screen Body */}
-			<main className='flex-1 flex flex-col justify-center items-center px-3 sm:px-6 py-2 sm:py-3 w-full max-w-7xl mx-auto min-h-0 overflow-hidden'>
+			<main
+				className={`flex-1 flex flex-col items-center px-3 sm:px-6 w-full max-w-7xl mx-auto ${
+					!isCompleted ?
+						'justify-center py-2 sm:py-3 min-h-0 overflow-hidden'
+					:	'justify-start py-6 sm:py-8 overflow-y-visible'
+				}`}>
 				{isLoadingSheet ?
 					/* Loading Cosmic State */
 					<div className='flex flex-col items-center justify-center p-12 text-center animate-in fade-in'>
@@ -911,7 +921,7 @@ export default function App() {
 						}
 					</div>
 				:	/* Completion & Summary View */
-					<div className='w-full'>
+					<div className='w-full max-w-5xl mx-auto pb-16'>
 						<Suspense fallback={<ScreenLoadingFallback />}>
 							{resultTab === 'overview' ?
 								<ResultOverview

@@ -190,7 +190,7 @@ const QuestionSummary = memo(function QuestionSummary({
 										<p className='text-xs sm:text-sm font-semibold text-slate-700 leading-relaxed mb-3'>
 											{q.solutionText}
 										</p>
-										{q.solutionDiagramType && (
+										{showVisualDiagrams && q.solutionDiagramType && (
 											<div className='bg-white p-2 rounded-xl border border-purple-100 flex justify-center'>
 												<VisualDiagram
 													type={q.solutionDiagramType}
