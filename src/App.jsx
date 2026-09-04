@@ -904,6 +904,7 @@ export default function App() {
 										onAskDoubt={() => setIsAskDoubtOpen(true)}
 										soundEnabled={soundEnabled}
 										onNext={handleNext}
+										showVisualDiagrams={showVisualDiagrams}
 									/>
 								</div>
 							</div>

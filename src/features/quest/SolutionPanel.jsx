@@ -20,6 +20,7 @@ const SolutionPanel = memo(function SolutionPanel({
 	onAskDoubt,
 	soundEnabled,
 	onNext,
+	showVisualDiagrams = false,
 }) {
 	const handleListenSolution = () => {
 		playButtonPop(soundEnabled);
@@ -109,16 +110,17 @@ const SolutionPanel = memo(function SolutionPanel({
 						{question.solutionText}
 					</p>
 
-					{/* Solution Visual Diagram */}
-					{(question.solutionDiagramType || question.diagramType) && (
-						<div className='bg-slate-50 rounded-2xl p-2 sm:p-3 flex justify-center items-center border border-slate-200/80 my-2 w-full overflow-hidden'>
-							<VisualDiagram
-								type={question.solutionDiagramType || question.diagramType}
-								data={question.solutionDiagramData || question.diagramData}
-								isSolution={true}
-							/>
-						</div>
-					)}
+					{/* Solution Visual Diagram (only if visual representation is enabled) */}
+					{showVisualDiagrams &&
+						(question.solutionDiagramType || question.diagramType) && (
+							<div className='bg-slate-50 rounded-2xl p-2 sm:p-3 flex justify-center items-center border border-slate-200/80 my-2 w-full overflow-hidden'>
+								<VisualDiagram
+									type={question.solutionDiagramType || question.diagramType}
+									data={question.solutionDiagramData || question.diagramData}
+									isSolution={true}
+								/>
+							</div>
+						)}
 				</div>
 
 				{/* Bottom Helper */}
