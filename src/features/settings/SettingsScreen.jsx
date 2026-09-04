@@ -16,6 +16,7 @@ import {
 	Rocket,
 	Smile,
 	Sparkles,
+	Volume2,
 } from 'lucide-react';
 import { memo, useEffect, useState } from 'react';
 import {
@@ -27,7 +28,13 @@ import {
 	setStoredSelectedModel,
 	validateGeminiApiKey,
 } from '../../services/aiGenerator';
-import { playButtonPop, speakText } from '../../utils/audioSynthesis';
+import {
+	getAvailableVoices,
+	getStoredVoiceURI,
+	playButtonPop,
+	setStoredVoiceURI,
+	speakText,
+} from '../../utils/audioSynthesis';
 import {
 	getStoredKidAge,
 	getStoredKidName,
@@ -78,6 +85,12 @@ const SettingsScreen = memo(function SettingsScreen({
 	);
 	const [isFetchingModels, setIsFetchingModels] = useState(false);
 	const [fetchModelStatus, setFetchModelStatus] = useState(null);
+
+	// Voice picker state
+	const [availableVoices, setAvailableVoices] = useState([]);
+	const [selectedVoiceURI, setSelectedVoiceURI] = useState(
+		() => getStoredVoiceURI() || '',
+	);
 
 	const quickAges = [3, 4, 5, 6, 7, 8];
 
@@ -134,6 +147,17 @@ const SettingsScreen = memo(function SettingsScreen({
 		);
 
 		setIsCustomAge(!quickAges.includes(Number(getStoredKidAge() || 5)));
+
+		// Load available voices — Chrome loads them async, so retry after a delay
+		const loadVoices = () => {
+			const voices = getAvailableVoices();
+			if (voices.length > 0) {
+				setAvailableVoices(voices);
+			}
+		};
+		loadVoices();
+		const voiceTimer = setTimeout(loadVoices, 500);
+		return () => clearTimeout(voiceTimer);
 	}, []);
 
 	const handleQuickAgeSelect = (age) => {
@@ -228,6 +252,7 @@ const SettingsScreen = memo(function SettingsScreen({
 		};
 		saveStoredTimerConfig(updatedConfig);
 		saveStoredShowVisualDiagrams(showVisualDiagrams);
+		setStoredVoiceURI(selectedVoiceURI || null);
 
 		setIsValidating(false);
 		setSaveSuccess(true);
@@ -854,7 +879,106 @@ const SettingsScreen = memo(function SettingsScreen({
 					</div>
 				</div>
 
+				{/* Section 7: Narrator Voice */}
+				<div className='bg-[#090B24]/80 p-4 sm:p-5 rounded-2xl border border-purple-500/40 shadow-inner'>
+					<div className='flex items-center gap-2 mb-2'>
+						<Volume2 className='w-4 h-4 text-purple-400' />
+						<span className='text-xs sm:text-sm font-bold text-white'>
+							Narrator Voice
+						</span>
+						{selectedVoiceURI && (
+							<span className='text-[10px] font-black px-2 py-0.5 rounded-full bg-purple-500/30 text-purple-300 border border-purple-400/40 truncate max-w-[160px]'>
+								{availableVoices.find((v) => v.voiceURI === selectedVoiceURI)
+									?.name || 'Custom'}
+							</span>
+						)}
+					</div>
+					<p className='text-xs text-slate-300 mb-3'>
+						Choose the voice used when reading questions aloud. Only one voice
+						speaks at a time.
+					</p>
+
+					{availableVoices.length === 0 ? (
+						<div className='text-xs text-slate-400 font-semibold p-3 rounded-xl bg-slate-800/60 border border-slate-700'>
+							⚠️ No voices available yet. Try clicking the speaker icon on a
+							question to trigger voice loading, then reopen Settings.
+						</div>
+					) : (
+						<div className='grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[220px] overflow-y-auto pr-1'>
+							{/* Default / Auto option */}
+							<button
+								type='button'
+								onClick={() => {
+									playButtonPop(soundEnabled);
+									setSelectedVoiceURI('');
+								}}
+								className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-2 ${
+									!selectedVoiceURI ?
+										'bg-purple-500/20 border-purple-400 ring-2 ring-purple-400/40'
+									:	'bg-[#0D1030] border-slate-700 hover:border-slate-500'
+								}`}>
+								<div
+									className={`w-3 h-3 rounded-full flex-shrink-0 border-2 ${
+										!selectedVoiceURI ?
+											'bg-purple-400 border-purple-300'
+										:	'bg-transparent border-slate-500'
+									}`}
+								/>
+								<div className='min-w-0'>
+									<div className='text-xs font-black text-white'>
+										Auto (Recommended)
+									</div>
+									<div className='text-[10px] text-slate-400'>
+										Best available English voice
+									</div>
+								</div>
+							</button>
+
+							{availableVoices.map((voice) => {
+								const isSelected = selectedVoiceURI === voice.voiceURI;
+								return (
+									<button
+										key={voice.voiceURI}
+										type='button'
+										onClick={() => {
+											playButtonPop(soundEnabled);
+											setSelectedVoiceURI(voice.voiceURI);
+											// Live preview of the voice
+											speakText('Hello! I am ready to read questions for you.', null, null);
+										}}
+										className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-2 ${
+											isSelected ?
+												'bg-purple-500/20 border-purple-400 ring-2 ring-purple-400/40'
+											:	'bg-[#0D1030] border-slate-700 hover:border-slate-500'
+										}`}>
+										<div
+											className={`w-3 h-3 rounded-full flex-shrink-0 border-2 ${
+												isSelected ?
+													'bg-purple-400 border-purple-300'
+												:	'bg-transparent border-slate-500'
+											}`}
+										/>
+										<div className='min-w-0'>
+											<div
+												className={`text-xs font-black truncate ${
+													isSelected ? 'text-purple-200' : 'text-white'
+												}`}>
+												{voice.name}
+											</div>
+											<div className='text-[10px] text-slate-400 truncate'>
+												{voice.lang}
+												{voice.localService ? ' · Local' : ' · Network'}
+											</div>
+										</div>
+									</button>
+								);
+							})}
+						</div>
+					)}
+				</div>
+
 				{/* Error Alert */}
+
 				{error && (
 					<div className='bg-rose-500/20 border border-rose-500/50 rounded-2xl p-4 text-xs sm:text-sm font-bold text-rose-200 text-center animate-shake shadow-lg'>
 						⚠️ {error}

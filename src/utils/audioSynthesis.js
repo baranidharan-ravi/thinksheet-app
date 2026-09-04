@@ -244,47 +244,85 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 }
 
 /**
- * Sanitizes question text for speech synthesis so it doesn't read both word and emoji.
- * e.g. "How many shiny red apples are in the basket? 🍎" -> "How many shiny red apples are in the basket?"
- * e.g. "Puppy 🐶 is to Dog 🐕, as Kitten 🐱 is to...?" -> "Puppy is to Dog, as Kitten is to...?"
- * e.g. "🍎 🍌 🍎 🍌" (emoji only) -> "apple banana apple banana"
+ * Returns all available browser voices, loading them fresh if needed.
  */
-export function cleanTextForSpeech(raw) {
-	if (!raw) return '';
-	let text = String(raw).trim();
+export function getAvailableVoices() {
+	if (typeof window === 'undefined' || !('speechSynthesis' in window)) return [];
+	const voices =
+		cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
+	cachedVoices = voices;
+	return voices || [];
+}
 
-	// Strip common prefixes
-	text = text.replace(/^(Prompt:|Question:)\s*/i, '');
+const VOICE_URI_KEY = 'thinksheet_voice_uri';
 
-	// Replace mathematical analogy symbols so speech engine reads them naturally
-	text = text.replace(/\s*::\s*/g, ', as ');
-	text = text.replace(/\s*:\s*/g, ' is to ');
+/** Persist the user's chosen voice URI to localStorage */
+export function setStoredVoiceURI(uri) {
+	try {
+		if (uri) {
+			localStorage.setItem(VOICE_URI_KEY, uri);
+		} else {
+			localStorage.removeItem(VOICE_URI_KEY);
+		}
+	} catch {}
+}
 
-	// Check if the string has regular alphanumeric words
-	const wordsOnly = text.replace(EMOJI_REGEX, '').trim();
-	if (wordsOnly.length >= 2) {
-		// When words exist, strip the emojis to avoid redundant speech (e.g. "red apple red apple")
-		return text
-			.replace(EMOJI_REGEX, '')
-			.replace(/\s+/g, ' ')
-			.replace(/\s+([.,!?:])/g, '$1')
-			.trim();
+/** Read the user's stored voice URI, or null if not set */
+export function getStoredVoiceURI() {
+	try {
+		return localStorage.getItem(VOICE_URI_KEY) || null;
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Pick the voice to use, in priority order:
+ * 1. User-selected voice URI from settings
+ * 2. Preferred English voice (Natural / Google / Samantha / Jenny / Guy / Aria / David / Zira)
+ * 3. Any English voice
+ * 4. First available voice
+ */
+function resolveVoice(voices) {
+	if (!voices || voices.length === 0) return null;
+
+	// 1. User-selected
+	const storedUri = getStoredVoiceURI();
+	if (storedUri) {
+		const match = voices.find((v) => v.voiceURI === storedUri);
+		if (match) return match;
 	}
 
-	// For emoji-only phrases (e.g. sequences), translate emojis to clean friendly words
-	return text
-		.replace(EMOJI_REGEX, (match) => {
-			return ' ' + (EMOJI_SPEECH_MAP[match] || '') + ' ';
-		})
-		.replace(/\s+/g, ' ')
-		.trim();
+	// 2. Preferred English voice names
+	const preferred = voices.find(
+		(v) =>
+			v.lang.startsWith('en') &&
+			(v.name.includes('Natural') ||
+				v.name.includes('Google') ||
+				v.name.includes('Samantha') ||
+				v.name.includes('Jenny') ||
+				v.name.includes('Guy') ||
+				v.name.includes('Aria') ||
+				v.name.includes('David') ||
+				v.name.includes('Zira') ||
+				v.name.includes('Child')),
+	);
+	if (preferred) return preferred;
+
+	// 3. Any English voice
+	const anyEn = voices.find((v) => v.lang.startsWith('en'));
+	if (anyEn) return anyEn;
+
+	// 4. Fallback
+	return voices[0];
 }
 
 let activeUtterance = null; // Hold module-level reference to prevent Chromium garbage collection
 
 /**
  * Web Speech API Voice Narrator for Kids
- * Resilient against Chromium paused state and garbage collection quirks
+ * Resilient against Chromium paused state and garbage collection quirks.
+ * Always cancels any previous speech before starting a new one (single voice guarantee).
  */
 export function speakText(text, onStart = null, onEnd = null) {
 	try {
@@ -294,11 +332,12 @@ export function speakText(text, onStart = null, onEnd = null) {
 			return;
 		}
 
-		// Ensure speech synthesizer is unpaused
+		// Cancel any ongoing speech — guarantees one voice at a time
 		if (window.speechSynthesis.paused) {
 			window.speechSynthesis.resume();
 		}
 		window.speechSynthesis.cancel();
+		activeUtterance = null;
 
 		const cleaned = cleanTextForSpeech(text);
 		if (!cleaned) {
@@ -313,31 +352,13 @@ export function speakText(text, onStart = null, onEnd = null) {
 		utterance.pitch = 1.1; // friendly tone
 		utterance.lang = 'en-US';
 
-		// Pick preferred English voice
+		// Resolve and apply voice (respects user's saved preference)
 		const voices =
 			cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
-		if (voices && voices.length > 0) {
-			const preferredVoice =
-				voices.find(
-					(v) =>
-						v.lang.startsWith('en') &&
-						(v.name.includes('Natural') ||
-							v.name.includes('Google') ||
-							v.name.includes('Samantha') ||
-							v.name.includes('Jenny') ||
-							v.name.includes('Guy') ||
-							v.name.includes('Aria') ||
-							v.name.includes('David') ||
-							v.name.includes('Zira') ||
-							v.name.includes('Child')),
-				) ||
-				voices.find((v) => v.lang.startsWith('en')) ||
-				voices[0];
-
-			if (preferredVoice) {
-				utterance.voice = preferredVoice;
-				utterance.lang = preferredVoice.lang || 'en-US';
-			}
+		const voice = resolveVoice(voices);
+		if (voice) {
+			utterance.voice = voice;
+			utterance.lang = voice.lang || 'en-US';
 		}
 
 		utterance.onstart = () => {
@@ -378,3 +399,5 @@ export function stopSpeaking() {
 		console.warn('Speech synthesis stop error', err);
 	}
 }
+
+
