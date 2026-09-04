@@ -119,6 +119,33 @@ export function saveStoredKidProfile(name, age) {
 	}
 }
 
+const SELECTED_SKILL_KEY = 'thinksheet_selected_skill_v1';
+
+export function getStoredSelectedSkill() {
+	try {
+		const stored = localStorage.getItem(SELECTED_SKILL_KEY);
+		if (stored) return stored;
+		const sessionRaw = localStorage.getItem('thinksheet_active_session_v1');
+		if (sessionRaw) {
+			const session = JSON.parse(sessionRaw);
+			if (session && session.selectedSkill) {
+				return session.selectedSkill;
+			}
+		}
+	} catch {}
+	return 'Visual';
+}
+
+export function saveStoredSelectedSkill(skill) {
+	try {
+		if (skill) {
+			localStorage.setItem(SELECTED_SKILL_KEY, String(skill).trim());
+		}
+	} catch (err) {
+		console.warn('Could not save selected skill to localStorage', err);
+	}
+}
+
 export function loadProfileStats() {
 	try {
 		const raw = localStorage.getItem(PROFILE_KEY);

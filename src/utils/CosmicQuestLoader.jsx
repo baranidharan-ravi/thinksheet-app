@@ -1,15 +1,32 @@
-import { Brain, Orbit } from 'lucide-react';
+import { Brain, Eye, Orbit } from 'lucide-react';
 import { memo, useEffect, useMemo, useState } from 'react';
-import { getStoredKidAge, getStoredKidName } from './progressTracker';
+import {
+	getStoredKidAge,
+	getStoredKidName,
+	getStoredSelectedSkill,
+} from './progressTracker';
 
 const CosmicQuestLoader = memo(function CosmicQuestLoader({
-	selectedSkill = 'Visual',
+	selectedSkill,
 	kidName,
 	kidAge,
 }) {
 	// Dynamically resolve child's name and age directly from settings storage if not passed or empty
-	const effectiveName = (kidName && String(kidName).trim()) || getStoredKidName() || 'Explorer';
+	const effectiveName =
+		(kidName && String(kidName).trim()) || getStoredKidName() || 'Explorer';
 	const effectiveAge = Number(kidAge) || Number(getStoredKidAge()) || 5;
+
+	// Dynamically extract and resolve selected skillset name from props or persistent storage
+	const rawSkill =
+		(selectedSkill && String(selectedSkill).trim()) ||
+		getStoredSelectedSkill() ||
+		'Visual';
+
+	const isAnalytical = rawSkill.toLowerCase().includes('analy');
+	const skillName = isAnalytical ? 'Analytical Thinking' : 'Visual';
+	const skillTagline =
+		isAnalytical ? 'Logic & Relationships' : 'Observation & Patterns';
+	const skillIcon = isAnalytical ? '🧠' : '👁️';
 
 	const missionSteps = useMemo(
 		() => [
@@ -18,23 +35,26 @@ const CosmicQuestLoader = memo(function CosmicQuestLoader({
 				title: `Plotting Flight Coordinates for ${effectiveName}...`,
 			},
 			{
-				icon: '🪐',
-				title: `Scanning Deep Space for ${selectedSkill} Challenges...`,
+				icon: isAnalytical ? '🧠' : '🪐',
+				title: `Scanning Deep Space for ${skillName} Challenges...`,
 			},
 			{
-				icon: '🧠',
+				icon: isAnalytical ? '🧩' : '👁️',
 				title: `AI Neural Core Synthesizing Age ${effectiveAge} Puzzles...`,
 			},
 			{
 				icon: '✨',
-				title: `Calibrating Customized Logic & Visual Patterns...`,
+				title:
+					isAnalytical ?
+						`Calibrating Analytical Deduction & Logical Relationships...`
+					:	`Calibrating Customized Observation & Visual Patterns...`,
 			},
 			{
 				icon: '🛰️',
 				title: `Mission Locked for Astronaut ${effectiveName}! Launching...`,
 			},
 		],
-		[effectiveName, effectiveAge, selectedSkill],
+		[effectiveName, effectiveAge, skillName, isAnalytical],
 	);
 
 	const [stepIndex, setStepIndex] = useState(0);
@@ -161,26 +181,42 @@ const CosmicQuestLoader = memo(function CosmicQuestLoader({
 					className='relative z-10 w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center shadow-2xl transition-all'
 					style={{ animation: 'planetGlow 3s ease-in-out infinite' }}>
 					{/* Planet Sphere with rich cosmic radial gradient */}
-					<div className='absolute inset-0 rounded-full bg-gradient-to-br from-[#00E5FF] via-[#5B4DFF] to-[#1C1F5E] shadow-inner overflow-hidden'>
+					<div
+						className={`absolute inset-0 rounded-full ${
+							isAnalytical ?
+								'bg-gradient-to-br from-[#A855F7] via-[#6366F1] to-[#1E1B4B]'
+							:	'bg-gradient-to-br from-[#00E5FF] via-[#0284C7] to-[#0F172A]'
+						} shadow-inner overflow-hidden`}>
 						{/* Planetary surface features / atmosphere clouds */}
-						<div className='absolute -top-3 -left-3 w-16 h-16 rounded-full bg-cyan-300/30 blur-md pointer-events-none' />
+						<div
+							className={`absolute -top-3 -left-3 w-16 h-16 rounded-full ${
+								isAnalytical ? 'bg-purple-300/30' : 'bg-cyan-300/30'
+							} blur-md pointer-events-none`}
+						/>
 						<div className='absolute -bottom-4 right-1 w-20 h-10 rounded-full bg-purple-950/60 blur-xs pointer-events-none' />
 						<div className='absolute top-7 -left-1 w-14 h-4 rounded-full bg-white/20 blur-[2px] transform -rotate-12 pointer-events-none' />
 					</div>
 
 					{/* Planetary Saturn-like Ring */}
 					<div
-						className='absolute w-36 sm:w-44 h-10 sm:h-12 border-2 border-cyan-300/60 rounded-[100%] pointer-events-none shadow-sm'
+						className={`absolute w-36 sm:w-44 h-10 sm:h-12 border-2 ${
+							isAnalytical ? 'border-purple-300/60' : 'border-cyan-300/60'
+						} rounded-[100%] pointer-events-none shadow-sm`}
 						style={{
 							transform: 'rotate(-25deg)',
 							background:
-								'linear-gradient(90deg, rgba(6,182,212,0.15) 0%, rgba(244,114,182,0.2) 50%, rgba(6,182,212,0.15) 100%)',
+								isAnalytical ?
+									'linear-gradient(90deg, rgba(168,85,247,0.15) 0%, rgba(244,114,182,0.2) 50%, rgba(99,102,241,0.15) 100%)'
+								:	'linear-gradient(90deg, rgba(6,182,212,0.15) 0%, rgba(244,114,182,0.2) 50%, rgba(6,182,212,0.15) 100%)',
 						}}
 					/>
 
-					{/* AI Brain Core at the center of the Planet */}
+					{/* Skill Core at the center of the Planet */}
 					<div className='relative z-20 flex flex-col items-center justify-center text-white'>
-						<Brain className='w-8 h-8 sm:w-9 sm:h-9 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] animate-pulse' />
+						{isAnalytical ?
+							<Brain className='w-8 h-8 sm:w-9 sm:h-9 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] animate-pulse' />
+						:	<Eye className='w-8 h-8 sm:w-9 sm:h-9 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] animate-pulse' />
+						}
 					</div>
 				</div>
 
@@ -280,34 +316,50 @@ const CosmicQuestLoader = memo(function CosmicQuestLoader({
 					</div>
 				</div>
 
-				{/* Floating Sparkles in Orbit */}
+				{/* Floating Sparkles & Skill Emojis in Orbit */}
 				<div
 					className='absolute top-3 right-5 text-amber-300 text-lg sm:text-xl pointer-events-none'
 					style={{ animation: 'cosmicFloat 3s ease-in-out infinite' }}>
 					✨
 				</div>
 				<div
-					className='absolute bottom-4 left-6 text-pink-400 text-base sm:text-lg pointer-events-none'
+					className={`absolute bottom-4 left-6 ${
+						isAnalytical ? 'text-purple-300' : 'text-cyan-300'
+					} text-base sm:text-lg pointer-events-none`}
 					style={{
 						animation: 'cosmicFloat 2.5s ease-in-out infinite reverse',
 					}}>
-					🧩
+					{isAnalytical ? '🧩' : '👁️'}
 				</div>
 			</div>
 
 			{/* Mission Title Header */}
-			<div className='inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-950/60 border border-cyan-400/40 text-cyan-300 text-xs font-black uppercase tracking-wider mb-2.5 shadow-sm'>
-				<Orbit className='w-3.5 h-3.5 text-cyan-400 animate-spin-slow' />
-				<span>AstroQuest AI Mission • {effectiveName} (Age {effectiveAge})</span>
+			<div
+				className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full ${
+					isAnalytical ?
+						'bg-purple-950/60 border-purple-400/40 text-purple-300'
+					:	'bg-cyan-950/60 border-cyan-400/40 text-cyan-300'
+				} border text-xs font-black uppercase tracking-wider mb-2.5 shadow-sm`}>
+				<Orbit
+					className={`w-3.5 h-3.5 ${
+						isAnalytical ? 'text-purple-400' : 'text-cyan-400'
+					} animate-spin-slow`}
+				/>
+				<span>
+					AstroQuest AI Mission • {effectiveName} (Age {effectiveAge})
+				</span>
 			</div>
 
 			<h2 className='text-xl sm:text-2xl md:text-3xl font-black text-white mb-2 leading-tight tracking-tight'>
-				Generating {selectedSkill} Challenges... 🚀
+				Generating {skillName} Challenges... {skillIcon}
 			</h2>
 
 			{/* Rotating Mission Telemetry Step */}
 			<div className='min-h-[36px] flex items-center justify-center px-4 py-1.5 rounded-xl bg-slate-900/60 border border-slate-700/60 mb-4 transition-all duration-300'>
-				<p className='text-xs sm:text-sm font-extrabold text-cyan-300 flex items-center gap-2'>
+				<p
+					className={`text-xs sm:text-sm font-extrabold flex items-center gap-2 ${
+						isAnalytical ? 'text-purple-300' : 'text-cyan-300'
+					}`}>
 					<span className='text-base'>{currentStep.icon}</span>
 					<span>{currentStep.title}</span>
 				</p>
@@ -315,10 +367,17 @@ const CosmicQuestLoader = memo(function CosmicQuestLoader({
 
 			{/* Subtitle / User Context */}
 			<p className='text-xs sm:text-sm font-bold text-slate-300 mb-5'>
-				Synthesizing 10 brand-new puzzles for{' '}
-				<span className='text-amber-300 font-extrabold'>
-					{effectiveName}
+				Synthesizing 10 brand-new{' '}
+				<span
+					className={
+						isAnalytical ?
+							'text-purple-300 font-extrabold'
+						:	'text-cyan-300 font-extrabold'
+					}>
+					{skillName}
 				</span>{' '}
+				puzzles for{' '}
+				<span className='text-amber-300 font-extrabold'>{effectiveName}</span>{' '}
 				<span className='text-cyan-300 font-extrabold'>
 					(Age {effectiveAge})...
 				</span>
@@ -337,6 +396,14 @@ const CosmicQuestLoader = memo(function CosmicQuestLoader({
 			{/* Telemetry Status Cue */}
 			<div className='flex items-center justify-between w-full max-w-xs mt-2 text-[10px] sm:text-xs font-bold text-slate-400 px-1'>
 				<span className='text-cyan-400'>LEVEL: AGE {effectiveAge}</span>
+				<span
+					className={
+						isAnalytical ?
+							'text-purple-300 font-black tracking-wider'
+						:	'text-cyan-300 font-black tracking-wider'
+					}>
+					SKILL: {skillName.toUpperCase()}
+				</span>
 				<span className='flex items-center gap-1 text-emerald-400'>
 					<span className='w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping' />
 					{effectiveName.toUpperCase()}'S LINK ONLINE

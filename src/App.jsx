@@ -49,11 +49,13 @@ import {
 import {
 	getStoredKidAge,
 	getStoredKidName,
+	getStoredSelectedSkill,
 	getStoredShowVisualDiagrams,
 	getStoredTimerConfig,
 	loadProfileStats,
 	recordCompletedSheet,
 	saveStoredKidProfile,
+	saveStoredSelectedSkill,
 } from './utils/progressTracker';
 import { clearSessionState, saveSessionState } from './utils/storage';
 
@@ -67,7 +69,9 @@ export default function App() {
 
 	// Navigation State
 	const [currentScreen, setCurrentScreen] = useState('dashboard'); // 'dashboard' | 'settings' | 'thinksheet'
-	const [selectedSkill, setSelectedSkill] = useState('Visual'); // 'Visual' | 'Analytical Thinking'
+	const [selectedSkill, setSelectedSkill] = useState(
+		() => getStoredSelectedSkill() || 'Visual',
+	); // 'Visual' | 'Analytical Thinking'
 	const [profileStats, setProfileStats] = useState(loadProfileStats);
 
 	// Timer Settings & Per-Question Limit State
@@ -270,6 +274,7 @@ export default function App() {
 	// Start Thinksheet Session for a given skill
 	const startSkillSession = async (skill, age = kidAge) => {
 		setSelectedSkill(skill);
+		saveStoredSelectedSkill(skill);
 		setIsLoadingSheet(true);
 		setAiError(null);
 		setCurrentScreen('thinksheet');
@@ -360,6 +365,7 @@ export default function App() {
 
 	// Start Sheet for a selected skill (100% Real-Time AI Generation)
 	const handleSelectSkill = async (skill) => {
+		saveStoredSelectedSkill(skill);
 		if (!getStoredApiKey() || !getStoredKidName()) {
 			setPendingSkill(skill);
 			setCurrentScreen('settings');
