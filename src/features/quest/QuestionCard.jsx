@@ -32,10 +32,10 @@ const QuestionCard = memo(function QuestionCard({
 
 	return (
 		<div
-			className={`bg-white text-[#1E293B] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col justify-between border-4 border-white/90 relative overflow-hidden transition-all duration-300 flex-1 h-full w-full ${
+			className={`bg-white text-[#1E293B] rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-2xl flex flex-col justify-between border-4 border-white/90 relative overflow-hidden transition-all duration-300 flex-1 h-full w-full min-h-0 ${
 				isSubmitted ?
-					'min-h-[200px] sm:min-h-[240px]'
-				:	'min-h-[380px] sm:min-h-[460px]'
+					'min-h-[180px] sm:min-h-[220px]'
+				:	'min-h-[240px] sm:min-h-[280px]'
 			}`}>
 			{/* Top Bar: Question Index, Category Badge, Zoom Button */}
 			<div className='flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5 mb-2'>
@@ -84,7 +84,7 @@ const QuestionCard = memo(function QuestionCard({
 			</div>
 
 			{/* Center Section: Question Prompt & Diagram */}
-			<div className='flex-1 flex flex-col justify-center my-auto py-2'>
+			<div className='flex-1 min-h-0 overflow-y-auto pr-1 flex flex-col justify-center my-auto py-1 sm:py-2'>
 				{/* Question Prompt */}
 				<div className='flex items-start gap-3 my-2'>
 					<h2 className='text-base sm:text-xl md:text-2xl font-extrabold text-slate-800 leading-snug'>

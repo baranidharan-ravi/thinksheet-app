@@ -84,7 +84,7 @@ const OptionsGrid = memo(function OptionsGrid({
 							playButtonPop(soundEnabled);
 							onSelectOption(opt.id);
 						}}
-						className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 flex items-center justify-start gap-3 sm:gap-3.5 transition-all duration-200 text-left flex-1 h-full min-h-[92px] sm:min-h-[110px] cursor-pointer relative overflow-hidden ${cardStyle}`}>
+						className={`rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 flex items-center justify-start gap-2.5 sm:gap-3.5 transition-all duration-200 text-left flex-1 h-full min-h-[72px] sm:min-h-[86px] cursor-pointer relative overflow-hidden ${cardStyle}`}>
 						{/* Letter Badge (A, B, C, D) */}
 						<div
 							className={`w-9 h-9 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center font-black text-sm sm:text-base flex-shrink-0 shadow-md ${badgeStyle}`}>

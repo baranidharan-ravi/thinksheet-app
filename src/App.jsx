@@ -661,7 +661,7 @@ export default function App() {
 
 	// Render Active Thinksheet Session
 	return (
-		<div className='min-h-screen space-background flex flex-col justify-between text-white font-sans overflow-x-hidden relative'>
+		<div className='min-h-screen lg:h-screen lg:overflow-hidden space-background flex flex-col justify-between text-white font-sans overflow-x-clip relative'>
 			{/* Top Header */}
 			<Header
 				questionIndex={currentIndex}
@@ -678,7 +678,7 @@ export default function App() {
 			/>
 
 			{/* Main Screen Body */}
-			<main className='flex-1 flex flex-col justify-center items-center px-3 sm:px-6 py-2 sm:py-4 w-full max-w-7xl mx-auto'>
+			<main className='flex-1 flex flex-col justify-center items-center px-3 sm:px-6 py-2 sm:py-3 w-full max-w-7xl mx-auto min-h-0 overflow-hidden'>
 				{isLoadingSheet ?
 					/* Loading Cosmic State */
 					<div className='flex flex-col items-center justify-center p-12 text-center animate-in fade-in'>
@@ -746,12 +746,12 @@ export default function App() {
 					</div>
 				: !isCompleted ?
 					/* Question Playing View */
-					<div className='w-full flex flex-col justify-center flex-1 my-auto'>
+					<div className='w-full flex flex-col justify-center flex-1 my-auto min-h-0 h-full'>
 						{/* Layout when NOT submitted: Both question and options share identical height */}
 						{!isSubmitted ?
-							<div className='grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch w-full'>
+							<div className='grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch w-full h-full lg:max-h-[calc(100dvh-95px)] min-h-0'>
 								{/* Left: Question Card (Matches full height of right side) */}
-								<div className='lg:col-span-6 flex flex-col h-full'>
+								<div className='lg:col-span-6 flex flex-col h-full lg:max-h-[calc(100dvh-95px)] min-h-0'>
 									<QuestionCard
 										question={currentQuestion}
 										currentIndex={currentIndex}
@@ -763,9 +763,9 @@ export default function App() {
 								</div>
 
 								{/* Right: Options Grid + Submit Bar (Equal height) */}
-								<div className='lg:col-span-6 flex flex-col justify-between gap-3 h-full'>
-									{/* Options Container expanding to fill height */}
-									<div className='flex-1 flex flex-col w-full h-full'>
+								<div className='lg:col-span-6 flex flex-col justify-between gap-3 h-full lg:max-h-[calc(100dvh-95px)] min-h-0'>
+									{/* Options Container expanding to fill height with smooth internal scrolling if tall */}
+									<div className='flex-1 min-h-0 overflow-y-auto pr-1 flex flex-col w-full'>
 										<OptionsGrid
 											options={currentQuestion.options || []}
 											selectedOptionId={selectedOptionId}
@@ -778,8 +778,8 @@ export default function App() {
 										/>
 									</div>
 
-									{/* Action Bar sticky at the bottom */}
-									<div className='sticky bottom-0 sm:bottom-2 z-30 flex items-center justify-between gap-3 py-3 px-3 sm:px-4 mt-auto select-none border-t border-white/15 bg-[#0C1033]/95 backdrop-blur-md rounded-2xl shadow-[0_-8px_25px_rgba(0,0,0,0.5)]'>
+									{/* Action Bar sticky and permanently visible at the bottom */}
+									<div className='flex-shrink-0 sticky bottom-0 sm:bottom-1 z-30 flex items-center justify-between gap-3 py-2.5 sm:py-3 px-3 sm:px-4 mt-auto select-none border-t border-white/15 bg-[#0C1033]/95 backdrop-blur-md rounded-2xl shadow-[0_-8px_25px_rgba(0,0,0,0.5)]'>
 										<div className='flex items-center gap-2 sm:gap-3'>
 											{/* Power-up Hint Button */}
 											<button
@@ -787,15 +787,15 @@ export default function App() {
 													playButtonPop(soundEnabled);
 													setIsHintOpen(true);
 												}}
-												className='w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 hover:scale-110 active:scale-95 text-white flex items-center justify-center shadow-lg transition-all border-2 border-white/40 flex-shrink-0 cursor-pointer'
+												className='w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 hover:scale-110 active:scale-95 text-white flex items-center justify-center shadow-lg transition-all border-2 border-white/40 flex-shrink-0 cursor-pointer'
 												title='Hint Clue'>
-												<Zap className='w-5 h-5 sm:w-6 sm:h-6 fill-white' />
+												<Zap className='w-5 h-5 fill-white' />
 											</button>
 
 											{/* Skip Question Button */}
 											<button
 												onClick={handleSkip}
-												className='px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-full font-black text-xs sm:text-sm tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-1.5 sm:gap-2 bg-[#1A1D54] hover:bg-[#252A74] text-slate-300 hover:text-white border-2 border-indigo-400/40 hover:border-indigo-300 hover:scale-105 active:scale-95 cursor-pointer'
+												className='px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full font-black text-xs sm:text-sm tracking-wider uppercase transition-all shadow-md flex items-center justify-center gap-1.5 sm:gap-2 bg-[#1A1D54] hover:bg-[#252A74] text-slate-300 hover:text-white border-2 border-indigo-400/40 hover:border-indigo-300 hover:scale-105 active:scale-95 cursor-pointer'
 												title='Skip this question'>
 												<SkipForward className='w-4 h-4 text-amber-400' />
 												<span>Skip</span>
@@ -806,15 +806,15 @@ export default function App() {
 										<button
 											disabled={!selectedOptionId}
 											onClick={handleSubmit}
-											className={`px-7 sm:px-11 py-3.5 sm:py-4 rounded-full font-black text-sm sm:text-lg tracking-wider uppercase transition-all shadow-xl flex items-center justify-center gap-2.5 ${
+											className={`px-6 sm:px-10 py-3 sm:py-3.5 rounded-full font-black text-sm sm:text-base md:text-lg tracking-wider uppercase transition-all shadow-xl flex items-center justify-center gap-2.5 ${
 												selectedOptionId ?
-													'bg-[#FF5B84] hover:bg-[#FF435A] text-white hover:scale-105 active:scale-95 shadow-[0_8px_20px_rgba(255,91,132,0.4)] cursor-pointer'
+													'bg-[#FF5B84] hover:bg-[#FF435A] text-white hover:scale-[1.02] active:scale-95 shadow-[0_8px_20px_rgba(255,91,132,0.4)] cursor-pointer'
 												:	'bg-slate-700 text-slate-400 cursor-not-allowed opacity-60'
 											}`}>
 											<span>Submit</span>
 											{timerConfig?.enabled && (
 												<span
-													className={`px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-mono font-black border transition-all ${
+													className={`px-2 py-0.5 rounded-full text-xs sm:text-sm font-mono font-black border transition-all ${
 														questionTimeRemaining <= 5 ?
 															'bg-rose-950 text-rose-300 border-rose-500 animate-bounce'
 														: questionTimeRemaining <= 15 ?
@@ -837,9 +837,9 @@ export default function App() {
 								</div>
 							</div>
 						:	/* Layout when SUBMITTED / TIMED OUT: Question Card on Left, Solution Panel with NEXT button on Right */
-							<div className='grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start'>
+							<div className='grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch w-full h-full lg:max-h-[calc(100dvh-95px)] min-h-0'>
 								{/* Left Column: Question Card & compact Options */}
-								<div className='lg:col-span-7 flex flex-col gap-3'>
+								<div className='lg:col-span-7 flex flex-col gap-3 lg:max-h-[calc(100dvh-95px)] lg:overflow-y-auto pr-1 min-h-0'>
 									<QuestionCard
 										question={currentQuestion}
 										currentIndex={currentIndex}
@@ -862,7 +862,7 @@ export default function App() {
 								</div>
 
 								{/* Right Column: Solution & Feedback Panel with NEXT BUTTON right below solution! */}
-								<div className='lg:col-span-5 flex flex-col min-w-0'>
+								<div className='lg:col-span-5 flex flex-col min-w-0 h-full lg:max-h-[calc(100dvh-95px)] min-h-0'>
 									<SolutionPanel
 										isCorrect={
 											selectedOptionId === currentQuestion.correctAnswerId

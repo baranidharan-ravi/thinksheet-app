@@ -30,10 +30,10 @@ const SolutionPanel = memo(function SolutionPanel({
 		autoAdvanceCountdown !== null && autoAdvanceCountdown >= 0;
 
 	return (
-		<div className='flex flex-col gap-3.5 sm:gap-4 animate-in fade-in slide-in-from-right-4 duration-300'>
+		<div className='flex flex-col gap-2.5 sm:gap-3 h-full lg:max-h-[calc(100dvh-95px)] min-h-0 animate-in fade-in slide-in-from-right-4 duration-300'>
 			{/* Feedback Banner with Celebratory Animation on Correct or Wrong/Timeout Styling */}
 			<div
-				className={`rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex items-center gap-3.5 shadow-xl border-2 transition-all relative overflow-hidden ${
+				className={`flex-shrink-0 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 flex items-center gap-3 sm:gap-3.5 shadow-xl border-2 transition-all relative overflow-hidden ${
 					isCorrect ?
 						'bg-[#E8F8F0] border-[#00D166] text-[#0A5D37] ring-4 ring-emerald-400/40 shadow-[0_0_20px_rgba(0,209,102,0.3)] animate-bounce-short'
 					:	'bg-[#FFF0F2] border-[#FF435A] text-[#9E1B2D] ring-4 ring-rose-400/20'
@@ -41,20 +41,20 @@ const SolutionPanel = memo(function SolutionPanel({
 				<div className='flex-shrink-0'>
 					{isCorrect ?
 						<div className='relative'>
-							<CheckCircle2 className='w-8 h-8 sm:w-10 sm:h-10 text-[#00D166] fill-[#00D166]/20 animate-pulse' />
+							<CheckCircle2 className='w-7 h-7 sm:w-9 sm:h-9 text-[#00D166] fill-[#00D166]/20 animate-pulse' />
 							<Sparkles className='w-4 h-4 text-amber-500 fill-amber-400 absolute -top-1 -right-1 animate-spin-slow' />
 						</div>
 					: isTimedOut ?
 						<div className='relative'>
-							<XCircle className='w-8 h-8 sm:w-10 sm:h-10 text-[#FF435A] fill-[#FF435A]/20' />
+							<XCircle className='w-7 h-7 sm:w-9 sm:h-9 text-[#FF435A] fill-[#FF435A]/20' />
 							<Clock className='w-4 h-4 text-amber-500 absolute -top-1 -right-1 animate-spin-slow' />
 						</div>
-					:	<XCircle className='w-8 h-8 sm:w-10 sm:h-10 text-[#FF435A] fill-[#FF435A]/20' />
+					:	<XCircle className='w-7 h-7 sm:w-9 sm:h-9 text-[#FF435A] fill-[#FF435A]/20' />
 					}
 				</div>
-				<div className='flex-1'>
+				<div className='flex-1 min-w-0'>
 					<div className='flex items-center gap-2 flex-wrap'>
-						<h3 className='text-base sm:text-lg font-black leading-tight'>
+						<h3 className='text-sm sm:text-base font-black leading-tight'>
 							{isCorrect ?
 								'Correct! 🎉'
 							: isTimedOut ?
@@ -75,7 +75,7 @@ const SolutionPanel = memo(function SolutionPanel({
 							</span>
 						)}
 					</div>
-					<p className='text-xs sm:text-sm font-semibold opacity-90 mt-0.5'>
+					<p className='text-xs sm:text-sm font-semibold opacity-90 mt-0.5 leading-snug'>
 						{isCorrect ?
 							`Great thinking! You got it right.${hasCountdown ? ` Moving to next in ${autoAdvanceCountdown}s...` : ''}`
 						: isTimedOut ?
@@ -86,25 +86,26 @@ const SolutionPanel = memo(function SolutionPanel({
 				</div>
 			</div>
 
-			{/* Solution Card */}
-			<div className='bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-slate-800 shadow-xl border-4 border-white/90 flex flex-col justify-between overflow-hidden'>
-				<div>
-					{/* Header */}
-					<div className='flex items-center justify-between mb-2 pb-2 border-b border-slate-100'>
-						<div className='flex items-center gap-2 text-purple-700 font-extrabold text-sm sm:text-base'>
-							<Lightbulb className='w-5 h-5 text-amber-500 fill-amber-400' />
-							<span>Solution</span>
-						</div>
-						<button
-							onClick={handleListenSolution}
-							className='p-1 rounded-full text-purple-600 hover:bg-purple-50 transition-all cursor-pointer'
-							title='Listen to solution'>
-							<Volume2 className='w-4 h-4' />
-						</button>
+			{/* Solution Card with Scrollable Body */}
+			<div className='bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 text-slate-800 shadow-xl border-4 border-white/90 flex flex-col flex-1 min-h-0 overflow-hidden'>
+				{/* Header */}
+				<div className='flex items-center justify-between mb-2 pb-1.5 border-b border-slate-100 flex-shrink-0'>
+					<div className='flex items-center gap-2 text-purple-700 font-extrabold text-sm sm:text-base'>
+						<Lightbulb className='w-5 h-5 text-amber-500 fill-amber-400' />
+						<span>Solution</span>
 					</div>
+					<button
+						onClick={handleListenSolution}
+						className='p-1 rounded-full text-purple-600 hover:bg-purple-50 transition-all cursor-pointer'
+						title='Listen to solution'>
+						<Volume2 className='w-4 h-4' />
+					</button>
+				</div>
 
+				{/* Scrollable Solution Body: Explanation Text & Visual Diagram */}
+				<div className='flex-1 min-h-0 overflow-y-auto pr-1 sm:pr-2'>
 					{/* Solution Explanation Text */}
-					<p className='text-xs sm:text-sm md:text-base font-bold text-slate-700 leading-relaxed mb-3'>
+					<p className='text-xs sm:text-sm md:text-base font-bold text-slate-700 leading-relaxed mb-2.5'>
 						{question.solutionText}
 					</p>
 
@@ -121,7 +122,7 @@ const SolutionPanel = memo(function SolutionPanel({
 				</div>
 
 				{/* Bottom Helper */}
-				<div className='mt-3 pt-2 border-t border-slate-100 flex items-center justify-center'>
+				<div className='mt-2 pt-2 border-t border-slate-100 flex items-center justify-center flex-shrink-0'>
 					<button
 						onClick={() => {
 							playButtonPop(soundEnabled);
@@ -134,12 +135,12 @@ const SolutionPanel = memo(function SolutionPanel({
 				</div>
 			</div>
 
-			{/* NEXT BUTTON: Sticky at the bottom of the screen */}
+			{/* NEXT BUTTON: Permanently Visible & Sticky at the bottom of the screen */}
 			{onNext && (
-				<div className='sticky bottom-0 sm:bottom-2 z-30 flex justify-end mt-2 pt-2.5 pb-2 px-2 bg-[#0C1033]/95 backdrop-blur-md rounded-2xl border-t border-white/15 shadow-[0_-8px_25px_rgba(0,0,0,0.5)]'>
+				<div className='sticky bottom-0 sm:bottom-1 z-30 flex-shrink-0 flex justify-end pt-2 pb-1 px-1 sm:px-2 bg-[#0C1033]/95 backdrop-blur-md rounded-2xl border-t border-white/15 shadow-[0_-8px_25px_rgba(0,0,0,0.5)]'>
 					<button
 						onClick={onNext}
-						className='w-full sm:w-auto px-10 py-3.5 sm:py-4 rounded-full bg-[#FF5B84] hover:bg-[#FF435A] text-white font-black text-sm sm:text-lg tracking-wider uppercase hover:scale-105 active:scale-95 shadow-[0_8px_25px_rgba(255,91,132,0.6)] flex items-center justify-center gap-2 cursor-pointer transition-all animate-bounce-short border-2 border-white/20'>
+						className='w-full px-8 sm:px-10 py-3 sm:py-3.5 rounded-full bg-[#FF5B84] hover:bg-[#FF435A] text-white font-black text-sm sm:text-base md:text-lg tracking-wider uppercase hover:scale-[1.02] active:scale-95 shadow-[0_8px_25px_rgba(255,91,132,0.6)] flex items-center justify-center gap-2 cursor-pointer transition-all border-2 border-white/20'>
 						<span>
 							{hasCountdown ?
 								`Next (${autoAdvanceCountdown}s)`
