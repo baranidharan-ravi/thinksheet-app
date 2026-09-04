@@ -6,6 +6,7 @@ import HintModal from './features/quest/HintModal';
 import OptionsGrid from './features/quest/OptionsGrid';
 import QuestionCard from './features/quest/QuestionCard';
 import SolutionPanel from './features/quest/SolutionPanel';
+import CosmicQuestLoader from './utils/CosmicQuestLoader';
 import Header from './utils/Header';
 import ZoomModal from './utils/ZoomModal';
 
@@ -691,19 +692,12 @@ export default function App() {
 					:	'justify-start py-6 sm:py-8 overflow-y-visible'
 				}`}>
 				{isLoadingSheet ?
-					/* Loading Cosmic State */
-					<div className='flex flex-col items-center justify-center p-12 text-center animate-in fade-in'>
-						<div className='w-20 h-20 rounded-3xl bg-gradient-to-tr from-pink-500 to-indigo-600 flex items-center justify-center shadow-2xl animate-bounce mb-6'>
-							<Sparkles className='w-10 h-10 text-amber-300 animate-spin-slow' />
-						</div>
-						<h2 className='text-2xl sm:text-3xl font-black text-white mb-2'>
-							Generating {selectedSkill} Challenges via AI... 🤖
-						</h2>
-						<p className='text-sm sm:text-base font-bold text-cyan-300'>
-							Synthesizing 10 brand-new puzzles for {kidName || 'Explorer'} (Age{' '}
-							{kidAge})...
-						</p>
-					</div>
+					/* AstroQuest Cosmic Loader */
+					<CosmicQuestLoader
+						selectedSkill={selectedSkill}
+						kidName={kidName}
+						kidAge={kidAge}
+					/>
 				: aiError ?
 					/* AI Error / API Key Setup Prompt Screen */
 					<div className='w-full max-w-xl mx-auto p-6 sm:p-8 bg-gradient-to-b from-[#1C1F5E] via-[#141846] to-[#0D1030] border-4 border-amber-400/80 rounded-3xl shadow-2xl text-center animate-in fade-in'>
