@@ -1,6 +1,10 @@
 import { Brain, Eye, Volume2, ZoomIn } from 'lucide-react';
 import { memo, useState } from 'react';
-import { playButtonPop, speakText, stopSpeaking } from '../../utils/audioSynthesis';
+import {
+	playButtonPop,
+	speakText,
+	stopSpeaking,
+} from '../../utils/audioSynthesis';
 import VisualDiagram from '../../utils/VisualDiagrams';
 
 const QuestionCard = memo(function QuestionCard({
