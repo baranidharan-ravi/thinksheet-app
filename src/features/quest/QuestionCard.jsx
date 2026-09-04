@@ -55,7 +55,7 @@ const QuestionCard = memo(function QuestionCard({
 				:	'min-h-[240px] sm:min-h-[280px]'
 			}`}>
 			{/* Top Bar: Question Index, Explorer Profile, Category Badge, Zoom Button */}
-			<div className='flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5 mb-2'>
+			<div className='flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5 mb-2 flex-shrink-0'>
 				{/* Left: Step Indicator & Explorer Badge */}
 				<div className='flex items-center gap-1.5 sm:gap-2 min-w-0'>
 					{/* Step Indicator */}
@@ -115,17 +115,17 @@ const QuestionCard = memo(function QuestionCard({
 			</div>
 
 			{/* Skill Objective Subtitle */}
-			<div className='text-[11px] sm:text-xs font-semibold text-slate-500 bg-slate-50 border border-slate-100 rounded-xl px-3 py-1.5 mb-2 text-center'>
+			<div className='text-[11px] sm:text-xs font-semibold text-slate-500 bg-slate-50 border border-slate-100 rounded-xl px-3 py-1.5 mb-2 text-center flex-shrink-0'>
 				{isVisual ?
 					'🎯 Goal: Spot & analyze visual details to solve the puzzle'
 				:	'🎯 Goal: Plan & break down relationships to solve the problem'}
 			</div>
 
 			{/* Center Section: Question Prompt & Diagram */}
-			<div className='flex-1 min-h-0 overflow-y-auto pr-1 flex flex-col justify-center my-auto py-1 sm:py-2'>
+			<div className='flex-1 min-h-0 overflow-y-auto pr-1.5 flex flex-col justify-start py-1 sm:py-2'>
 				{/* Question Prompt */}
-				<div className='flex items-start gap-3 my-2'>
-					<h2 className='text-base sm:text-xl md:text-2xl font-extrabold text-slate-800 leading-snug'>
+				<div className='flex items-start gap-3 my-1.5 flex-shrink-0'>
+					<h2 className='text-base sm:text-lg md:text-xl font-extrabold text-slate-800 leading-snug'>
 						{question.question || question.questionText}
 					</h2>
 
@@ -157,7 +157,7 @@ const QuestionCard = memo(function QuestionCard({
 			</div>
 
 			{/* Footer cue */}
-			<div className='mt-auto pt-2 text-center text-xs font-semibold text-slate-400 border-t border-slate-50'>
+			<div className='mt-auto pt-2 text-center text-xs font-semibold text-slate-400 border-t border-slate-50 flex-shrink-0'>
 				✨ Tap an answer choice on the right
 			</div>
 		</div>
