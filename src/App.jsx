@@ -30,6 +30,7 @@ function ScreenLoadingFallback() {
 import confetti from 'canvas-confetti';
 import {
 	ArrowLeft,
+	Clock,
 	Key,
 	RefreshCw,
 	SkipForward,
@@ -779,9 +780,10 @@ export default function App() {
 									</div>
 								</div>
 
-								{/* Full-Width Bottom Action Bar (Hint, Skip, and Submit) spanning the entire width */}
-								<div className='flex-shrink-0 sticky bottom-0 sm:bottom-1 z-30 w-full flex items-center justify-between gap-3 py-2.5 sm:py-3 px-4 sm:px-6 select-none border-t border-white/15 bg-[#0C1033]/95 backdrop-blur-md rounded-2xl shadow-[0_-8px_25px_rgba(0,0,0,0.5)]'>
-									<div className='flex items-center gap-2 sm:gap-3'>
+								{/* Full-Width Bottom Action Bar (Hint, Skip, Center Timer, and Submit) spanning the entire width */}
+								<div className='flex-shrink-0 sticky bottom-0 sm:bottom-1 z-30 w-full flex items-center justify-between gap-2 sm:gap-4 py-2.5 sm:py-3 px-3.5 sm:px-6 select-none border-t border-white/15 bg-[#0C1033]/95 backdrop-blur-md rounded-2xl shadow-[0_-8px_25px_rgba(0,0,0,0.5)]'>
+									{/* Left: Hint & Skip Buttons */}
+									<div className='flex items-center gap-2 sm:gap-3 flex-shrink-0'>
 										{/* Power-up Hint Button */}
 										<button
 											onClick={() => {
@@ -803,36 +805,65 @@ export default function App() {
 										</button>
 									</div>
 
-									{/* Submit Button */}
+									{/* Center: Running Timer for both Timer Limit (countdown) & Infinite Timer (stopwatch) */}
+									<div className='flex items-center justify-center flex-1 mx-2 sm:mx-4'>
+										<div
+											className={`flex items-center gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-2xl border font-mono font-black text-sm sm:text-base md:text-lg tracking-wider shadow-inner transition-all ${
+												timerConfig?.enabled ?
+													questionTimeRemaining <= 5 ?
+														'bg-rose-950/80 border-rose-500 text-rose-300 ring-2 ring-rose-400/40 animate-bounce'
+													: questionTimeRemaining <= 15 ?
+														'bg-amber-950/70 border-amber-400 text-amber-300 ring-2 ring-amber-400/30 animate-pulse'
+													:	'bg-[#121644]/90 border-cyan-400/50 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.15)]'
+												:	'bg-[#121644]/90 border-pink-400/40 text-pink-300 shadow-[0_0_15px_rgba(244,114,182,0.15)]'
+											}`}
+											title={
+												timerConfig?.enabled ?
+													`Time remaining: ${questionTimeRemaining}s (Question limit)`
+												:	`Elapsed session time: ${timerSeconds}s (Infinite timer)`
+											}>
+											<Clock
+												className={`w-4 h-4 sm:w-5 sm:h-5 ${
+													timerConfig?.enabled ?
+														questionTimeRemaining <= 15 ?
+															'text-amber-400 animate-spin'
+														:	'text-cyan-400'
+													:	'text-pink-400 animate-spin-slow'
+												}`}
+											/>
+											<span>
+												{Math.floor(
+													(timerConfig?.enabled ?
+														questionTimeRemaining
+													:	timerSeconds) / 60,
+												)
+													.toString()
+													.padStart(2, '0')}
+												:
+												{(
+													(timerConfig?.enabled ?
+														questionTimeRemaining
+													:	timerSeconds) % 60
+												)
+													.toString()
+													.padStart(2, '0')}
+											</span>
+											<span className='text-[10px] sm:text-xs uppercase font-extrabold tracking-widest opacity-80 ml-0.5 hidden xs:inline'>
+												{timerConfig?.enabled ? 'Left' : 'Elapsed'}
+											</span>
+										</div>
+									</div>
+
+									{/* Right: Submit Button */}
 									<button
 										disabled={!selectedOptionId}
 										onClick={handleSubmit}
-										className={`px-7 sm:px-12 py-3 sm:py-3.5 rounded-full font-black text-sm sm:text-base md:text-lg tracking-wider uppercase transition-all shadow-xl flex items-center justify-center gap-2.5 ${
+										className={`px-7 sm:px-12 py-3 sm:py-3.5 rounded-full font-black text-sm sm:text-base md:text-lg tracking-wider uppercase transition-all shadow-xl flex items-center justify-center gap-2.5 flex-shrink-0 ${
 											selectedOptionId ?
 												'bg-[#FF5B84] hover:bg-[#FF435A] text-white hover:scale-[1.02] active:scale-95 shadow-[0_8px_20px_rgba(255,91,132,0.4)] cursor-pointer'
 											:	'bg-slate-700 text-slate-400 cursor-not-allowed opacity-60'
 										}`}>
 										<span>Submit</span>
-										{timerConfig?.enabled && (
-											<span
-												className={`px-2 py-0.5 rounded-full text-xs sm:text-sm font-mono font-black border transition-all ${
-													questionTimeRemaining <= 5 ?
-														'bg-rose-950 text-rose-300 border-rose-500 animate-bounce'
-													: questionTimeRemaining <= 15 ?
-														'bg-amber-950/80 text-amber-300 border-amber-400 animate-pulse'
-													:	'bg-black/30 text-white/90 border-white/20'
-												}`}
-												title={`Time remaining: ${questionTimeRemaining}s`}>
-												⏱️{' '}
-												{Math.floor(questionTimeRemaining / 60)
-													.toString()
-													.padStart(2, '0')}
-												:
-												{(questionTimeRemaining % 60)
-													.toString()
-													.padStart(2, '0')}
-											</span>
-										)}
 									</button>
 								</div>
 							</div>

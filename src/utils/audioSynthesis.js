@@ -226,12 +226,49 @@ const EMOJI_SPEECH_MAP = {
 const EMOJI_REGEX =
 	/\p{Extended_Pictographic}|\p{Emoji_Presentation}|[\uFE00-\uFE0F\u200D\u20E3]/gu;
 
+/**
+ * Clean text for friendly speech narration:
+ * 1. Replaces known emojis with words (e.g. 🍎 -> "apple", 🚗 -> "car")
+ * 2. Removes remaining symbols/emojis
+ * 3. Strips markdown asterisks, hashes, backticks
+ * 4. Normalizes whitespace
+ */
+export function cleanTextForSpeech(text) {
+	if (!text || typeof text !== 'string') return '';
+	let str = text;
+
+	// Replace mapped emojis with spoken equivalents
+	for (const [emoji, word] of Object.entries(EMOJI_SPEECH_MAP)) {
+		str = str.replaceAll(emoji, ` ${word} `);
+	}
+
+	// Remove unmapped emojis or symbols
+	str = str.replace(EMOJI_REGEX, ' ');
+
+	// Strip markdown formatting (*, _, `, #, [], (), etc.)
+	str = str
+		.replace(/\*\*(.*?)\*\*/g, '$1')
+		.replace(/\*(.*?)\*/g, '$1')
+		.replace(/__(.*?)__/g, '$1')
+		.replace(/_(.*?)_/g, '$1')
+		.replace(/`([^`]+)`/g, '$1')
+		.replace(/^#+\s+/gm, '')
+		.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+
+	// Normalize spaces
+	str = str.replace(/\s+/g, ' ').trim();
+	return str;
+}
+
 // Pre-warm and cache speech synthesis voices across browser engines
 let cachedVoices = [];
 function populateVoiceList() {
 	if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 		try {
-			cachedVoices = window.speechSynthesis.getVoices() || [];
+			const voices = window.speechSynthesis.getVoices();
+			if (voices && voices.length > 0) {
+				cachedVoices = voices;
+			}
 		} catch {}
 	}
 }
@@ -249,10 +286,12 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 export function getAvailableVoices() {
 	if (typeof window === 'undefined' || !('speechSynthesis' in window))
 		return [];
-	const voices =
-		cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
-	cachedVoices = voices;
-	return voices || [];
+	const fresh = window.speechSynthesis.getVoices();
+	if (fresh && fresh.length > 0) {
+		cachedVoices = fresh;
+		return fresh;
+	}
+	return cachedVoices || [];
 }
 
 const VOICE_URI_KEY = 'thinksheet_voice_uri';
@@ -297,6 +336,7 @@ function resolveVoice(voices) {
 	// 2. Preferred English voice names
 	const preferred = voices.find(
 		(v) =>
+			v.lang &&
 			v.lang.startsWith('en') &&
 			(v.name.includes('Natural') ||
 				v.name.includes('Google') ||
@@ -311,11 +351,11 @@ function resolveVoice(voices) {
 	if (preferred) return preferred;
 
 	// 3. Any English voice
-	const anyEn = voices.find((v) => v.lang.startsWith('en'));
+	const anyEn = voices.find((v) => v.lang && v.lang.startsWith('en'));
 	if (anyEn) return anyEn;
 
 	// 4. Fallback
-	return voices[0];
+	return voices[0] || null;
 }
 
 let activeUtterance = null; // Hold module-level reference to prevent Chromium garbage collection
@@ -333,7 +373,7 @@ export function speakText(text, onStart = null, onEnd = null) {
 			return;
 		}
 
-		// Cancel any ongoing speech — guarantees one voice at a time
+		// Cancel previous speech and resume if paused
 		if (window.speechSynthesis.paused) {
 			window.speechSynthesis.resume();
 		}
@@ -347,17 +387,22 @@ export function speakText(text, onStart = null, onEnd = null) {
 		}
 
 		const utterance = new SpeechSynthesisUtterance(cleaned);
-		activeUtterance = utterance; // Prevent garbage collection during speech in V8
+		activeUtterance = utterance; // Prevent garbage collection in V8
+		if (typeof window !== 'undefined') {
+			window.__astroUtterance = utterance;
+		}
 
 		utterance.rate = 0.92; // natural pace for young learners
 		utterance.pitch = 1.1; // friendly tone
 		utterance.lang = 'en-US';
 
 		// Resolve and apply voice (respects user's saved preference)
+		const liveVoices = window.speechSynthesis.getVoices();
 		const voices =
-			cachedVoices.length > 0 ?
-				cachedVoices
-			:	window.speechSynthesis.getVoices();
+			liveVoices && liveVoices.length > 0 ? liveVoices : cachedVoices;
+		if (voices && voices.length > 0) {
+			cachedVoices = voices;
+		}
 		const voice = resolveVoice(voices);
 		if (voice) {
 			utterance.voice = voice;
@@ -374,18 +419,18 @@ export function speakText(text, onStart = null, onEnd = null) {
 		};
 
 		utterance.onerror = (err) => {
-			console.warn('Speech synthesis utterance error:', err);
+			if (err.error !== 'interrupted' && err.error !== 'canceled') {
+				console.warn('Speech synthesis utterance error:', err);
+			}
 			activeUtterance = null;
 			if (onEnd) onEnd();
 		};
 
-		// Chromium workaround: small setTimeout ensures cancel() resolves cleanly before speak()
-		setTimeout(() => {
-			if (window.speechSynthesis.paused) {
-				window.speechSynthesis.resume();
-			}
-			window.speechSynthesis.speak(utterance);
-		}, 40);
+		// Speak immediately to preserve user gesture context in WebKit/Safari/Chromium
+		if (window.speechSynthesis.paused) {
+			window.speechSynthesis.resume();
+		}
+		window.speechSynthesis.speak(utterance);
 	} catch (err) {
 		console.warn('Speech synthesis error', err);
 		if (onEnd) onEnd();
