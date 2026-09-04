@@ -205,7 +205,7 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 - **Customizable Browser Voice Selection (Settings Section 7)**:
   - Dynamically detects and lists all speech synthesis voices installed in the user's browser/OS (with automatic retry for asynchronous voice loading in Chrome).
   - **"Auto (Recommended)" Mode**: Automatically selects clear, natural-sounding English voices (Google US English, Samantha, Jenny, etc.) with progressive fallback.
-  - **One-Click Live Audition**: Clicking any voice card immediately speaks *"Hello! I am ready to read questions for you."* so users can sample tone and pronunciation before saving.
+  - **One-Click Live Audition**: Clicking any voice card immediately speaks _"Hello! I am ready to read questions for you."_ so users can sample tone and pronunciation before saving.
   - **Persistent Voice Memory**: Persists the selected `voiceURI` in `localStorage` under `thinksheet_voice_uri` across sessions.
 - **No Duplicate Reading**: Intelligently strips emoji characters from sentences when reading text aloud, preventing speech synthesis from redundantly repeating the word and emoji name (e.g. _"How many shiny red apples are in the basket?"_ instead of _"shiny red apples red apple"_).
 - **Natural Analogy Pronunciation**: Translates colon analogy syntax (`::` ➔ `" as "`, `:` ➔ `" is to "`) into smooth speech.
