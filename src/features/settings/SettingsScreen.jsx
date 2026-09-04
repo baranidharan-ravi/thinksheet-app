@@ -14,11 +14,14 @@ import {
 	Plus,
 	RefreshCw,
 	Rocket,
+	RotateCcw,
+	Save,
 	Smile,
 	Sparkles,
 	Volume2,
+	X,
 } from 'lucide-react';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import {
 	fetchOnlineGeminiModels,
 	getAvailableGeminiModels,
@@ -92,11 +95,14 @@ const SettingsScreen = memo(function SettingsScreen({
 		() => getStoredVoiceURI() || '',
 	);
 
+	const [initialValues, setInitialValues] = useState(null);
+	const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+
 	const quickAges = [3, 4, 5, 6, 7, 8];
 
 	const handleFetchLiveModels = async () => {
 		playButtonPop(soundEnabled);
-		const targetKey = apiKey.trim() || getStoredApiKey();
+		const targetKey = apiKeyInput.trim() || getStoredApiKey();
 		if (!targetKey) {
 			setFetchModelStatus({
 				type: 'error',
@@ -128,25 +134,53 @@ const SettingsScreen = memo(function SettingsScreen({
 
 	useEffect(() => {
 		const existingTimer = getStoredTimerConfig();
-		setTimerEnabled(Boolean(existingTimer.enabled));
-		setTimerSeconds(Number(existingTimer.secondsPerQuestion) || 90);
-		setIsCustomTimer(
-			![45, 60, 90, 120, 180].includes(
-				Number(existingTimer.secondsPerQuestion),
-			),
-		);
-
-		setAutoAdvanceEnabled(
+		const initTimerEnabled = Boolean(existingTimer.enabled);
+		const initTimerSec = Number(existingTimer.secondsPerQuestion) || 90;
+		const initAutoAdvanceEnabled =
 			existingTimer.autoAdvanceEnabled !== undefined ?
 				Boolean(existingTimer.autoAdvanceEnabled)
-			:	true,
-		);
-		setAutoAdvanceSeconds(Number(existingTimer.autoAdvanceSeconds) || 7);
-		setIsCustomAutoAdvance(
-			![3, 5, 7, 10, 15].includes(Number(existingTimer.autoAdvanceSeconds)),
+			:	true;
+		const initAutoAdvanceSec =
+			Number(existingTimer.autoAdvanceSeconds) || 7;
+		const initName = getStoredKidName() || '';
+		const initAge = Number(getStoredKidAge() || 5);
+		const initApiKey = getStoredApiKey() || '';
+		const initModel = getStoredSelectedModel();
+		const initShowDiagrams = Boolean(getStoredShowVisualDiagrams());
+		const initVoiceURI = getStoredVoiceURI() || '';
+
+		setInitialValues({
+			name: initName,
+			age: initAge,
+			apiKey: initApiKey,
+			selectedModel: initModel,
+			timerEnabled: initTimerEnabled,
+			timerSeconds: initTimerSec,
+			autoAdvanceEnabled: initAutoAdvanceEnabled,
+			autoAdvanceSeconds: initAutoAdvanceSec,
+			showVisualDiagrams: initShowDiagrams,
+			selectedVoiceURI: initVoiceURI,
+		});
+
+		setNameInput(initName);
+		setAgeInput(initAge);
+		setApiKeyInput(initApiKey);
+		setSelectedModel(initModel);
+		setTimerEnabled(initTimerEnabled);
+		setTimerSeconds(initTimerSec);
+		setIsCustomTimer(
+			![45, 60, 90, 120, 180].includes(initTimerSec),
 		);
 
-		setIsCustomAge(!quickAges.includes(Number(getStoredKidAge() || 5)));
+		setAutoAdvanceEnabled(initAutoAdvanceEnabled);
+		setAutoAdvanceSeconds(initAutoAdvanceSec);
+		setIsCustomAutoAdvance(
+			![3, 5, 7, 10, 15].includes(initAutoAdvanceSec),
+		);
+
+		setIsCustomAge(!quickAges.includes(initAge));
+		setShowVisualDiagrams(initShowDiagrams);
+		setSelectedVoiceURI(initVoiceURI);
 
 		// Load available voices — Chrome loads them async, so retry after a delay
 		const loadVoices = () => {
@@ -159,6 +193,90 @@ const SettingsScreen = memo(function SettingsScreen({
 		const voiceTimer = setTimeout(loadVoices, 500);
 		return () => clearTimeout(voiceTimer);
 	}, []);
+
+	// Change detection: true if any setting differs from initial stored values
+	const isDirty = useMemo(() => {
+		if (!initialValues) return false;
+		return (
+			nameInput.trim() !== initialValues.name.trim() ||
+			Number(ageInput) !== Number(initialValues.age) ||
+			apiKeyInput.trim() !== initialValues.apiKey.trim() ||
+			selectedModel !== initialValues.selectedModel ||
+			timerEnabled !== initialValues.timerEnabled ||
+			Number(timerSeconds) !== Number(initialValues.timerSeconds) ||
+			autoAdvanceEnabled !== initialValues.autoAdvanceEnabled ||
+			Number(autoAdvanceSeconds) !== Number(initialValues.autoAdvanceSeconds) ||
+			showVisualDiagrams !== initialValues.showVisualDiagrams ||
+			selectedVoiceURI !== initialValues.selectedVoiceURI
+		);
+	}, [
+		initialValues,
+		nameInput,
+		ageInput,
+		apiKeyInput,
+		selectedModel,
+		timerEnabled,
+		timerSeconds,
+		autoAdvanceEnabled,
+		autoAdvanceSeconds,
+		showVisualDiagrams,
+		selectedVoiceURI,
+	]);
+
+	// Warn browser before tab close/refresh if unsaved changes exist
+	useEffect(() => {
+		if (!isDirty) return;
+		const handleBeforeUnload = (e) => {
+			e.preventDefault();
+			e.returnValue = '';
+		};
+		window.addEventListener('beforeunload', handleBeforeUnload);
+		return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+	}, [isDirty]);
+
+	// Intercept navigation if unsaved changes exist
+	const handleAttemptLeave = () => {
+		playButtonPop(soundEnabled);
+		if (isDirty) {
+			setShowUnsavedModal(true);
+		} else if (onBack) {
+			onBack();
+		}
+	};
+
+	// Discard unsaved changes and revert state back to original stored values
+	const handleRevertAndLeave = () => {
+		playButtonPop(soundEnabled);
+		if (initialValues) {
+			setNameInput(initialValues.name);
+			setAgeInput(initialValues.age);
+			setApiKeyInput(initialValues.apiKey);
+			setSelectedModel(initialValues.selectedModel);
+			setTimerEnabled(initialValues.timerEnabled);
+			setTimerSeconds(initialValues.timerSeconds);
+			setIsCustomTimer(
+				![45, 60, 90, 120, 180].includes(Number(initialValues.timerSeconds)),
+			);
+			setAutoAdvanceEnabled(initialValues.autoAdvanceEnabled);
+			setAutoAdvanceSeconds(initialValues.autoAdvanceSeconds);
+			setIsCustomAutoAdvance(
+				![3, 5, 7, 10, 15].includes(Number(initialValues.autoAdvanceSeconds)),
+			);
+			setIsCustomAge(!quickAges.includes(Number(initialValues.age)));
+			setShowVisualDiagrams(initialValues.showVisualDiagrams);
+			setSelectedVoiceURI(initialValues.selectedVoiceURI);
+		}
+		setShowUnsavedModal(false);
+		if (onBack) {
+			onBack();
+		}
+	};
+
+	// Save changes and proceed
+	const handleSaveAndLeave = async () => {
+		setShowUnsavedModal(false);
+		await handleSave();
+	};
 
 	const handleQuickAgeSelect = (age) => {
 		playButtonPop(soundEnabled);
@@ -254,6 +372,20 @@ const SettingsScreen = memo(function SettingsScreen({
 		saveStoredShowVisualDiagrams(showVisualDiagrams);
 		setStoredVoiceURI(selectedVoiceURI || null);
 
+		// Update initialValues to reflect newly saved state
+		setInitialValues({
+			name: trimmedName,
+			age: numAge,
+			apiKey: validationResult.cleanedKey,
+			selectedModel,
+			timerEnabled,
+			timerSeconds,
+			autoAdvanceEnabled,
+			autoAdvanceSeconds,
+			showVisualDiagrams,
+			selectedVoiceURI: selectedVoiceURI || '',
+		});
+
 		setIsValidating(false);
 		setSaveSuccess(true);
 
@@ -286,10 +418,7 @@ const SettingsScreen = memo(function SettingsScreen({
 				<div className='flex items-center gap-3'>
 					{hasProfile && onBack && (
 						<button
-							onClick={() => {
-								playButtonPop(soundEnabled);
-								onBack();
-							}}
+							onClick={handleAttemptLeave}
 							className='p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-slate-200 hover:text-white transition-all shadow-md cursor-pointer'
 							title='Back to Dashboard'>
 							<ArrowLeft className='w-5 h-5' />
@@ -994,10 +1123,7 @@ const SettingsScreen = memo(function SettingsScreen({
 						<button
 							type='button'
 							disabled={isValidating}
-							onClick={() => {
-								playButtonPop(soundEnabled);
-								onBack();
-							}}
+							onClick={handleAttemptLeave}
 							className='w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm transition-all cursor-pointer'>
 							Cancel
 						</button>
@@ -1030,6 +1156,68 @@ const SettingsScreen = memo(function SettingsScreen({
 					</button>
 				</div>
 			</div>
+
+			{/* Unsaved Changes Confirmation Modal */}
+			{showUnsavedModal && (
+				<div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200'>
+					<div className='bg-[#131642] border-2 border-amber-400/80 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(251,191,36,0.35)] text-center animate-in zoom-in-95 duration-200 relative'>
+						{/* Close icon button */}
+						<button
+							type='button'
+							onClick={() => {
+								playButtonPop(soundEnabled);
+								setShowUnsavedModal(false);
+							}}
+							className='absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer'
+							title='Close'>
+							<X className='w-5 h-5' />
+						</button>
+
+						<div className='w-16 h-16 rounded-3xl bg-amber-400/20 border border-amber-400/50 flex items-center justify-center mx-auto mb-4 text-amber-300'>
+							<AlertTriangle className='w-8 h-8' />
+						</div>
+
+						<h2 className='text-xl sm:text-2xl font-black text-white mb-2'>
+							Unsaved Changes Detected! ⚠️
+						</h2>
+
+						<p className='text-xs sm:text-sm text-slate-300 font-semibold mb-6 leading-relaxed'>
+							You modified your settings without saving. Please save your settings before navigating, or your changes will be discarded and reverted back to the previous values.
+						</p>
+
+						<div className='flex flex-col gap-3'>
+							{/* 1. Save & Continue */}
+							<button
+								type='button'
+								onClick={handleSaveAndLeave}
+								className='w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 hover:opacity-95 text-white font-black text-sm sm:text-base tracking-wider shadow-lg flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer'>
+								<Save className='w-4 h-4' />
+								<span>Save Settings & Continue 💾</span>
+							</button>
+
+							{/* 2. Discard & Revert */}
+							<button
+								type='button'
+								onClick={handleRevertAndLeave}
+								className='w-full py-3.5 px-5 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/50 text-rose-200 hover:text-white font-black text-sm tracking-wider flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer'>
+								<RotateCcw className='w-4 h-4 text-rose-300' />
+								<span>Discard Changes & Revert ↩️</span>
+							</button>
+
+							{/* 3. Keep Editing */}
+							<button
+								type='button'
+								onClick={() => {
+									playButtonPop(soundEnabled);
+									setShowUnsavedModal(false);
+								}}
+								className='w-full py-2.5 px-5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-bold text-xs sm:text-sm transition-all cursor-pointer'>
+								Keep Editing
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 });
