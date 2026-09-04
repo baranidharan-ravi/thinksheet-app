@@ -916,7 +916,9 @@ const VisualDiagram = memo(function VisualDiagram({
 		const qSource = data.question || data.questionText || data.raw || '';
 		if (
 			(rawItems.length === 0 ||
-				rawItems.every((it) => /^\d+(st|nd|rd|th)$/i.test(String(it).trim()))) &&
+				rawItems.every((it) =>
+					/^\d+(st|nd|rd|th)$/i.test(String(it).trim()),
+				)) &&
 			qSource
 		) {
 			const extracted = extractShapeSequenceTerms(qSource);
@@ -942,7 +944,12 @@ const VisualDiagram = memo(function VisualDiagram({
 			});
 
 		if (items.length === 0) {
-			items = ['Triangle (white)', 'Square (shaded)', 'Triangle (white)', 'Square (shaded)'];
+			items = [
+				'Triangle (white)',
+				'Square (shaded)',
+				'Triangle (white)',
+				'Square (shaded)',
+			];
 		}
 
 		const nextItem =

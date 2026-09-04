@@ -1,11 +1,12 @@
 import { Check, X as XIcon } from 'lucide-react';
 import { memo } from 'react';
 import { playButtonPop } from '../../utils/audioSynthesis';
-import {
-	DynamicSvgShape,
-	hasShapeOrVisualConcept,
-	parseDynamicShape,
-} from '../../utils/shapeGenerator';
+import
+	{
+		DynamicSvgShape,
+		hasShapeOrVisualConcept,
+		parseDynamicShape,
+	} from '../../utils/shapeGenerator';
 import { getConceptVisual, LazyVisualImage } from '../../utils/VisualDiagrams';
 
 const OptionsGrid = memo(function OptionsGrid({

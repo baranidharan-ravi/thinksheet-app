@@ -140,8 +140,7 @@ const SettingsScreen = memo(function SettingsScreen({
 			existingTimer.autoAdvanceEnabled !== undefined ?
 				Boolean(existingTimer.autoAdvanceEnabled)
 			:	true;
-		const initAutoAdvanceSec =
-			Number(existingTimer.autoAdvanceSeconds) || 7;
+		const initAutoAdvanceSec = Number(existingTimer.autoAdvanceSeconds) || 7;
 		const initName = getStoredKidName() || '';
 		const initAge = Number(getStoredKidAge() || 5);
 		const initApiKey = getStoredApiKey() || '';
@@ -168,15 +167,11 @@ const SettingsScreen = memo(function SettingsScreen({
 		setSelectedModel(initModel);
 		setTimerEnabled(initTimerEnabled);
 		setTimerSeconds(initTimerSec);
-		setIsCustomTimer(
-			![45, 60, 90, 120, 180].includes(initTimerSec),
-		);
+		setIsCustomTimer(![45, 60, 90, 120, 180].includes(initTimerSec));
 
 		setAutoAdvanceEnabled(initAutoAdvanceEnabled);
 		setAutoAdvanceSeconds(initAutoAdvanceSec);
-		setIsCustomAutoAdvance(
-			![3, 5, 7, 10, 15].includes(initAutoAdvanceSec),
-		);
+		setIsCustomAutoAdvance(![3, 5, 7, 10, 15].includes(initAutoAdvanceSec));
 
 		setIsCustomAge(!quickAges.includes(initAge));
 		setShowVisualDiagrams(initShowDiagrams);
@@ -1182,7 +1177,9 @@ const SettingsScreen = memo(function SettingsScreen({
 						</h2>
 
 						<p className='text-xs sm:text-sm text-slate-300 font-semibold mb-6 leading-relaxed'>
-							You modified your settings without saving. Please save your settings before navigating, or your changes will be discarded and reverted back to the previous values.
+							You modified your settings without saving. Please save your
+							settings before navigating, or your changes will be discarded and
+							reverted back to the previous values.
 						</p>
 
 						<div className='flex flex-col gap-3'>

@@ -691,7 +691,12 @@ function synchronizeDiagramData(
 			data.sequence =
 				emojis && emojis.length >= 2 ?
 					emojis
-				:	['Triangle (white)', 'Square (shaded)', 'Triangle (white)', 'Square (shaded)'];
+				:	[
+						'Triangle (white)',
+						'Square (shaded)',
+						'Triangle (white)',
+						'Square (shaded)',
+					];
 		}
 
 		if (Array.isArray(data.sequence)) {
