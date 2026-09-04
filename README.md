@@ -19,6 +19,11 @@ An engaging, visual-first React.js educational platform designed for early child
   8. **Dynamic Visual Synthesis Notice**: Displays an informative amber alert in Settings explaining that visual diagrams and option shapes are dynamically generated via cognitive models and AI prompts, so minor visual variations may occasionally occur.
   9. **Narrator Voice Selector** _(Customizable 🎙️)_: Choose from all text-to-speech voices supported by your web browser and operating system, with an **"Auto (Recommended)"** default option and instant one-click audition audio playback before saving.
 - **Live Verification on Save**: When clicking **"Save & Launch 🚀"**, the app sends an asynchronous test ping to Google Gemini API. If the key is invalid or expired, a clear red error is shown and the settings page remains open until a valid key is provided.
+- **Settings Dirty-State Guard & Save Confirmation Before Navigation**:
+  - Automatically tracks whether any setting (explorer name, age, API key, model selection, timer challenge, auto-advance delay, voice, or visual diagram preference) has been modified.
+  - If a user changes settings and attempts to navigate away without clicking **"Save Settings"**, an interactive confirmation dialog alerts the user:
+    - **"Save & Continue"**: Validates and saves changes immediately before navigating.
+    - **"Discard Changes"**: Reverts all settings back to their previously saved values, ensuring unconfirmed edits never bleed into the active session.
 - **Skill Selection Auto-Launch Flow**: If a user clicks a skill card without having entered an API key, the app transitions directly to the Settings page while remembering the targeted skill. Upon successful validation, it immediately launches the selected skill quest.
 
 ---
@@ -41,6 +46,28 @@ An engaging, visual-first React.js educational platform designed for early child
 - **Skip Question Option (`SkipForward ⏭️`)**:
   - Allows students to skip challenging or unfamiliar questions directly from the question screen.
   - Skipped questions are marked with an amber indicator in the top progress bar and recorded in the Question Summary and Result Overview (`{correctCount} Correct • {skippedCount} Skipped`).
+
+---
+
+### 2.1. 🛸 Immersive Space-Themed Cosmic Quest Loader (`CosmicQuestLoader.jsx`)
+
+- **Dynamic Space Mission Theater**:
+  - Replaced generic loading spinners with a custom, application-connected space theater that engages young explorers while the Gemini AI synthesizes questions.
+  - **Central Celestial AI Planet**: High-resolution cosmic sphere with atmospheric shading, glowing nebula aura, and Saturn-like tilted planetary ring (`rotate(-25deg)`).
+  - **Orbiting Vector Space Rocket**: Multi-polygon futuristic rocket orbiting along an elliptical 360° flight trajectory with animated stardust trails (`astroOrbitDust`) and a flickering plasma engine thruster plume (`thrusterFlame`).
+  - **Radar Pulses & Warp Gauge**: Dual pulsing radar rings and a sci-fi energy bar with animated gradient warp beam highlights.
+- **Dynamic Child Profile & Age Binding**:
+  - Automatically reads the explorer's name and age from active settings and persistent storage (`getStoredKidName()`, `getStoredKidAge()`), completely personalizing the loading experience:
+    - `"Plotting Flight Coordinates for {Name}..."`
+    - `"AI Neural Core Synthesizing Age {Age} Puzzles..."`
+    - `"Synthesizing 10 brand-new puzzles for {Name} (Age {Age})..."`
+    - Telemetry footer: `LEVEL: AGE {Age}` • `🟢 {NAME}'S LINK ONLINE`.
+- **Adaptive Skillset Extraction & Dynamic Theming**:
+  - Dynamically extracts the active skillset name from session props and `localStorage` (`thinksheet_selected_skill_v1`):
+    - **Visual Skillset**: Cyan and deep navy planetary gradient (`from-[#00E5FF] via-[#0284C7] to-[#0F172A]`), glowing `<Eye />` core icon, cyan ring, `👁️` orbiting stardust, and telemetry calibrating observation & visual patterns.
+    - **Analytical Thinking Skillset**: Purple and indigo planetary gradient (`from-[#A855F7] via-[#6366F1] to-[#1E1B4B]`), glowing `<Brain />` core icon, purple ring, `🧩` orbiting stardust, and telemetry calibrating analytical deduction & logic relationships.
+    - Dynamic Header: `Generating {Visual | Analytical Thinking} Challenges... {👁️ | 🧠}`.
+    - Live Telemetry Cue: `SKILL: VISUAL` or `SKILL: ANALYTICAL THINKING`.
 
 ---
 
@@ -74,20 +101,33 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 - **Mathematical Geometric Shape Engine (`shapeGenerator.jsx`)**:
   - **Dynamic Polygon Coordinate Math (`getRegularPolygonPoints`)**: Calculates vertex angles and Cartesian points for any regular polygon ($N \ge 3$):
-    - `Triangle` (3 sides), `Square` (4 sides), `Pentagon` (5 sides), `Hexagon` (6 sides), `Heptagon` (7 sides), `Octagon` (8 sides), `Nonagon` (9 sides), `Decagon` (10 sides), `Circle` (0 sides), `Star`, `Moon` (crescent), `Sun` (sunburst), `Diamond`.
+    - `Triangle` (3 sides), `Square` (4 sides), `Pentagon` (5 sides), `Hexagon` (6 sides), `Heptagon` (7 sides), `Octagon` (8 sides), `Nonagon` (9 sides), `Decagon` (10 sides), `Circle` (0 sides), `Star`, `Moon` (crescent), `Sun` (sunburst), `Heart`, `Diamond`.
+  - **Comprehensive Emoji & Symbol Parser (`parseDynamicShape`)**:
+    - Extensively recognizes Unicode geometric and celestial emojis:
+      - 🌙 Crescent moons (`🌙`, `🌛`, `🌜`, `🌔`, `🌖`, `🌘`, `🌒`) ➔ Parsed as `{ shape: 'moon', color: 'Gold' }`.
+      - ⭐ Stars (`⭐`, `🌟`, `✨`, `★`, `☆`) ➔ Parsed as `{ shape: 'star', color: 'Gold' }`.
+      - ☀️ Sunbursts (`☀️`, `🌞`, `🌅`) ➔ Parsed as `{ shape: 'sun', color: 'Gold' }`.
+      - ❤️ Hearts (`❤️`, `💙`, `💚`, `💛`, `💜`, `🧡`) ➔ Parsed as `{ shape: 'heart', color: 'Red/Colored' }`.
+      - 🔷 Diamonds (`🔷`, `🔹`, `🔶`, `🔸`, `◆`, `◇`).
+      - 🔴 Circles (`🔴`, `🔵`, `🟡`, `🟢`, `🟣`, `🟠`, `🟤`, `⚫`, `⚪`).
+      - 🟩 Squares (`🟩`, `🟥`, `🟦`, `🟨`, `🟪`, `🟧`, `🟫`, `⬛`, `⬜`).
+  - **Vector SVG Crescent Moon Path**:
+    - Implemented a smooth cubic Bezier vector crescent moon curve in `DynamicSvgShape`, eliminating jagged pixelated emojis and scaling cleanly in all screen resolutions.
+    - Protected 0-sided shapes (`moon`, `sun`, `heart`) from being shadowed or overridden by general circle checks.
   - **Color & Shading Styles**:
     - **White / Outline**: Clean `#FFFFFF` fill with high-contrast `#0F172A` borders.
-    - **Solid / Filled**: Vibrant solid fills (e.g. Amber `#F59E0B` for sun, Purple `#8B5CF6` for moon, Blue `#3B82F6` for star).
+    - **Solid / Filled**: Vibrant solid fills (e.g. Amber/Gold `#F59E0B` for sun, moon, and star, Crimson Red `#EF4444` for heart, Royal Blue `#3B82F6` for shapes).
     - **Striped / Hatching**: Crisp SVG vector diagonal hatch pattern (`<pattern id="...-striped">`).
     - **Dotted / Polka**: Crisp SVG vector dot pattern (`<pattern id="...-dotted">`).
-    - **Vibrant Colors**: _Blue_, _Green_, _Red_, _Cyan_, _Yellow_, _Orange_, _Purple_, _Pink_.
+    - **Vibrant Colors**: _Blue_, _Green_, _Red_, _Cyan_, _Yellow_, _Orange_, _Purple_, _Pink_, _Gold_.
   - **3x3 Matrix Grid Automatic Parsing (`parseMatrixGridFromQuestion`)**:
     - Automatically extracts matrix cells from questions describing Row 1, Row 2, and Row 3 (e.g. _Row 1 has a solid star, striped moon, and dotted sun_).
     - Pairs every cell with the exact shape (`Star`, `Moon`, `Sun`, etc.) and pattern (`Solid`, `Striped`, `Dotted`).
     - In Question mode: The unknown tile renders a purple dashed cell with `❓`.
     - In Solution mode: The target tile displays the correct answer tile highlighted in emerald green.
-  - **Clean & Uncluttered Visual Cards (`DynamicShapeCard`)**:
-    - Renders the exact geometric shape cleanly with its style tag (e.g. _Solid Star_, _Striped Moon_, _Dotted Sun_).
+  - **Clean & Deduplicated Visual Cards (`DynamicShapeCard`)**:
+    - Renders the exact geometric shape cleanly on a pedestal with a deduplicated style tag (e.g. `Gold Star`, `Gold Moon`, `Dotted Sun`).
+    - Prevents duplicate emoji output by ensuring the visual representation and text label never redundantly print identical emojis.
 - **Dynamic SVG Shapes & Concept Icons in Answer Option Cards (`OptionsGrid.jsx`)**:
   - Each answer option card (A, B, C, D) renders the exact mathematical SVG shape or concept visual icon alongside the answer text.
   - **Automatic Contrast Pedestals**:
@@ -217,6 +257,7 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 - **Celebratory Feedback**: 3D `COMPLETED` ribbon banner, glowing star ratings (1 to 3 stars), and confetti particle bursts.
 - **Detailed Question Summary Accordion**:
   - Detailed review comparing the child's selected answers against correct solutions.
+  - **"Expand All" & "Collapse All" Actions**: Header controls (`ChevronsDownUp` & `ChevronsUpDown`) allow parents and educators to effortlessly expand all 10 questions simultaneously for a comprehensive evaluation, or collapse them with a single click.
   - **Status Indicators**:
     - 🟢 **Correct Answer** (`CheckCircle2` with green card).
     - 🟡 **Skipped Question** (`SkipForward ⏭️` with amber card and `⏭️ Skipped (Not Answered)` label).
@@ -384,7 +425,8 @@ npm run deploy
 
 ## 📁 Project Structure
 
-```
+├── scripts/                                  # Repository utilities & maintenance
+│   └── fix-git-index.ps1                     # Automated Git index recovery script for Windows
 ├── server/                                   # Secure Node.js Express API reverse proxy
 │   └── index.js                              # Shields API keys, handles Gemini & Imagen routing via Axios
 src/
@@ -408,6 +450,7 @@ src/
 │   ├── aiGenerator.js                        # Google Gemini & Imagen 3 AI generation engine & live model discovery
 │   └── questionService.js                    # Question session pipeline & prompt orchestration
 ├── utils/                                    # Common utility logic & shared components
+│   ├── CosmicQuestLoader.jsx                 # Dynamic space mission loader with adaptive skillset theming
 │   ├── ErrorBoundary.jsx                     # Cosmic error boundary & clipboard error copy tool
 │   ├── Header.jsx                            # Shared top navigation & progress bar component
 │   ├── VisualDiagrams.jsx                    # Shared visual diagram rendering component
