@@ -2,6 +2,8 @@ import {
 	CheckCircle2,
 	ChevronDown,
 	ChevronUp,
+	ChevronsDown,
+	ChevronsUp,
 	Download,
 	LayoutGrid,
 	Lightbulb,
@@ -24,20 +26,44 @@ const QuestionSummary = memo(function QuestionSummary({
 	onBackToDashboard,
 	showVisualDiagrams = false,
 }) {
-	const [expandedIndex, setExpandedIndex] = useState(null);
+	// Track which question accordions are currently expanded
+	const [expandedIndices, setExpandedIndices] = useState(() => new Set());
 
 	const toggleExpand = useCallback(
 		(idx) => {
 			playButtonPop(soundEnabled);
-			setExpandedIndex((prev) => (prev === idx ? null : idx));
+			setExpandedIndices((prev) => {
+				const next = new Set(prev);
+				if (next.has(idx)) {
+					next.delete(idx);
+				} else {
+					next.add(idx);
+				}
+				return next;
+			});
 		},
 		[soundEnabled],
 	);
 
+	const handleExpandAll = useCallback(() => {
+		playButtonPop(soundEnabled);
+		const all = new Set(questions.map((_, i) => i));
+		setExpandedIndices(all);
+	}, [questions, soundEnabled]);
+
+	const handleCollapseAll = useCallback(() => {
+		playButtonPop(soundEnabled);
+		setExpandedIndices(new Set());
+	}, [soundEnabled]);
+
+	const isAllExpanded =
+		questions.length > 0 && expandedIndices.size === questions.length;
+	const isAllCollapsed = expandedIndices.size === 0;
+
 	return (
 		<div className='w-full max-w-5xl mx-auto px-4 py-6 flex flex-col items-center select-none animate-in fade-in zoom-in-95 duration-500'>
 			{/* Top Tabs */}
-			<div className='flex items-center gap-3 mb-8'>
+			<div className='flex items-center gap-3 mb-6'>
 				<button
 					onClick={() => {
 						playButtonPop(soundEnabled);
@@ -65,12 +91,60 @@ const QuestionSummary = memo(function QuestionSummary({
 				</button>
 			</div>
 
+			{/* Controls: Question count & Expand / Collapse All buttons */}
+			<div className='w-full flex items-center justify-between gap-3 mb-4 px-1'>
+				<div className='flex items-center gap-2'>
+					<span className='text-xs sm:text-sm font-black text-slate-300'>
+						{questions.length} Questions
+					</span>
+					<span className='text-xs font-bold text-slate-400 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full'>
+						{expandedIndices.size === questions.length ?
+							'All Expanded'
+						: expandedIndices.size === 0 ?
+							'All Collapsed'
+						:	`${expandedIndices.size} Expanded`}
+					</span>
+				</div>
+
+				<div className='flex items-center gap-2'>
+					{/* Expand All Button */}
+					<button
+						type='button'
+						onClick={handleExpandAll}
+						disabled={isAllExpanded}
+						className={`px-3 sm:px-3.5 py-1.5 rounded-xl border font-black text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-sm ${
+							isAllExpanded ?
+								'bg-white/5 border-white/10 text-slate-500 opacity-60 cursor-not-allowed'
+							:	'bg-[#181D58] hover:bg-[#232B78] border-[#38419D] text-cyan-300 hover:text-white cursor-pointer hover:scale-105 active:scale-95'
+						}`}
+						title='Expand all questions'>
+						<ChevronsDown className='w-4 h-4' />
+						<span>Expand All</span>
+					</button>
+
+					{/* Collapse All Button */}
+					<button
+						type='button'
+						onClick={handleCollapseAll}
+						disabled={isAllCollapsed}
+						className={`px-3 sm:px-3.5 py-1.5 rounded-xl border font-black text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-sm ${
+							isAllCollapsed ?
+								'bg-white/5 border-white/10 text-slate-500 opacity-60 cursor-not-allowed'
+							:	'bg-[#181D58] hover:bg-[#232B78] border-[#38419D] text-pink-300 hover:text-white cursor-pointer hover:scale-105 active:scale-95'
+						}`}
+						title='Collapse all questions'>
+						<ChevronsUp className='w-4 h-4' />
+						<span>Collapse All</span>
+					</button>
+				</div>
+			</div>
+
 			{/* Questions Accordion List */}
 			<div className='w-full flex flex-col gap-3'>
 				{questions.map((q, idx) => {
 					const userResult = history[idx] || {};
 					const isCorrect = userResult.isCorrect;
-					const isExpanded = expandedIndex === idx;
+					const isExpanded = expandedIndices.has(idx);
 					const userOption = q.options.find(
 						(o) => o.id === userResult.selectedOptionId,
 					);
