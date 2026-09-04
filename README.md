@@ -425,6 +425,7 @@ npm run deploy
 
 ## 📁 Project Structure
 
+```
 ├── scripts/                                  # Repository utilities & maintenance
 │   └── fix-git-index.ps1                     # Automated Git index recovery script for Windows
 ├── server/                                   # Secure Node.js Express API reverse proxy

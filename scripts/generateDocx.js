@@ -421,17 +421,26 @@ const docContent = [
 		'                             [No]            [Yes]',
 		'                              /                \\',
 		'  +--------------------------v---+        +-----v--------------------------+',
-		'  | 2. SETTINGS SCREEN           |        | 3. QUESTION PIPELINE           |',
+		'  | 2. SETTINGS SCREEN           |        | 3. QUESTION SYNTHESIS PIPELINE |',
 		'  |    - Enter Gemini Key        |        |    - questionService.js        |',
 		'  |    - Select AI Model         |        |    - Request 2 Batches (6+6)   |',
 		'  |    - Configure Timers/Voice  |        |    - Parse & Deduplicate       |',
 		'  |    - Live API Key Ping       |        |    - Guarantee 10 Questions    |',
-		'  +--------------+---------------+        +-----+--------------------------+',
+		'  |    - Dirty-State Guard       |        +-----+--------------------------+',
+		'  +--------------+---------------+              |',
 		'                 | (Saved & Validated)          |',
 		'                 +------------------------------+',
 		'                                                |',
 		'  +---------------------------------------------v--------------------------+',
-		'  | 4. INTERACTIVE QUEST INTERFACE (App.jsx)                               |',
+		'  | 4. COSMIC QUEST LOADER (CosmicQuestLoader.jsx)                         |',
+		'  |    - Dynamic Explorer Name & Age binding (Settings Storage)            |',
+		'  |    - Adaptive Skillset Theming: Visual (Eye) vs Analytical (Brain)     |',
+		'  |    - Orbiting vector space rocket, radar pulses, & warp energy gauge   |',
+		'  |    - Rotating mission telemetry steps & live link status               |',
+		'  +---------------------------------------------+--------------------------+',
+		'                                                | [Synthesis Complete]',
+		'  +---------------------------------------------v--------------------------+',
+		'  | 5. INTERACTIVE QUEST INTERFACE (App.jsx)                               |',
 		'  |    - QuestionCard.jsx: Age-calibrated prompt + TTS voice narration     |',
 		'  |    - VisualDiagrams.jsx: Dynamic SVG geometry / 3D towers / Matrices   |',
 		'  |    - OptionsGrid.jsx: Mathematical SVG options with contrast pedestal  |',
@@ -603,7 +612,7 @@ const docContent = [
 	),
 
 	createHeading2(
-		'4.4 Mathematical SVG Shape Engine (src/utils/shapeGenerator.jsx)',
+		'4.4 Mathematical SVG Shape Engine & Deduplication (src/utils/shapeGenerator.jsx)',
 	),
 	createParagraph(
 		'The shape generator provides procedural geometric generation without relying on raster image assets.',
@@ -611,6 +620,18 @@ const docContent = [
 	createBullet(
 		'Regular Polygon Geometry',
 		'getRegularPolygonPoints dynamically calculates trigonometric vertex points (x = r * cos(theta), y = r * sin(theta)) for triangles, pentagons, hexagons, heptagons, octagons, nonagons, and decagons.',
+	),
+	createBullet(
+		'Vector Crescent Moon & Celestial Geometries',
+		'Implemented a smooth cubic Bezier vector crescent moon curve in DynamicSvgShape and decoupled 0-sided shapes (moon, sun, heart) from circle intercept conditions, rendering scalable vector art for celestial patterns.',
+	),
+	createBullet(
+		'Comprehensive Emoji Parser (parseDynamicShape)',
+		'Directly extracts and normalizes celestial emojis (moon, sun, lightning, cloud), hearts, stars, and geometric blocks into structured shape objects with appropriate theme color mappings.',
+	),
+	createBullet(
+		'Label Deduplication Safeguard (DynamicShapeCard)',
+		'Ensures that card headers and text subtitles never redundantly repeat identical emoji symbols, displaying clean deduplicated labels (e.g. Gold Star, Gold Moon).',
 	),
 	createBullet(
 		'Vector Hatching & Patterns',
@@ -650,6 +671,51 @@ const docContent = [
 	createBullet(
 		'Multi-Model Fallback Chain',
 		'Attempts generation on the user-selected model first; if rate-limited or unavailable, cascades through gemini-3.5-flash-lite -> gemini-3.5-flash -> gemini-3-flash-preview -> gemini-2.5-flash.',
+	),
+
+	createHeading2(
+		'4.6 Space-Themed Cosmic Quest Loader (src/utils/CosmicQuestLoader.jsx)',
+	),
+	createParagraph(
+		'Replaces generic loading spinners with an interactive cosmic space mission theater providing rich real-time visual feedback while AI generates questions.',
+	),
+	createBullet(
+		'Immersive Space Mission Theater',
+		'Features an orbiting vector rocket with dynamic plasma thruster flame (thrusterFlame), planetary rings, dual radar pulses, and a sci-fi energy warp progress bar.',
+	),
+	createBullet(
+		'Dynamic Explorer Profile Binding',
+		'Automatically binds the child\'s name and age from settings storage (getStoredKidName(), getStoredKidAge()), customizing telemetry steps and mission status cues.',
+	),
+	createBullet(
+		'Adaptive Skillset Extraction & Theming',
+		'Dynamically queries the active skill from props or storage (getStoredSelectedSkill()), automatically adapting the loader\'s aesthetic: Visual (Cyan palette, glowing Eye core, eye particles) vs. Analytical Thinking (Purple palette, glowing Brain core, puzzle particles).',
+	),
+
+	createHeading2(
+		'4.7 Settings Dirty-State Guard & Confirmation Engine (src/features/settings/SettingsScreen.jsx)',
+	),
+	createParagraph(
+		'Safeguards configuration modifications from accidental navigation loss.',
+	),
+	createBullet(
+		'Unsaved Changes Interception',
+		'Tracks granular dirty-state across all configuration parameters (name, age, API key, model, timer, auto-advance, voice, visual diagrams).',
+	),
+	createBullet(
+		'Navigation Guard Dialog',
+		'If the user attempts to navigate back to the dashboard with unsaved modifications, an interactive modal warns the user with options to "Save & Continue" or "Discard Changes" (safely reverting to saved state).',
+	),
+
+	createHeading2(
+		'4.8 Question Review Accordion & Batch Controls (src/features/results/QuestionSummary.jsx)',
+	),
+	createParagraph(
+		'Streamlines evaluation of the completed quest with one-click batch controls.',
+	),
+	createBullet(
+		'Batch Expansion Controls',
+		'Equips the question review accordion with Expand All (ChevronsDownUp) and Collapse All (ChevronsUpDown) action buttons, enabling teachers and parents to review all 10 solutions simultaneously with a single click.',
 	),
 
 	// SECTION 5: SECURITY ARCHITECTURE
@@ -784,7 +850,7 @@ const docContent = [
 			[
 				'Mathematical SVG Shapes',
 				'Draws procedural regular polygons (triangles to decagons), diagonal hatches, dots, and outlines.',
-				'Visual Diagrams toggle: Disabled by Default (Hidden / Shown).',
+				'Visual Diagrams toggle: Shown or Hidden.',
 				'utils/shapeGenerator.jsx',
 			],
 			[
@@ -836,6 +902,30 @@ const docContent = [
 				'features/quest/ExitConfirmationModal.jsx',
 			],
 			[
+				'Cosmic Quest Loader',
+				'Interactive space mission theater with orbiting vector rocket, plasma flame, and real-time telemetry.',
+				'Adaptive theming: Visual (Eye) vs Analytical (Brain); dynamic name/age.',
+				'utils/CosmicQuestLoader.jsx',
+			],
+			[
+				'Settings Dirty-State Guard',
+				'Intercepts navigation with unsaved changes; offers to save or safely discard edits.',
+				'Confirmation modal on navigating back with uncommitted changes.',
+				'features/settings/SettingsScreen.jsx',
+			],
+			[
+				'Question Review Accordion',
+				'Expand or collapse all 10 question reviews simultaneously for rapid parent/educator evaluation.',
+				'"Expand All" and "Collapse All" toggle buttons.',
+				'features/results/QuestionSummary.jsx',
+			],
+			[
+				'Vector Moon & Celestial Shapes',
+				'Mathematical SVG crescent curve, emoji recognition, and deduplicated card label display.',
+				'Automatic via dynamic shape parser and SVG renderer.',
+				'utils/shapeGenerator.jsx',
+			],
+			[
 				'Multi-Page PDF Report',
 				'Generates personalized multi-page PDF session summary with integrated header score & options.',
 				'Download PDF Report (📄) button on Results page.',
@@ -877,6 +967,10 @@ const docContent = [
 	createBullet(
 		'Single-Voice Guarantee Test',
 		'Verified rapid clicking of question speech and hint buttons: prior utterance cancels immediately with zero voice stacking.',
+	),
+	createBullet(
+		'Automated Windows Git Index Integrity Tool (scripts/fix-git-index.ps1)',
+		'Configured Git filesystem synchronization (git config core.fsync index,committed) and added standalone PowerShell recovery script scripts/fix-git-index.ps1 and npm shortcut "npm run fix-git" to instantly recover from zero-byte Windows index truncation (fatal: .git/index: index file smaller than expected) without data loss.',
 	),
 ];
 
@@ -969,17 +1063,26 @@ The application synthesizes strictly dynamic mathematical diagrams, polygonal SV
                              [No]            [Yes]
                               /                \\
   +--------------------------v---+        +-----v--------------------------+
-  | 2. SETTINGS SCREEN           |        | 3. QUESTION PIPELINE           |
+  | 2. SETTINGS SCREEN           |        | 3. QUESTION SYNTHESIS PIPELINE |
   |    - Enter Gemini Key        |        |    - questionService.js        |
   |    - Select AI Model         |        |    - Request 2 Batches (6+6)   |
   |    - Configure Timers/Voice  |        |    - Parse & Deduplicate       |
   |    - Live API Key Ping       |        |    - Guarantee 10 Questions    |
-  +--------------+---------------+        +-----+--------------------------+
+  |    - Dirty-State Guard       |        +-----+--------------------------+
+  +--------------+---------------+              |
                  | (Saved & Validated)          |
                  +------------------------------+
                                                 |
   +---------------------------------------------v--------------------------+
-  | 4. INTERACTIVE QUEST INTERFACE (App.jsx)                               |
+  | 4. COSMIC QUEST LOADER (CosmicQuestLoader.jsx)                         |
+  |    - Dynamic Explorer Name & Age binding (Settings Storage)            |
+  |    - Adaptive Skillset Theming: Visual (Eye) vs Analytical (Brain)     |
+  |    - Orbiting vector space rocket, radar pulses, & warp energy gauge   |
+  |    - Rotating mission telemetry steps & live link status               |
+  +---------------------------------------------+--------------------------+
+                                                | [Synthesis Complete]
+  +---------------------------------------------v--------------------------+
+  | 5. INTERACTIVE QUEST INTERFACE (App.jsx)                               |
   |    - QuestionCard.jsx: Age-calibrated prompt + TTS voice narration     |
   |    - VisualDiagrams.jsx: Dynamic SVG geometry / 3D towers / Matrices   |
   |    - OptionsGrid.jsx: Mathematical SVG options with contrast pedestal  |
@@ -1093,8 +1196,11 @@ The application synthesizes strictly dynamic mathematical diagrams, polygonal SV
 - **Text Sanitization & Pronunciation**: Cleans text strings using regex to eliminate redundant emoji reading (e.g. "shiny red apples" instead of "shiny red apples red apple") and translates relational analogy colon syntax (\`::\` -> " as ", \`:\` -> " is to ").
 - **Browser Voice Discovery & Preference**: \`getAvailableVoices\` queries all installed OS voices. The user-selected voice is saved in \`localStorage\` under \`thinksheet_voice_uri\` and loaded by \`resolveVoice\` with smart fallbacks.
 
-### 4.4 Mathematical SVG Shape Engine (\`src/utils/shapeGenerator.jsx\`)
+### 4.4 Mathematical SVG Shape Engine & Deduplication (\`src/utils/shapeGenerator.jsx\`)
 - **Regular Polygon Geometry**: \`getRegularPolygonPoints\` dynamically calculates trigonometric vertex points ($x = r \\cdot \\cos(\\theta), y = r \\cdot \\sin(\\theta)$) for triangles, pentagons, hexagons, heptagons, octagons, nonagons, and decagons.
+- **Vector Crescent Moon & Celestial Geometries**: Implemented a smooth cubic Bezier vector crescent moon curve in \`DynamicSvgShape\` and decoupled 0-sided shapes (\`moon\`, \`sun\`, \`heart\`) from circle intercept conditions, rendering scalable vector art for celestial patterns.
+- **Comprehensive Emoji Parser (\`parseDynamicShape\`)**: Directly extracts and normalizes celestial emojis (\`🌙\`, \`🌛\`, \`☀️\`, \`⚡\`, \`☁️\`), hearts (\`❤️\`), stars (\`⭐\`), and geometric blocks into structured shape objects with appropriate theme color mappings.
+- **Label Deduplication Safeguard (\`DynamicShapeCard\`)**: Ensures that card headers and text subtitles never redundantly repeat identical emoji symbols, displaying clean deduplicated labels (e.g. \`Gold Star\`, \`Gold Moon\`).
 - **Vector Hatching & Patterns**: Injects SVG \`<defs>\` containing \`<pattern id="...-striped">\` with 45-degree diagonal lines and \`<pattern id="...-dotted">\` with radial dot arrays.
 - **3x3 Matrix Grid Parser**: \`parseMatrixGridFromQuestion\` extracts Row 1, Row 2, and Row 3 descriptions from question text, populating a 9-cell grid with interactive question marks and emerald solution highlights.
 - **3D Isometric Cube Towers**: Computes isometric projections with depth-sorted back-to-front rendering and dynamic face shading (top: light, left: medium, right: dark).
@@ -1105,6 +1211,21 @@ The application synthesizes strictly dynamic mathematical diagrams, polygonal SV
 - **String Normalization & Signature Tracking**: Applies \`normalizeText\` to strip punctuation and case, checking against \`SEEN_QUESTIONS_KEY\` in browser storage to prevent repetition across sessions.
 - **Automated Top-Up Pass**: If deduplication yields 8 or 9 questions, immediately fetches a top-up batch to guarantee exactly 10 questions.
 - **Multi-Model Fallback Chain**: Attempts generation on the user-selected model first; if rate-limited or unavailable, cascades through \`gemini-3.5-flash-lite\` -> \`gemini-3.5-flash\` -> \`gemini-3-flash-preview\` -> \`gemini-2.5-flash\`.
+
+### 4.6 Space-Themed Cosmic Quest Loader (\`src/utils/CosmicQuestLoader.jsx\`)
+- **Immersive Space Mission Theater**: Replaces generic loading spinners with an interactive cosmic space station featuring an orbiting vector rocket, plasma thruster fire (\`thrusterFlame\`), planetary rings, dual radar pulses, and a sci-fi energy warp bar.
+- **Dynamic Explorer Profile Binding**: Automatically binds the child's name and age from settings storage (\`getStoredKidName()\`, \`getStoredKidAge()\`), customizing every telemetry step and status cue.
+- **Adaptive Skillset Extraction & Theming**: Dynamically queries the active skill from props or persistent storage (\`getStoredSelectedSkill()\`), automatically adapting the loader's aesthetic:
+  - **Visual**: Cyan / Blue space palette, glowing \`<Eye />\` planetary core, cyan orbital rings, \`👁️\` orbiting particles, and telemetry calibrating observation & pattern synthesis.
+  - **Analytical Thinking**: Purple / Indigo space palette, glowing \`<Brain />\` planetary core, purple orbital rings, \`🧩\` orbiting particles, and telemetry calibrating deduction & relationship analysis.
+  - **Telemetry Status Display**: Real-time age level indicator and live explorer link online indicator.
+
+### 4.7 Settings Dirty-State Guard & Confirmation Engine (\`src/features/settings/SettingsScreen.jsx\`)
+- **Unsaved Changes Interception**: Tracks granular dirty-state across all configuration parameters (name, age, API key, model, timer, auto-advance, voice, visual diagrams).
+- **Navigation Guard Dialog**: If the user attempts to navigate back to the dashboard with unsaved modifications, an interactive modal warns the user with options to "Save & Continue" or "Discard Changes" (safely reverting to saved state).
+
+### 4.8 Question Review Accordion & Batch Controls (\`src/features/results/QuestionSummary.jsx\`)
+- **Batch Expansion Controls**: Equips the question review accordion with **Expand All (\`ChevronsDownUp\`)** and **Collapse All (\`ChevronsUpDown\`)** action buttons, enabling teachers and parents to review all 10 solutions simultaneously with a single click.
 
 ---
 
@@ -1164,6 +1285,10 @@ The active 1-second countdown timer runs continuously during gameplay. If not pr
 | **Cognitive Hint Modal** | Opens age-appropriate hints to guide the explorer without giving away the direct answer. | Zap (⚡) hint button in bottom action bar. | features/quest/HintModal.jsx |
 | **AI Tutor Doubt Explainer** | Explains confusing concepts interactively using friendly space-tutor persona prompts. | Ask Space Tutor (🤖) button on solution reveal. | features/quest/AskDoubtModal.jsx |
 | **Streamlined Exit Workflow** | Confirms mid-quiz exits safely without generating incomplete or premature PDF reports. | Exit button in top navigation bar. | features/quest/ExitConfirmationModal.jsx |
+| **Cosmic Quest Loader** | Interactive space mission theater with orbiting vector rocket, plasma flame, and real-time telemetry. | Adaptive theming: Visual (Eye) vs Analytical (Brain); dynamic name/age. | utils/CosmicQuestLoader.jsx |
+| **Settings Dirty-State Guard** | Intercepts navigation with unsaved changes; offers to save or safely discard edits. | Confirmation modal on navigating back with uncommitted changes. | features/settings/SettingsScreen.jsx |
+| **Question Review Accordion** | Expand or collapse all 10 question reviews simultaneously for rapid parent/educator evaluation. | "Expand All" and "Collapse All" toggle buttons. | features/results/QuestionSummary.jsx |
+| **Vector Moon & Celestial Shapes** | Mathematical SVG crescent curve, emoji recognition, and deduplicated card label display. | Automatic via dynamic shape parser and SVG renderer. | utils/shapeGenerator.jsx |
 | **Multi-Page PDF Report** | Generates personalized multi-page PDF session summary with integrated header score & options. | Download PDF Report (📄) button on Results page. | utils/pdfGenerator.js |
 | **Cosmic Error Boundary** | Shields application from runtime crashes with kid-friendly recovery and clipboard error copying. | Refresh & Continue, Reset Cache, Copy Error Details. | utils/ErrorBoundary.jsx |
 | **Network Retry Middleware** | Automatically retries dropped connections 3 times with exponential backoff and toast notification. | Automatic via Axios interceptors + floating DOM toast. | services/apiClient.js |
@@ -1176,6 +1301,9 @@ The active 1-second countdown timer runs continuously during gameplay. If not pr
 - **Zero Fetch Remnants**: Verified project-wide via automated AST grep script: 100% of HTTP calls route through Axios.
 - **Strict Type & Syntax Validation**: Verified \`server/index.js\` and all React components using \`node -c\` and esbuild transform.
 - **Single-Voice Guarantee Test**: Verified rapid clicking of question speech and hint buttons: prior utterance cancels immediately with zero voice stacking.
+- **Automated Windows Git Index Integrity Tool (\`scripts/fix-git-index.ps1\`)**:
+  - Configured Git filesystem synchronization (\`git config core.fsync index,committed\`).
+  - Added standalone PowerShell recovery script \`scripts/fix-git-index.ps1\` and npm shortcut \`npm run fix-git\` to instantly recover from zero-byte Windows index truncation (\`fatal: .git/index: index file smaller than expected\`) without data loss.
 `;
 
 const outputMdPath = path.join(
