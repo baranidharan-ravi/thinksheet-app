@@ -1,8 +1,8 @@
 # 🚀 AstroQuest: Technical Architecture & Implementation Documentation
 
-**Document Version**: 2.0.0 (Production Edition)  
-**Classification**: Engineering Design & Technical Implementation Specification  
-**Target Platforms**: Modern Web Browsers (Chrome, Edge, Safari, Firefox), Desktop, Tablet, Mobile Responsive  
+**Document Version**: 2.0.0 (Production Edition)
+**Classification**: Engineering Design & Technical Implementation Specification
+**Target Platforms**: Modern Web Browsers (Chrome, Edge, Safari, Firefox), Desktop, Tablet, Mobile Responsive
 
 ---
 

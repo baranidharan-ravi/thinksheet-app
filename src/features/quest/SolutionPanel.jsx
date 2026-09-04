@@ -134,12 +134,12 @@ const SolutionPanel = memo(function SolutionPanel({
 				</div>
 			</div>
 
-			{/* NEXT BUTTON: Positioned right below the Solution section for instant access */}
+			{/* NEXT BUTTON: Sticky at the bottom of the screen */}
 			{onNext && (
-				<div className='flex justify-end mt-1'>
+				<div className='sticky bottom-0 sm:bottom-2 z-30 flex justify-end mt-2 pt-2.5 pb-2 px-2 bg-[#0C1033]/95 backdrop-blur-md rounded-2xl border-t border-white/15 shadow-[0_-8px_25px_rgba(0,0,0,0.5)]'>
 					<button
 						onClick={onNext}
-						className='w-full sm:w-auto px-10 py-3.5 sm:py-4 rounded-full bg-[#FF5B84] hover:bg-[#FF435A] text-white font-black text-sm sm:text-lg tracking-wider uppercase hover:scale-105 active:scale-95 shadow-[0_8px_20px_rgba(255,91,132,0.5)] flex items-center justify-center gap-2 cursor-pointer transition-all animate-bounce-short'>
+						className='w-full sm:w-auto px-10 py-3.5 sm:py-4 rounded-full bg-[#FF5B84] hover:bg-[#FF435A] text-white font-black text-sm sm:text-lg tracking-wider uppercase hover:scale-105 active:scale-95 shadow-[0_8px_25px_rgba(255,91,132,0.6)] flex items-center justify-center gap-2 cursor-pointer transition-all animate-bounce-short border-2 border-white/20'>
 						<span>
 							{hasCountdown ?
 								`Next (${autoAdvanceCountdown}s)`

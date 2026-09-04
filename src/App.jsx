@@ -778,8 +778,8 @@ export default function App() {
 										/>
 									</div>
 
-									{/* Action Bar aligned at the bottom */}
-									<div className='flex items-center justify-between gap-3 pt-3 mt-auto select-none border-t border-white/10'>
+									{/* Action Bar sticky at the bottom */}
+									<div className='sticky bottom-0 sm:bottom-2 z-30 flex items-center justify-between gap-3 py-3 px-3 sm:px-4 mt-auto select-none border-t border-white/15 bg-[#0C1033]/95 backdrop-blur-md rounded-2xl shadow-[0_-8px_25px_rgba(0,0,0,0.5)]'>
 										<div className='flex items-center gap-2 sm:gap-3'>
 											{/* Power-up Hint Button */}
 											<button

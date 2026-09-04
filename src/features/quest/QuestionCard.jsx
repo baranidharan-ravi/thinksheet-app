@@ -10,7 +10,7 @@ const QuestionCard = memo(function QuestionCard({
 	onZoomClick,
 	soundEnabled,
 	isSubmitted = false,
-	showVisualDiagrams = true,
+	showVisualDiagrams = false,
 }) {
 	const [isSpeaking, setIsSpeaking] = useState(false);
 

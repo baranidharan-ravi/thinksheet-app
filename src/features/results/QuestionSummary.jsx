@@ -22,7 +22,7 @@ const QuestionSummary = memo(function QuestionSummary({
 	setActiveTab,
 	soundEnabled,
 	onBackToDashboard,
-	showVisualDiagrams = true,
+	showVisualDiagrams = false,
 }) {
 	const [expandedIndex, setExpandedIndex] = useState(null);
 

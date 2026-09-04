@@ -25,7 +25,7 @@ const SkillSelectionDashboard = memo(function SkillSelectionDashboard({
 		autoAdvanceEnabled: true,
 		autoAdvanceSeconds: 7,
 	},
-	showVisualDiagrams = true,
+	showVisualDiagrams = false,
 }) {
 	const [infoModalTopic, setInfoModalTopic] = useState(null);
 	const [hasApiKey, setHasApiKey] = useState(false);

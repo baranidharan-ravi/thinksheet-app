@@ -784,8 +784,14 @@ const docContent = [
 			[
 				'Mathematical SVG Shapes',
 				'Draws procedural regular polygons (triangles to decagons), diagonal hatches, dots, and outlines.',
-				'Visual Diagrams toggle: Shown or Hidden.',
+				'Visual Diagrams toggle: Disabled by Default (Hidden / Shown).',
 				'utils/shapeGenerator.jsx',
+			],
+			[
+				'Sticky Submit & Next Buttons',
+				'Submit action bar (Hint, Skip, Submit) and Solution Next button remain sticky at bottom of screen when options or solutions scroll.',
+				'Always docked with glassmorphic cosmic blur backdrop.',
+				'App.jsx & SolutionPanel.jsx',
 			],
 			[
 				'Spatial & Physics Diagrams',

@@ -15,7 +15,7 @@ An engaging, visual-first React.js educational platform designed for early child
   4. **Gemini AI Model Selection** _(Selectable 🤖)_: Choose between `gemini-3.5-flash-lite` _(Recommended)_, `gemini-3.5-flash`, `gemini-3-flash-preview`, and `gemini-2.5-flash`.
   5. **Per-Question Time Limit** _(Optional ⏱️)_: Toggle ON/OFF, select preset limits (`45s`, `60s`, `90s`, `2m`, `3m`), or set a custom duration (`15s`–`300s`).
   6. **Next Question Auto-Advance Delay** _(Optional ⏩)_: Toggle Auto-Advance ON/OFF, select preset delay (`3s`, `5s`, `7s Default`, `10s`, `15s`), or set a custom delay (`2s`–`30s`).
-  7. **Visual Diagrams & Clues Display** _(Optional 👁️)_: Toggle ON/OFF (`👁️ Shown` / `🙈 Hidden`) to choose whether interactive geometric diagrams, 3x3 matrices, sequence patterns, and STEM illustrations appear alongside questions **and** inside answer option cards. When disabled, option cards cleanly hide all shape containers and render full-width text choices.
+  7. **Visual Diagrams & Clues Display** _(Optional 👁️ - Disabled by Default)_: Toggle ON/OFF (`🙈 Hidden Default` / `👁️ Shown`) to choose whether interactive geometric diagrams, 3x3 matrices, sequence patterns, and STEM illustrations appear alongside questions **and** inside answer option cards. When disabled, option cards cleanly hide all shape containers and render full-width text choices.
   8. **Dynamic Visual Synthesis Notice**: Displays an informative amber alert in Settings explaining that visual diagrams and option shapes are dynamically generated via cognitive models and AI prompts, so minor visual variations may occasionally occur.
   9. **Narrator Voice Selector** _(Customizable 🎙️)_: Choose from all text-to-speech voices supported by your web browser and operating system, with an **"Auto (Recommended)"** default option and instant one-click audition audio playback before saving.
 - **Live Verification on Save**: When clicking **"Save & Launch 🚀"**, the app sends an asynchronous test ping to Google Gemini API. If the key is invalid or expired, a clear red error is shown and the settings page remains open until a valid key is provided.
@@ -156,14 +156,13 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ---
 
-### 6. 📐 Symmetrical Layout, Skip Option & Live Timer on Submit
+### 6. 📐 Symmetrical Layout, Skip Option & Sticky Bottom Submit / Next Buttons
 
 - **Equal-Height Cards**: The left Question Card and right Options Section share identical vertical heights (`items-stretch` & `h-full`), keeping prompts and visual diagrams neatly centered.
 - **Expanding Options Grid**: Option buttons dynamically expand (`flex-1 h-full`) to fill available vertical space.
-- **Bottom-Anchored Action Bar**:
-  - **Power-up Hint Button (`Zap ⚡`)**: Opens age-appropriate cognitive hints.
-  - **Skip Question Button (`SkipForward ⏭️`)**: Lets the student skip the current question anytime. It plays a friendly confirmation tone, announces `"Question skipped"`, and advances directly to the next question.
-  - **Submit Button with Live Countdown**: Anchored at the bottom-right (`mt-auto border-t border-white/10`).
+- **Sticky Bottom Action Bar & Next Button**:
+  - Both the active Submit action bar (containing Hint, Skip, and Submit) and the SolutionPanel Next button are positioned with `sticky bottom-0 sm:bottom-2 z-30` paired with a translucent cosmic backdrop blur (`bg-[#0C1033]/95 backdrop-blur-md`).
+  - When options content or solution cards cause vertical scrolling or overflow, the buttons remain docked at the bottom of the viewport so students never need to scroll down to submit an answer or advance.
 - **Real-Time Countdown on Submit**: When the timer challenge is active, the Submit button displays the remaining countdown badge (e.g. `Submit ⏱️ 01:30`) with animated color urgency alerts:
   - **Normal (> 15s)**: Dark translucent pill (`bg-black/30 text-white/90`).
   - **Warning (<= 15s)**: Pulsating amber alert (`bg-amber-950/80 text-amber-300`).

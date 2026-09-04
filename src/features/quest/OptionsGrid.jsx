@@ -15,7 +15,7 @@ const OptionsGrid = memo(function OptionsGrid({
 	isSubmitted,
 	correctAnswerId,
 	soundEnabled,
-	showVisualDiagrams = true,
+	showVisualDiagrams = false,
 }) {
 	return (
 		<div className='grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4.5 p-1 flex-1 h-full w-full'>

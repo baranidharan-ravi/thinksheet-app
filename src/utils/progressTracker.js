@@ -56,7 +56,7 @@ export function saveStoredTimerConfig(config) {
 	}
 }
 
-const VISUAL_DIAGRAMS_CONFIG_KEY = 'astroquest_show_visual_diagrams_v1';
+const VISUAL_DIAGRAMS_CONFIG_KEY = 'astroquest_show_visual_diagrams_v2';
 
 export function getStoredShowVisualDiagrams() {
 	try {
@@ -65,7 +65,7 @@ export function getStoredShowVisualDiagrams() {
 			return raw === 'true';
 		}
 	} catch {}
-	return true; // Default to true (visual diagrams enabled)
+	return false; // Default to false (visual diagrams disabled by default)
 }
 
 export function saveStoredShowVisualDiagrams(show) {
