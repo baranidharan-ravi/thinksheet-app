@@ -1,29 +1,52 @@
 import { Brain, Orbit } from 'lucide-react';
-import { memo, useEffect, useState } from 'react';
-
-const MISSION_STEPS = [
-	{ icon: '🚀', title: 'Plotting Flight Coordinates into Deep Space...' },
-	{ icon: '🪐', title: 'Scanning Star Clusters for Cosmic Puzzles...' },
-	{ icon: '🧠', title: 'AI Neural Core Synthesizing Customized Challenges...' },
-	{ icon: '✨', title: 'Calibrating Visual & Logic Patterns...' },
-	{ icon: '🛰️', title: 'Transmission Locked! Preparing Mission Launch...' },
-];
+import { memo, useEffect, useMemo, useState } from 'react';
+import { getStoredKidAge, getStoredKidName } from './progressTracker';
 
 const CosmicQuestLoader = memo(function CosmicQuestLoader({
 	selectedSkill = 'Visual',
-	kidName = 'Explorer',
-	kidAge = 5,
+	kidName,
+	kidAge,
 }) {
+	// Dynamically resolve child's name and age directly from settings storage if not passed or empty
+	const effectiveName = (kidName && String(kidName).trim()) || getStoredKidName() || 'Explorer';
+	const effectiveAge = Number(kidAge) || Number(getStoredKidAge()) || 5;
+
+	const missionSteps = useMemo(
+		() => [
+			{
+				icon: '🚀',
+				title: `Plotting Flight Coordinates for ${effectiveName}...`,
+			},
+			{
+				icon: '🪐',
+				title: `Scanning Deep Space for ${selectedSkill} Challenges...`,
+			},
+			{
+				icon: '🧠',
+				title: `AI Neural Core Synthesizing Age ${effectiveAge} Puzzles...`,
+			},
+			{
+				icon: '✨',
+				title: `Calibrating Customized Logic & Visual Patterns...`,
+			},
+			{
+				icon: '🛰️',
+				title: `Mission Locked for Astronaut ${effectiveName}! Launching...`,
+			},
+		],
+		[effectiveName, effectiveAge, selectedSkill],
+	);
+
 	const [stepIndex, setStepIndex] = useState(0);
 
 	useEffect(() => {
 		const interval = setInterval(() => {
-			setStepIndex((prev) => (prev + 1) % MISSION_STEPS.length);
+			setStepIndex((prev) => (prev + 1) % missionSteps.length);
 		}, 1800);
 		return () => clearInterval(interval);
-	}, []);
+	}, [missionSteps.length]);
 
-	const currentStep = MISSION_STEPS[stepIndex];
+	const currentStep = missionSteps[stepIndex] || missionSteps[0];
 
 	return (
 		<div className='flex flex-col items-center justify-center p-6 sm:p-10 text-center animate-in fade-in duration-500 max-w-lg mx-auto w-full'>
@@ -275,7 +298,7 @@ const CosmicQuestLoader = memo(function CosmicQuestLoader({
 			{/* Mission Title Header */}
 			<div className='inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-950/60 border border-cyan-400/40 text-cyan-300 text-xs font-black uppercase tracking-wider mb-2.5 shadow-sm'>
 				<Orbit className='w-3.5 h-3.5 text-cyan-400 animate-spin-slow' />
-				<span>AstroQuest AI Mission Dispatch</span>
+				<span>AstroQuest AI Mission • {effectiveName} (Age {effectiveAge})</span>
 			</div>
 
 			<h2 className='text-xl sm:text-2xl md:text-3xl font-black text-white mb-2 leading-tight tracking-tight'>
@@ -283,7 +306,7 @@ const CosmicQuestLoader = memo(function CosmicQuestLoader({
 			</h2>
 
 			{/* Rotating Mission Telemetry Step */}
-			<div className='min-h-[32px] flex items-center justify-center px-4 py-1.5 rounded-xl bg-slate-900/60 border border-slate-700/60 mb-4 transition-all duration-300'>
+			<div className='min-h-[36px] flex items-center justify-center px-4 py-1.5 rounded-xl bg-slate-900/60 border border-slate-700/60 mb-4 transition-all duration-300'>
 				<p className='text-xs sm:text-sm font-extrabold text-cyan-300 flex items-center gap-2'>
 					<span className='text-base'>{currentStep.icon}</span>
 					<span>{currentStep.title}</span>
@@ -294,10 +317,10 @@ const CosmicQuestLoader = memo(function CosmicQuestLoader({
 			<p className='text-xs sm:text-sm font-bold text-slate-300 mb-5'>
 				Synthesizing 10 brand-new puzzles for{' '}
 				<span className='text-amber-300 font-extrabold'>
-					{kidName || 'Explorer'}
+					{effectiveName}
 				</span>{' '}
-				<span className='text-slate-400'>
-					(Level {kidAge} • {selectedSkill})
+				<span className='text-cyan-300 font-extrabold'>
+					(Age {effectiveAge})...
 				</span>
 			</p>
 
@@ -313,10 +336,10 @@ const CosmicQuestLoader = memo(function CosmicQuestLoader({
 
 			{/* Telemetry Status Cue */}
 			<div className='flex items-center justify-between w-full max-w-xs mt-2 text-[10px] sm:text-xs font-bold text-slate-400 px-1'>
-				<span className='text-cyan-400'>WARP SPEED 9.8</span>
+				<span className='text-cyan-400'>LEVEL: AGE {effectiveAge}</span>
 				<span className='flex items-center gap-1 text-emerald-400'>
 					<span className='w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping' />
-					NEURAL LINK ONLINE
+					{effectiveName.toUpperCase()}'S LINK ONLINE
 				</span>
 			</div>
 		</div>
