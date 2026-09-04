@@ -116,7 +116,12 @@ const SolutionPanel = memo(function SolutionPanel({
 							<div className='bg-slate-50 rounded-2xl p-2 sm:p-3 flex justify-center items-center border border-slate-200/80 my-2 w-full overflow-hidden'>
 								<VisualDiagram
 									type={question.solutionDiagramType || question.diagramType}
-									data={question.solutionDiagramData || question.diagramData}
+									data={{
+										...(question.solutionDiagramData || question.diagramData),
+										questionText: question.question || question.questionText,
+										correctAnswerText:
+											question.correctAnswerText || question.correctAnswer,
+									}}
 									isSolution={true}
 								/>
 							</div>

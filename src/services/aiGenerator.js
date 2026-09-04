@@ -638,17 +638,20 @@ function synchronizeDiagramData(
 	} else if (type === 'sequence-ladder') {
 		const numbersInQ = questionText.match(/-?\d+(?:\.\d+)?/g);
 		if (numbersInQ && numbersInQ.length >= 2) {
-			data.steps =
-				data.steps && data.steps.length > 0 ?
-					data.steps
-				:	numbersInQ.map((n) => n.trim());
+			if (
+				!data.steps ||
+				!Array.isArray(data.steps) ||
+				numbersInQ.length >= data.steps.length
+			) {
+				data.steps = numbersInQ.map((n) => n.trim());
+			}
 		} else {
 			data.steps =
 				data.steps && data.steps.length > 0 ?
 					data.steps
 				:	['1st', '2nd', '3rd', '4th'];
 		}
-		data.nextVal = data.nextVal || correctText.trim();
+		data.nextVal = correctText.trim() || data.nextVal;
 	} else if (type === 'odd-one-out') {
 		data.target = data.target || correctText.trim();
 		data.rule =
@@ -678,8 +681,15 @@ function synchronizeDiagramData(
 	} else if (type === 'pattern-shapes' || type === 'shape-sequence') {
 		const extracted = extractShapeSequenceTerms(questionText);
 		if (extracted && extracted.length >= 2) {
-			data.sequence =
-				data.sequence && data.sequence.length >= 2 ? data.sequence : extracted;
+			// Prioritize ground-truth sequence extracted directly from the actual question text:
+			if (
+				!data.sequence ||
+				!Array.isArray(data.sequence) ||
+				extracted.length >= data.sequence.length ||
+				!data.sequence.every((it, idx) => it === extracted[idx])
+			) {
+				data.sequence = extracted;
+			}
 		} else if (
 			!data.sequence ||
 			!Array.isArray(data.sequence) ||
@@ -711,7 +721,7 @@ function synchronizeDiagramData(
 				);
 		}
 		data.nextItem =
-			data.nextItem || data.nextVal || correctText.trim() || data.sequence[0];
+			correctText.trim() || data.nextItem || data.nextVal || data.sequence[0];
 	} else if (type === 'grid-tiles') {
 		const count = parsedNum && parsedNum > 0 ? parsedNum : data.count || 4;
 		data.count = count;
@@ -1023,8 +1033,8 @@ CRITICAL RULES (100% Non-Repetitive, Visually-Enriched & Accurate):
    - For Science & Nature Process / Cause & Effect: use "diagramType": "cause-effect", "diagramData": {"cause": "...", "action": "...", "effect": "..."}
    - For 4-term Analogies (A : B :: C : D): use "diagramType": "analogy-map", "diagramData": {"itemA": "...", "itemB": "...", "itemC": "...", "itemD": "..."}
    - For 3D Isometric Cube Pyramids: use "diagramType": "block-tower", "diagramData": {"layers": [{"size": 3, "count": 9}, {"size": 2, "count": 4}, {"size": 1, "count": 1}], "totalCubes": 14}
-   - For Geometric Shape Progressions: use "diagramType": "pattern-shapes" or "shape-sequence", "diagramData": {"sequence": ["Triangle (white)", "Square (shaded)"], "nextItem": "Pentagon (white)"}
-   - For Number Progressions: use "diagramType": "sequence-ladder", "diagramData": {"steps": ["2", "4", "8"], "nextVal": "16", "rule": "x2"}
+   - For Geometric Shape Progressions: use "diagramType": "pattern-shapes" or "shape-sequence", "diagramData": {"sequence": ["Red Circle", "Blue Square", "Green Triangle", "Red Circle", "Blue Square", "Green Triangle", "Red Circle", "Blue Square"], "nextItem": "Green Triangle"}. CRITICAL: "sequence" MUST contain EVERY SINGLE term in the question prompt up to the "?" in identical order. NEVER truncate or abbreviate the sequence.
+   - For Number Progressions: use "diagramType": "sequence-ladder", "diagramData": {"steps": ["2", "4", "8", "16"], "nextVal": "32", "rule": "x2"}. CRITICAL: "steps" MUST contain every number stated in the question sequence.
 3. Every question must have 4 distinct, plausible multiple-choice options with exactly 1 unambiguous correct answer.
 4. All multiple-choice options in the "options" array MUST be standard JSON strings e.g. ["Choice 1", "Choice 2", "Choice 3", "Choice 4"]. Do NOT use tuples or parentheses around items like [("...")].
 5. The complexity and vocabulary MUST strictly fit a ${kidAge}-year-old student.

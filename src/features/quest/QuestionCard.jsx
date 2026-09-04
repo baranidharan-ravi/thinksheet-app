@@ -150,7 +150,12 @@ const QuestionCard = memo(function QuestionCard({
 					<div className='flex flex-col justify-center items-center py-2'>
 						<VisualDiagram
 							type={question.diagramType}
-							data={question.diagramData}
+							data={{
+								...question.diagramData,
+								questionText: question.question || question.questionText,
+								correctAnswerText:
+									question.correctAnswerText || question.correctAnswer,
+							}}
 						/>
 					</div>
 				)}

@@ -971,7 +971,13 @@ export default function App() {
 
 			<ZoomModal
 				diagramType={currentQuestion.diagramType}
-				diagramData={currentQuestion.diagramData}
+				diagramData={{
+					...currentQuestion.diagramData,
+					questionText:
+						currentQuestion.question || currentQuestion.questionText,
+					correctAnswerText:
+						currentQuestion.correctAnswerText || currentQuestion.correctAnswer,
+				}}
 				isOpen={isZoomOpen}
 				onClose={() => setIsZoomOpen(false)}
 				soundEnabled={soundEnabled}

@@ -914,16 +914,19 @@ const VisualDiagram = memo(function VisualDiagram({
 			: [];
 
 		const qSource = data.question || data.questionText || data.raw || '';
-		if (
-			(rawItems.length === 0 ||
-				rawItems.every((it) =>
-					/^\d+(st|nd|rd|th)$/i.test(String(it).trim()),
-				)) &&
-			qSource
-		) {
+		if (qSource) {
 			const extracted = extractShapeSequenceTerms(qSource);
 			if (extracted && extracted.length >= 2) {
-				rawItems = extracted;
+				// If extracted has items and either rawItems is empty or extracted has more terms
+				// or rawItems does not match the full question sequence, use extracted directly from question:
+				if (
+					rawItems.length === 0 ||
+					extracted.length > rawItems.length ||
+					!rawItems.every((it, idx) => it === extracted[idx]) ||
+					rawItems.every((it) => /^\d+(st|nd|rd|th)$/i.test(String(it).trim()))
+				) {
+					rawItems = extracted;
+				}
 			}
 		}
 
@@ -953,12 +956,14 @@ const VisualDiagram = memo(function VisualDiagram({
 		}
 
 		const nextItem =
-			data.nextItem ||
-			data.nextVal ||
 			data.correctAnswer ||
 			data.correctAnswerText ||
+			data.nextItem ||
+			data.nextVal ||
 			items[0] ||
 			'?';
+
+		const isCompact = items.length >= 5;
 
 		return (
 			<div className='flex flex-col items-center justify-center p-3 sm:p-4 my-2 bg-gradient-to-br from-indigo-50/90 via-sky-50/80 to-purple-50/90 rounded-2xl border-2 border-indigo-200 shadow-sm max-w-xl w-full animate-in fade-in duration-300'>
@@ -968,7 +973,7 @@ const VisualDiagram = memo(function VisualDiagram({
 				</div>
 
 				{/* Geometric Shape Cards Row */}
-				<div className='flex items-center justify-center flex-wrap gap-2 sm:gap-2.5 w-full'>
+				<div className='flex items-center justify-center flex-wrap gap-1.5 sm:gap-2 w-full'>
 					{items.map((item, idx) => (
 						<div
 							key={idx}
@@ -976,14 +981,19 @@ const VisualDiagram = memo(function VisualDiagram({
 							<DynamicShapeCard
 								item={item}
 								index={idx}
+								isCompact={isCompact}
 							/>
 							{idx < items.length - 1 && (
-								<span className='text-xs font-black text-indigo-400'>➔</span>
+								<span className='text-[10px] sm:text-xs font-black text-indigo-400'>
+									➔
+								</span>
 							)}
 						</div>
 					))}
 
-					<span className='text-xs font-black text-indigo-400'>➔</span>
+					<span className='text-[10px] sm:text-xs font-black text-indigo-400'>
+						➔
+					</span>
 
 					{/* Target Next Term Card */}
 					<DynamicShapeCard
@@ -991,6 +1001,7 @@ const VisualDiagram = memo(function VisualDiagram({
 						index={items.length}
 						isTarget={true}
 						isSolution={isSolution}
+						isCompact={isCompact}
 					/>
 				</div>
 			</div>

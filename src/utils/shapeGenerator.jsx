@@ -1094,7 +1094,9 @@ export function DynamicSvgShape({
 	return (
 		<svg
 			viewBox={`0 0 ${size} ${size}`}
-			className='w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 drop-shadow-md'>
+			className={`${
+				size <= 54 ? 'w-10 h-10 sm:w-12 sm:h-12' : 'w-14 h-14 sm:w-16 sm:h-16'
+			} flex-shrink-0 drop-shadow-md`}>
 			<defs>
 				{/* Diagonal Striped Hatch Pattern */}
 				<pattern
@@ -1118,7 +1120,7 @@ export function DynamicSvgShape({
 					/>
 				</pattern>
 
-				{/* Polka Dot Pattern */}
+				{/* Polka Dot Hatch Pattern */}
 				<pattern
 					id={`${patternId}-dotted`}
 					width='8'
@@ -1132,7 +1134,7 @@ export function DynamicSvgShape({
 					<circle
 						cx='4'
 						cy='4'
-						r='2'
+						r='2.2'
 						fill='#1E293B'
 					/>
 				</pattern>
@@ -1162,6 +1164,7 @@ export function DynamicSvgShape({
 
 			{shapeElement}
 
+			{/* Center Progression Number Badge if applicable */}
 			{overlayText !== null && (
 				<g>
 					<circle
@@ -1200,6 +1203,7 @@ export function DynamicShapeCard({
 	index = 0,
 	isTarget = false,
 	isSolution = false,
+	isCompact = false,
 }) {
 	const parsed = parseDynamicShape(item);
 	const uniquePatternId = `diag-hatch-${index}-${Math.random().toString(36).substr(2, 4)}`;
@@ -1213,12 +1217,25 @@ export function DynamicShapeCard({
 
 	if ((isTarget || isQuestionItem) && !isSolution) {
 		return (
-			<div className='flex flex-col items-center justify-center p-3 rounded-2xl bg-white border-2 border-dashed border-indigo-400 min-w-[80px] sm:min-w-[95px] shadow-sm animate-pulse'>
-				<div className='w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-2xl shadow-inner'>
+			<div
+				className={`flex flex-col items-center justify-center rounded-2xl bg-white border-2 border-dashed border-indigo-400 shadow-sm animate-pulse ${
+					isCompact ?
+						'p-1.5 sm:p-2 min-w-[64px] sm:min-w-[76px]'
+					:	'p-3 min-w-[80px] sm:min-w-[95px]'
+				}`}>
+				<div
+					className={`rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black shadow-inner ${
+						isCompact ?
+							'w-10 h-10 sm:w-12 sm:h-12 text-xl'
+						:	'w-14 h-14 sm:w-16 sm:h-16 text-2xl'
+					}`}>
 					❓
 				</div>
-				<div className='flex flex-col items-center mt-1.5 text-center'>
-					<span className='text-[10px] font-black uppercase text-indigo-600 tracking-wider'>
+				<div className='flex flex-col items-center mt-1 text-center'>
+					<span
+						className={`font-black uppercase text-indigo-600 tracking-wider ${
+							isCompact ? 'text-[9px]' : 'text-[10px]'
+						}`}>
 						Next Shape?
 					</span>
 				</div>
@@ -1235,17 +1252,29 @@ export function DynamicShapeCard({
 
 		return (
 			<div
-				className={`flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border-2 transition-transform hover:scale-105 min-w-[80px] sm:min-w-[95px] ${
+				className={`flex flex-col items-center justify-center rounded-2xl border-2 transition-transform hover:scale-105 ${
+					isCompact ?
+						'p-1.5 sm:p-2 min-w-[64px] sm:min-w-[76px]'
+					:	'p-2.5 sm:p-3 min-w-[80px] sm:min-w-[95px]'
+				} ${
 					isSolution ?
 						'bg-gradient-to-tr from-emerald-50 to-teal-50 border-emerald-400 ring-2 ring-emerald-300 shadow-lg'
 					:	'bg-white border-slate-200 shadow-md'
 				}`}>
-				<div className='w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-700 font-extrabold text-2xl sm:text-3xl'>
+				<div
+					className={`rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-700 font-extrabold ${
+						isCompact ?
+							'w-10 h-10 sm:w-12 sm:h-12 text-xl'
+						:	'w-14 h-14 sm:w-16 sm:h-16 text-2xl sm:text-3xl'
+					}`}>
 					{textStr}
 				</div>
 				{!isSingleEmoji && textStr && (
-					<div className='flex flex-col items-center mt-1.5 text-center w-full'>
-						<h5 className='text-xs sm:text-sm font-black text-slate-900 leading-tight'>
+					<div className='flex flex-col items-center mt-1 text-center w-full'>
+						<h5
+							className={`font-black text-slate-900 leading-tight ${
+								isCompact ? 'text-[10px] sm:text-[11px]' : 'text-xs sm:text-sm'
+							}`}>
 							{textStr}
 						</h5>
 					</div>
@@ -1256,19 +1285,26 @@ export function DynamicShapeCard({
 
 	return (
 		<div
-			className={`flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border-2 transition-transform hover:scale-105 min-w-[80px] sm:min-w-[95px] ${
+			className={`flex flex-col items-center justify-center rounded-2xl border-2 transition-transform hover:scale-105 ${
+				isCompact ?
+					'p-1.5 sm:p-2 min-w-[64px] sm:min-w-[76px]'
+				:	'p-2.5 sm:p-3 min-w-[80px] sm:min-w-[95px]'
+			} ${
 				isSolution ?
 					'bg-gradient-to-tr from-emerald-50 to-teal-50 border-emerald-400 ring-2 ring-emerald-300 shadow-lg animate-bounce-short'
 				:	'bg-white border-slate-200 shadow-md'
 			}`}>
 			<DynamicSvgShape
 				parsed={parsed}
-				size={64}
+				size={isCompact ? 48 : 64}
 				patternId={uniquePatternId}
 			/>
 
-			<div className='flex flex-col items-center mt-1.5 text-center w-full'>
-				<h5 className='text-xs sm:text-sm font-black text-slate-900 leading-tight'>
+			<div className='flex flex-col items-center mt-1 text-center w-full'>
+				<h5
+					className={`font-black text-slate-900 leading-tight ${
+						isCompact ? 'text-[10px] sm:text-[11px]' : 'text-xs sm:text-sm'
+					}`}>
 					{(
 						parsed.styleTag &&
 						!parsed.shapeName

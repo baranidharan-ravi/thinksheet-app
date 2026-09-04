@@ -214,7 +214,12 @@ const QuestionSummary = memo(function QuestionSummary({
 										<div className='w-full flex justify-center py-2'>
 											<VisualDiagram
 												type={q.diagramType}
-												data={q.diagramData}
+												data={{
+													...q.diagramData,
+													questionText: q.question || q.questionText,
+													correctAnswerText:
+														q.correctAnswerText || q.correctAnswer,
+												}}
 											/>
 										</div>
 									)}
@@ -268,7 +273,12 @@ const QuestionSummary = memo(function QuestionSummary({
 											<div className='bg-white p-2 rounded-xl border border-purple-100 flex justify-center'>
 												<VisualDiagram
 													type={q.solutionDiagramType}
-													data={q.solutionDiagramData || q.diagramData}
+													data={{
+														...(q.solutionDiagramData || q.diagramData),
+														questionText: q.question || q.questionText,
+														correctAnswerText:
+															q.correctAnswerText || q.correctAnswer,
+													}}
 													isSolution={true}
 												/>
 											</div>
