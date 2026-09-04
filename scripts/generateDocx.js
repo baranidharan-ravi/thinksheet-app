@@ -685,11 +685,11 @@ const docContent = [
 	),
 	createBullet(
 		'Dynamic Explorer Profile Binding',
-		'Automatically binds the child\'s name and age from settings storage (getStoredKidName(), getStoredKidAge()), customizing telemetry steps and mission status cues.',
+		"Automatically binds the child's name and age from settings storage (getStoredKidName(), getStoredKidAge()), customizing telemetry steps and mission status cues.",
 	),
 	createBullet(
 		'Adaptive Skillset Extraction & Theming',
-		'Dynamically queries the active skill from props or storage (getStoredSelectedSkill()), automatically adapting the loader\'s aesthetic: Visual (Cyan palette, glowing Eye core, eye particles) vs. Analytical Thinking (Purple palette, glowing Brain core, puzzle particles).',
+		"Dynamically queries the active skill from props or storage (getStoredSelectedSkill()), automatically adapting the loader's aesthetic: Visual (Cyan palette, glowing Eye core, eye particles) vs. Analytical Thinking (Purple palette, glowing Brain core, puzzle particles).",
 	),
 
 	createHeading2(
