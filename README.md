@@ -2,11 +2,14 @@
 
 An engaging, visual-first React.js educational platform designed for early childhood and young learners (Ages 2–14), featuring cosmic space-themed AstroQuest challenges, interactive animations, sound effects, on-demand voice narration, **100% real-time direct AI question generation via Google Gemini API (Mandatory API Key with Live Validation)**, configurable auto-advance question pacing, customizable per-question countdown timers, streamlined exit workflows, dynamic mathematical SVG shape generation, and strict age-calibrated difficulty with zero offline/cached questions.
 
+> 💡 **Interactive Documentation**: Click on any section heading below to expand and explore the complete details.
+
 ---
 
 ## ✨ Key Features & Architecture
 
-### 1. ⚙️ Dedicated Full-Screen Settings & Preferences Page
+<details>
+<summary><h3 style="display: inline;">1. ⚙️ Dedicated Full-Screen Settings & Preferences Page</h3></summary>
 
 - **Full-Page Configuration Experience**: Replaced popup modals with a dedicated full-screen configuration interface:
   1. **Child's Name** _(Required)_: Personalized explorer name.
@@ -26,9 +29,12 @@ An engaging, visual-first React.js educational platform designed for early child
     - **"Discard Changes"**: Reverts all settings back to their previously saved values, ensuring unconfirmed edits never bleed into the active session.
 - **Skill Selection Auto-Launch Flow**: If a user clicks a skill card without having entered an API key, the app transitions directly to the Settings page while remembering the targeted skill. Upon successful validation, it immediately launches the selected skill quest.
 
+</details>
+
 ---
 
-### 2. ⚡ 100% Direct Live Generation (Zero In-Memory Caching)
+<details>
+<summary><h3 style="display: inline;">2. ⚡ 100% Direct Live Generation (Zero In-Memory Caching)</h3></summary>
 
 - **Fresh Generation on Every Request**: Questions are never cached into memory; every time a child starts a new sheet or advances to the next sheet, fresh questions are synthesized live from the Google Gemini API.
 - **Skillset-Injected AI Prompts**:
@@ -47,9 +53,12 @@ An engaging, visual-first React.js educational platform designed for early child
   - Allows students to skip challenging or unfamiliar questions directly from the question screen.
   - Skipped questions are marked with an amber indicator in the top progress bar and recorded in the Question Summary and Result Overview (`{correctCount} Correct • {skippedCount} Skipped`).
 
+</details>
+
 ---
 
-### 2.1. 🛸 Immersive Space-Themed Cosmic Quest Loader (`CosmicQuestLoader.jsx`)
+<details>
+<summary><h3 style="display: inline;">2.1. 🛸 Immersive Space-Themed Cosmic Quest Loader (`CosmicQuestLoader.jsx`)</h3></summary>
 
 - **Dynamic Space Mission Theater**:
   - Replaced generic loading spinners with a custom, application-connected space theater that engages young explorers while the Gemini AI synthesizes questions.
@@ -69,9 +78,12 @@ An engaging, visual-first React.js educational platform designed for early child
     - Dynamic Header: `Generating {Visual | Analytical Thinking} Challenges... {👁️ | 🧠}`.
     - Live Telemetry Cue: `SKILL: VISUAL` or `SKILL: ANALYTICAL THINKING`.
 
+</details>
+
 ---
 
-### 3. 🤖 Active Google Gemini Models Support & Resilient Multi-Model Fallback
+<details>
+<summary><h3 style="display: inline;">3. 🤖 Active Google Gemini Models Support & Resilient Multi-Model Fallback</h3></summary>
 
 - **Active Model Chain**:
   1. `gemini-3.5-flash-lite` _(Primary, ultra-fast endpoint recommended by Google)_
@@ -95,9 +107,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 | **Ages 8–10** (Upper Elementary)      | Multi-step logic & STEM deduction   | Number sequences (`3, 6, 12, 24, ?`), 3D block projections, grid area matrices                   | Higher-order analogies (_Author : Book :: Sculptor : Statue_), scientific states of matter                    |
 | **Ages 11–14** (Middle School / Teen) | Advanced analytical problem-solving | Algebraic & non-linear sequences (`2, 5, 10, 17, 26, ?`), rotational symmetry, isometric volumes | Abstract analogies (_Microscope : Cell :: Telescope : Galaxy_), deductive syllogisms, physics & circuit logic |
 
+</details>
+
 ---
 
-### 4. 🎨 Dynamic SVG Shape Generator & Rich Visual Diagram System
+<details>
+<summary><h3 style="display: inline;">4. 🎨 Dynamic SVG Shape Generator & Rich Visual Diagram System</h3></summary>
 
 - **Mathematical Geometric Shape Engine (`shapeGenerator.jsx`)**:
   - **Dynamic Polygon Coordinate Math (`getRegularPolygonPoints`)**: Calculates vertex angles and Cartesian points for any regular polygon ($N \ge 3$):
@@ -181,9 +196,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
   - Direct image diagrams load asynchronously using native browser lazy loading (`loading="lazy"` and `decoding="async"`).
   - Features an animated skeleton shimmer placeholder and smooth fade-in transitions on load for optimal rendering performance and zero layout shift.
 
+</details>
+
 ---
 
-### 5. ⏩ Configurable Next Question Auto-Advance Pacing
+<details>
+<summary><h3 style="display: inline;">5. ⏩ Configurable Next Question Auto-Advance Pacing</h3></summary>
 
 - **Independent Learning Pace Control**: Works whether the per-question timer challenge is enabled or disabled:
   - **When Auto-Advance is Enabled (Default `7s`)**:
@@ -194,9 +212,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
     - The solution and visual diagram remain on screen indefinitely.
     - The student or parent clicks the `Next Question ➔` button when ready to proceed.
 
+</details>
+
 ---
 
-### 6. 📐 Symmetrical Layout, Skip Option & Sticky Bottom Submit / Next Buttons
+<details>
+<summary><h3 style="display: inline;">6. 📐 Symmetrical Layout, Skip Option & Sticky Bottom Submit / Next Buttons</h3></summary>
 
 - **Equal-Height Cards**: The left Question Card and right Options Section share identical vertical heights (`items-stretch` & `h-full`), keeping prompts and visual diagrams neatly centered.
 - **Expanding Options Grid**: Option buttons dynamically expand (`flex-1 h-full`) to fill available vertical space.
@@ -208,9 +229,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
   - **Warning (<= 15s)**: Pulsating amber alert (`bg-amber-950/80 text-amber-300`).
   - **Critical (<= 5s)**: Bouncing red urgent indicator (`bg-rose-950 text-rose-300`).
 
+</details>
+
 ---
 
-### 7. 🚪 Streamlined Exit Confirmation Workflow
+<details>
+<summary><h3 style="display: inline;">7. 🚪 Streamlined Exit Confirmation Workflow</h3></summary>
 
 - **Distraction-Free Top Bar**: Features clean question progress, active timer, sound/speech toggles, fullscreen, and a dedicated **`Exit` button**.
 - **Streamlined Mid-Quiz Exit Dialog (`ExitConfirmationModal.jsx`)**:
@@ -219,9 +243,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
     1. **🚀 Continue AstroQuest**: Instantly dismisses the modal and resumes the active question without losing flow.
     2. **🚪 Exit Without Saving**: Clears the temporary session cache and safely returns the explorer to the Skills Hub.
 
+</details>
+
 ---
 
-### 8. 🎬 AstroQuest Intro Animation & Clean Dashboard
+<details>
+<summary><h3 style="display: inline;">8. 🎬 AstroQuest Intro Animation & Clean Dashboard</h3></summary>
 
 - **Center Stage Splash**: On opening the dashboard, the green **AstroQuest** banner starts in the center of the viewport with a glowing bold font and cosmic sparkles (`✨` & `🚀`).
 - **Smooth Shrink-to-Top Glide**: Scales down smoothly and glides into its docked position in the top header using an organic spring transition (`cubic-bezier(0.34, 1.3, 0.64, 1)`).
@@ -234,9 +261,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 - **Quest Settings & Pacing Overview Card**:
   - Summarizes the active configuration directly above the skill cards: `Timer: 90s/question • Next: Auto in 7s • Diagrams: 👁️ Shown` _(or `🙈 Hidden`)_.
 
+</details>
+
 ---
 
-### 9. 🗣️ Smart Voice Narration & Chromium State Recovery (Web Speech API)
+<details>
+<summary><h3 style="display: inline;">9. 🗣️ Smart Voice Narration & Chromium State Recovery (Web Speech API)</h3></summary>
 
 - **Single-Voice Guarantee**: `speakText` strictly terminates any active speech utterance (`window.speechSynthesis.cancel()` + `activeUtterance = null`) prior to starting a new one. This ensures only a single narrator voice speaks at any time and prevents overlapping or echo issues.
 - **Persistent Utterance Reference**: Maintains a module-level reference preventing V8 garbage collection mid-speech.
@@ -250,9 +280,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 - **Natural Analogy Pronunciation**: Translates colon analogy syntax (`::` ➔ `" as "`, `:` ➔ `" is to "`) into smooth speech.
 - **Active Visual Feedback**: Speaker button pulses with an active ring indicator while speaking.
 
+</details>
+
 ---
 
-### 10. 🏆 Performance Results & Session Summary System
+<details>
+<summary><h3 style="display: inline;">10. 🏆 Performance Results & Session Summary System</h3></summary>
 
 - **Celebratory Feedback**: 3D `COMPLETED` ribbon banner, glowing star ratings (1 to 3 stars), and confetti particle bursts.
 - **Detailed Question Summary Accordion**:
@@ -279,9 +312,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
     - **Running Footers**: Page numbering (`Page X of Y`) and platform watermark.
   - Accessible via **"Download PDF Report 📄"** on both the Result Overview page and Question Summary page.
 
+</details>
+
 ---
 
-### 11. 🛡️ Cosmic Error Boundary & Instant Debugging (`ErrorBoundary.jsx`)
+<details>
+<summary><h3 style="display: inline;">11. 🛡️ Cosmic Error Boundary & Instant Debugging (`ErrorBoundary.jsx`)</h3></summary>
 
 - **Comprehensive Exception Shield**: Wraps the entire application tree to intercept and catch runtime errors without collapsing into a blank screen.
 - **Friendly Kid-Themed Fallback Interface**: Displays an encouraging recovery screen (_"Cosmic Bump Detected! AstroQuest hit a little stardust! Don't worry, your progress and settings are safe."_) featuring:
@@ -290,9 +326,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 - **Interactive Technical Error Drawer**: Expandable developer drawer displaying the exact error message and React component stack trace.
 - **One-Click Clipboard Copy (`📋 Copy Error Details`)**: Features an automated copy button that writes the complete error trace to the user's clipboard and toggles to `✅ Copied to Clipboard!` for effortless debugging.
 
+</details>
+
 ---
 
-### 12. ⚡ Advanced React Performance Optimization & Code Splitting
+<details>
+<summary><h3 style="display: inline;">12. ⚡ Advanced React Performance Optimization & Code Splitting</h3></summary>
 
 - **On-Demand PDF Engine Loading (`~400 kB` Startup Savings)**:
   - Dynamically imports `jspdf` and `html2canvas` only when the user clicks **"Download PDF Report"**, eliminating heavy libraries from the initial page payload.
@@ -306,9 +345,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 - **Vendor Chunking Architecture (Vite 6 / Rollup)**:
   - Isolated `vendor-react` (`react`, `react-dom`) and `vendor-icons` (`lucide-react`) into standalone, long-term cacheable bundles with zero chunk-size warnings.
 
+</details>
+
 ---
 
-### 13. 🌐 Centralized Axios Client, Network Middleware & Smart Retry Engine (`apiClient.js`)
+<details>
+<summary><h3 style="display: inline;">13. 🌐 Centralized Axios Client, Network Middleware & Smart Retry Engine (`apiClient.js`)</h3></summary>
 
 - **100% Axios-Powered API Architecture**:
   - Replaced legacy browser `fetch` implementations across the frontend and server proxy with a centralized, singleton Axios client (`src/services/apiClient.js`).
@@ -330,9 +372,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 - **Silent Background Probing (`skipRetry: true`)**:
   - Background health checks (e.g. probing for local Express proxy availability on startup) run quietly with `skipRetry: true` so users are never alarmed by expected fallback checks.
 
+</details>
+
 ---
 
-### 14. 🔒 Secure Node.js Express Proxy Middleware (`server/index.js`)
+<details>
+<summary><h3 style="display: inline;">14. 🔒 Secure Node.js Express Proxy Middleware (`server/index.js`)</h3></summary>
 
 - **Complete API Key Shielding**:
   - An optional lightweight Node.js Express server (`server/index.js`) acts as a secure reverse proxy between the AstroQuest frontend and Google Gemini API.
@@ -346,9 +391,12 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 - **Concurrent Development (`npm run dev:all`)**:
   - Launches both the Express proxy (port 5001) and the Vite frontend (port 3000) concurrently in a single terminal command.
 
+</details>
+
 ---
 
-## 🔑 How to Get a Google Gemini API Key (Step-by-Step)
+<details>
+<summary><h2 style="display: inline;">🔑 How to Get a Google Gemini API Key (Step-by-Step)</h2></summary>
 
 A Gemini API key is mandatory for generating questions in real time. Follow these simple steps to obtain a free key:
 
@@ -363,9 +411,12 @@ A Gemini API key is mandatory for generating questions in real time. Follow thes
 2. Select an existing Google Cloud project or choose **"Create API key in new project"**.
 3. Copy the generated API key (it starts with `AIzaSy...`).
 
+</details>
+
 ---
 
-## ⚙️ How to Configure the API Key
+<details>
+<summary><h2 style="display: inline;">⚙️ How to Configure the API Key</h2></summary>
 
 You can configure your API key using either of the following two methods:
 
@@ -385,9 +436,12 @@ You can configure your API key using either of the following two methods:
    ```
 2. Restart the Vite development server (`npm run dev`).
 
+</details>
+
 ---
 
-## 🌐 Deploying to GitHub Pages
+<details>
+<summary><h2 style="display: inline;">🌐 Deploying to GitHub Pages</h2></summary>
 
 ### Method 1: Automated Deployment via GitHub Actions (Recommended)
 
@@ -410,9 +464,12 @@ An automated deployment workflow (`.github/workflows/deploy.yml`) is included:
 npm run deploy
 ```
 
+</details>
+
 ---
 
-## 🎨 Official App Icon & Visual Identity
+<details>
+<summary><h2 style="display: inline;">🎨 Official App Icon & Visual Identity</h2></summary>
 
 - **Vector App Icon (`/public/astroquest-icon.svg`)**:
   - **Cosmic Squircle Canvas**: Multi-stop deep space radial gradient (`#312E81` ➔ `#1E1B4B` ➔ `#0B0D28`) with an indigo border.
@@ -421,9 +478,12 @@ npm run deploy
   - **Planetary Orbit & Stardust**: Dashed celestial orbit ring (`#38BDF8` ➔ `#A855F7`), distant mini planet, and twinkling 4-point golden/cyan stars.
   - **Cross-Platform Integration**: Linked as primary favicon, mobile touch icon (`apple-touch-icon`), and featured directly in the in-app navigation header badge.
 
+</details>
+
 ---
 
-## 📁 Project Structure
+<details>
+<summary><h2 style="display: inline;">📁 Project Structure</h2></summary>
 
 ```
 ├── scripts/                                  # Repository utilities & maintenance
@@ -467,9 +527,12 @@ src/
 └── index.css                                 # Global styles & Tailwind
 ```
 
+</details>
+
 ---
 
-## 🛠️ Tech Stack
+<details>
+<summary><h2 style="display: inline;">🛠️ Tech Stack</h2></summary>
 
 - **React 18** (Modern functional components, hooks, `React.lazy`, `Suspense`, `React.memo`, & `useCallback`)
 - **Axios** (Centralized API client with interceptor middleware, 3-attempt exponential backoff retry on network drops, and error classification)
@@ -483,9 +546,12 @@ src/
 - **Canvas Confetti** (Celebratory particle effects)
 - **Web Audio API & Web Speech API** (Zero-asset sound synthesis, single-voice guarantee, and customizable browser voice selection)
 
+</details>
+
 ---
 
-## 🚀 Getting Started
+<details>
+<summary><h2 style="display: inline;">🚀 Getting Started</h2></summary>
 
 ### 1. Install Dependencies
 
@@ -528,3 +594,5 @@ npm run build
 ```
 
 The optimized production build will be generated in the `dist/` directory.
+
+</details>
