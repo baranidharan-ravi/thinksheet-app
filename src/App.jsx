@@ -688,6 +688,8 @@ export default function App() {
 				speechEnabled={speechEnabled}
 				onToggleSpeech={handleToggleSpeech}
 				onExitClick={handleOpenExitModal}
+				kidName={kidName}
+				kidAge={kidAge}
 			/>
 
 			{/* Main Screen Body */}
@@ -772,6 +774,8 @@ export default function App() {
 											onZoomClick={() => setIsZoomOpen(true)}
 											soundEnabled={soundEnabled}
 											showVisualDiagrams={showVisualDiagrams}
+											kidName={kidName}
+											kidAge={kidAge}
 										/>
 									</div>
 
@@ -889,6 +893,8 @@ export default function App() {
 										soundEnabled={soundEnabled}
 										isSubmitted={true}
 										showVisualDiagrams={showVisualDiagrams}
+										kidName={kidName}
+										kidAge={kidAge}
 									/>
 									<OptionsGrid
 										options={currentQuestion.options || []}

@@ -5,6 +5,7 @@ import {
 	speakText,
 	stopSpeaking,
 } from '../../utils/audioSynthesis';
+import { getStoredKidAge, getStoredKidName } from '../../utils/progressTracker';
 import VisualDiagram from '../../utils/VisualDiagrams';
 
 const QuestionCard = memo(function QuestionCard({
@@ -15,8 +16,14 @@ const QuestionCard = memo(function QuestionCard({
 	soundEnabled,
 	isSubmitted = false,
 	showVisualDiagrams = false,
+	kidName,
+	kidAge,
 }) {
 	const [isSpeaking, setIsSpeaking] = useState(false);
+
+	const resolvedKidName =
+		(kidName && String(kidName).trim()) || getStoredKidName() || 'Explorer';
+	const resolvedKidAge = kidAge || getStoredKidAge() || 5;
 
 	const handleListenQuestion = () => {
 		playButtonPop(soundEnabled);
@@ -47,43 +54,64 @@ const QuestionCard = memo(function QuestionCard({
 					'min-h-[180px] sm:min-h-[220px]'
 				:	'min-h-[240px] sm:min-h-[280px]'
 			}`}>
-			{/* Top Bar: Question Index, Category Badge, Zoom Button */}
+			{/* Top Bar: Question Index, Explorer Profile, Category Badge, Zoom Button */}
 			<div className='flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5 mb-2'>
-				{/* Step Indicator */}
-				<div className='bg-[#302B63] text-white text-xs sm:text-sm font-black px-3 py-1 rounded-lg shadow-sm'>
-					{currentIndex + 1}/{totalQuestions}
+				{/* Left: Step Indicator & Explorer Badge */}
+				<div className='flex items-center gap-1.5 sm:gap-2 min-w-0'>
+					{/* Step Indicator */}
+					<div className='bg-[#302B63] text-white text-xs sm:text-sm font-black px-2.5 sm:px-3 py-1 rounded-lg shadow-sm flex-shrink-0'>
+						{currentIndex + 1}/{totalQuestions}
+					</div>
+
+					{/* Explorer Badge (Child Name & Age) */}
+					<div
+						className='flex items-center gap-1.5 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border border-indigo-200/80 rounded-lg px-2 sm:px-2.5 py-1 shadow-xs min-w-0'
+						title={`Explorer: ${resolvedKidName} (Age ${resolvedKidAge})`}>
+						<span className='text-xs sm:text-sm leading-none flex-shrink-0'>
+							🧑‍🚀
+						</span>
+						<span className='font-black text-slate-800 text-xs truncate max-w-[85px] xs:max-w-[130px] sm:max-w-[170px]'>
+							{resolvedKidName}
+						</span>
+						<span className='bg-indigo-600 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full shadow-xs flex-shrink-0'>
+							Age {resolvedKidAge}
+						</span>
+					</div>
 				</div>
 
-				{/* Category Badge */}
-				<div className='flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-sm border bg-slate-50 text-slate-700 border-slate-200'>
-					{isVisual ?
-						<>
-							<Eye className='w-3.5 h-3.5 text-sky-600' />
-							<span className='text-sky-700 font-extrabold'>Visual</span>
-						</>
-					:	<>
-							<Brain className='w-3.5 h-3.5 text-purple-600' />
-							<span className='text-purple-700 font-extrabold'>
-								Analytical Thinking
-							</span>
-						</>
-					}
-				</div>
+				{/* Right: Category Badge & Zoom Button */}
+				<div className='flex items-center gap-1.5 sm:gap-2 flex-shrink-0'>
+					{/* Category Badge */}
+					<div className='flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-sm border bg-slate-50 text-slate-700 border-slate-200'>
+						{isVisual ?
+							<>
+								<Eye className='w-3.5 h-3.5 text-sky-600' />
+								<span className='text-sky-700 font-extrabold'>Visual</span>
+							</>
+						:	<>
+								<Brain className='w-3.5 h-3.5 text-purple-600' />
+								<span className='text-purple-700 font-extrabold'>
+									Analytical Thinking
+								</span>
+							</>
+						}
+					</div>
 
-				{/* Zoom Button */}
-				{showVisualDiagrams && question.diagramType ?
-					<button
-						type='button'
-						onClick={() => {
-							playButtonPop(soundEnabled);
-							onZoomClick();
-						}}
-						className='flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-all cursor-pointer'
-						title='Zoom image'>
-						<ZoomIn className='w-3.5 h-3.5' />
-						<span>ZOOM</span>
-					</button>
-				:	<div className='w-12' />}
+					{/* Zoom Button */}
+					{showVisualDiagrams && question.diagramType ?
+						<button
+							type='button'
+							onClick={() => {
+								playButtonPop(soundEnabled);
+								onZoomClick();
+							}}
+							className='flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-all cursor-pointer'
+							title='Zoom image'>
+							<ZoomIn className='w-3.5 h-3.5' />
+							<span className='hidden xs:inline'>ZOOM</span>
+						</button>
+					:	null}
+				</div>
 			</div>
 
 			{/* Skill Objective Subtitle */}

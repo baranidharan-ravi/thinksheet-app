@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { playButtonPop } from './audioSynthesis';
+import { getStoredKidAge, getStoredKidName } from './progressTracker';
 
 const Header = React.memo(function Header({
 	questionIndex,
@@ -23,8 +24,14 @@ const Header = React.memo(function Header({
 	speechEnabled,
 	onToggleSpeech,
 	onExitClick,
+	kidName,
+	kidAge,
 }) {
 	const [isFullscreen, setIsFullscreen] = React.useState(false);
+
+	const resolvedKidName =
+		(kidName && String(kidName).trim()) || getStoredKidName() || 'Explorer';
+	const resolvedKidAge = kidAge || getStoredKidAge() || 5;
 
 	// Format MM:SS
 	const formatTime = (secs) => {
@@ -53,20 +60,38 @@ const Header = React.memo(function Header({
 
 	return (
 		<header className='w-full max-w-7xl mx-auto px-3 sm:px-6 py-3 flex items-center justify-between gap-2 sm:gap-4 select-none'>
-			{/* AstroQuest Badge with App Icon */}
-			<div className='flex items-center gap-2 bg-[#151747] border border-[#2B3075] rounded-xl px-2.5 py-1 sm:px-3.5 sm:py-1.5 shadow-lg'>
-				<img
-					src='/astroquest-icon.svg'
-					alt='AstroQuest'
-					className='w-6 h-6 sm:w-7 sm:h-7 rounded-lg shadow-sm flex-shrink-0'
-				/>
-				<div className='flex flex-col items-start leading-none'>
-					<span className='text-white font-extrabold text-xs sm:text-sm tracking-wider bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent'>
-						ASTRO
-					</span>
-					<span className='text-[9px] sm:text-[10px] font-bold text-gray-300 tracking-wide uppercase mt-0.5'>
-						QUEST
-					</span>
+			{/* Left Area: AstroQuest Badge & Explorer Profile */}
+			<div className='flex items-center gap-1.5 sm:gap-2.5'>
+				{/* AstroQuest Badge with App Icon */}
+				<div className='flex items-center gap-2 bg-[#151747] border border-[#2B3075] rounded-xl px-2.5 py-1 sm:px-3.5 sm:py-1.5 shadow-lg flex-shrink-0'>
+					<img
+						src='/astroquest-icon.svg'
+						alt='AstroQuest'
+						className='w-6 h-6 sm:w-7 sm:h-7 rounded-lg shadow-sm flex-shrink-0'
+					/>
+					<div className='flex flex-col items-start leading-none'>
+						<span className='text-white font-extrabold text-xs sm:text-sm tracking-wider bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent'>
+							ASTRO
+						</span>
+						<span className='text-[9px] sm:text-[10px] font-bold text-gray-300 tracking-wide uppercase mt-0.5'>
+							QUEST
+						</span>
+					</div>
+				</div>
+
+				{/* Explorer Profile Badge (Name & Age) */}
+				<div
+					className='hidden md:flex items-center gap-2 bg-[#151747] border border-[#2B3075] rounded-xl px-2.5 py-1 sm:px-3 sm:py-1.5 shadow-lg select-none'
+					title={`Explorer: ${resolvedKidName} (Age ${resolvedKidAge})`}>
+					<span className='text-base leading-none'>🧑‍🚀</span>
+					<div className='flex flex-col items-start leading-none'>
+						<span className='text-white font-extrabold text-xs tracking-wide truncate max-w-[90px] lg:max-w-[130px]'>
+							{resolvedKidName}
+						</span>
+						<span className='text-[9px] font-black text-cyan-300 uppercase tracking-wider mt-0.5'>
+							Age {resolvedKidAge}
+						</span>
+					</div>
 				</div>
 			</div>
 
