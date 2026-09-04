@@ -17,6 +17,7 @@ An engaging, visual-first React.js educational platform designed for early child
   6. **Next Question Auto-Advance Delay** _(Optional ⏩)_: Toggle Auto-Advance ON/OFF, select preset delay (`3s`, `5s`, `7s Default`, `10s`, `15s`), or set a custom delay (`2s`–`30s`).
   7. **Visual Diagrams & Clues Display** _(Optional 👁️)_: Toggle ON/OFF (`👁️ Shown` / `🙈 Hidden`) to choose whether interactive geometric diagrams, 3x3 matrices, sequence patterns, and STEM illustrations appear alongside questions **and** inside answer option cards. When disabled, option cards cleanly hide all shape containers and render full-width text choices.
   8. **Dynamic Visual Synthesis Notice**: Displays an informative amber alert in Settings explaining that visual diagrams and option shapes are dynamically generated via cognitive models and AI prompts, so minor visual variations may occasionally occur.
+  9. **Narrator Voice Selector** _(Customizable 🎙️)_: Choose from all text-to-speech voices supported by your web browser and operating system, with an **"Auto (Recommended)"** default option and instant one-click audition audio playback before saving.
 - **Live Verification on Save**: When clicking **"Save & Launch 🚀"**, the app sends an asynchronous test ping to Google Gemini API. If the key is invalid or expired, a clear red error is shown and the settings page remains open until a valid key is provided.
 - **Skill Selection Auto-Launch Flow**: If a user clicks a skill card without having entered an API key, the app transitions directly to the Settings page while remembering the targeted skill. Upon successful validation, it immediately launches the selected skill quest.
 
@@ -198,8 +199,14 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
 
 ### 9. 🗣️ Smart Voice Narration & Chromium State Recovery (Web Speech API)
 
+- **Single-Voice Guarantee**: `speakText` strictly terminates any active speech utterance (`window.speechSynthesis.cancel()` + `activeUtterance = null`) prior to starting a new one. This ensures only a single narrator voice speaks at any time and prevents overlapping or echo issues.
 - **Persistent Utterance Reference**: Maintains a module-level reference preventing V8 garbage collection mid-speech.
 - **Chromium Synthesizer Queue Fix**: Resilient against browser paused states with automatic `speechSynthesis.resume()` and resolution ticks.
+- **Customizable Browser Voice Selection (Settings Section 7)**:
+  - Dynamically detects and lists all speech synthesis voices installed in the user's browser/OS (with automatic retry for asynchronous voice loading in Chrome).
+  - **"Auto (Recommended)" Mode**: Automatically selects clear, natural-sounding English voices (Google US English, Samantha, Jenny, etc.) with progressive fallback.
+  - **One-Click Live Audition**: Clicking any voice card immediately speaks *"Hello! I am ready to read questions for you."* so users can sample tone and pronunciation before saving.
+  - **Persistent Voice Memory**: Persists the selected `voiceURI` in `localStorage` under `thinksheet_voice_uri` across sessions.
 - **No Duplicate Reading**: Intelligently strips emoji characters from sentences when reading text aloud, preventing speech synthesis from redundantly repeating the word and emoji name (e.g. _"How many shiny red apples are in the basket?"_ instead of _"shiny red apples red apple"_).
 - **Natural Analogy Pronunciation**: Translates colon analogy syntax (`::` ➔ `" as "`, `:` ➔ `" is to "`) into smooth speech.
 - **Active Visual Feedback**: Speaker button pulses with an active ring indicator while speaking.
@@ -258,6 +265,46 @@ The AI dynamically adapts prompt personas, vocabulary, and cognitive complexity 
   - Decouples the 1-second active timer ticks from re-rendering heavy SVG graphics and cards, resulting in 0 unnecessary re-renders.
 - **Vendor Chunking Architecture (Vite 6 / Rollup)**:
   - Isolated `vendor-react` (`react`, `react-dom`) and `vendor-icons` (`lucide-react`) into standalone, long-term cacheable bundles with zero chunk-size warnings.
+
+---
+
+### 13. 🌐 Centralized Axios Client, Network Middleware & Smart Retry Engine (`apiClient.js`)
+
+- **100% Axios-Powered API Architecture**:
+  - Replaced legacy browser `fetch` implementations across the frontend and server proxy with a centralized, singleton Axios client (`src/services/apiClient.js`).
+  - Standardized JSON serialization, headers, and uniform 60-second timeouts tailored for generative LLM response synthesis.
+- **Request & Response Interceptor Middleware**:
+  - **Request Middleware**: Injects and tracks retry metadata (`_retryCount`) across each asynchronous request lifecycle.
+  - **Response Middleware**: Transparently unwraps successful data, clears active network alerts, and intercepts failure conditions before they crash UI components.
+- **Automated 3-Attempt Retry with Exponential Backoff**:
+  - Intercepts network drops (`!error.response`, `ECONNABORTED`), connection timeouts, and transient status codes (`408, 429, 500, 502, 503, 504`).
+  - Retries up to **3 times** with exponential backoff intervals ($1\text{s} \rightarrow 2\text{s} \rightarrow 4\text{s}$), giving temporary network interruptions sufficient time to recover.
+- **User-Facing Network Drop Toast Notification (`networkNotifier.js`)**:
+  - Non-intrusive floating DOM-injected status banner mounted directly into `document.body` (zero React dependency, usable anywhere in the app):
+    - **During Retries**: Shows an amber status card: `📡 A network drop happened. Retrying to get the information again (X/3)...`
+    - **Upon Reconnection**: Displays an emerald success pill: `✅ Network connection restored! Successfully retrieved information.`
+    - **On Exhaustion**: Informs the user after 3 failed attempts: `⚠️ Network failure: Unable to reach server after 3 retry attempts. Please check your internet connection.`
+  - **Browser Online/Offline Event Listeners**: Automatically hooks into `window.addEventListener('offline')` and `'online'` to immediately notify the user if device connectivity drops.
+- **Fail-Fast Error Classification**:
+  - Non-retryable errors such as invalid API keys (HTTP 400) or forbidden access (HTTP 401/403) bypass retries immediately, preventing unnecessary API quota consumption.
+- **Silent Background Probing (`skipRetry: true`)**:
+  - Background health checks (e.g. probing for local Express proxy availability on startup) run quietly with `skipRetry: true` so users are never alarmed by expected fallback checks.
+
+---
+
+### 14. 🔒 Secure Node.js Express Proxy Middleware (`server/index.js`)
+
+- **Complete API Key Shielding**:
+  - An optional lightweight Node.js Express server (`server/index.js`) acts as a secure reverse proxy between the AstroQuest frontend and Google Gemini API.
+  - When the proxy is active, the Google Gemini API key is completely hidden from the browser DevTools Network tab.
+- **Comprehensive API Proxy Endpoints**:
+  - `GET /api/health`: Healthcheck endpoint reporting proxy status and key configuration.
+  - `POST /api/validate-key`: Validates API keys against Google Generative Language models.
+  - `GET /api/models`: Live discovery of compatible Gemini models.
+  - `POST /api/generate-content`: Proxies content synthesis (questions, hints, tutor explanations).
+  - `POST /api/generate-image`: Multi-provider image synthesis gateway supporting Google Imagen 3, Gemini Flash Image, and Pollinations AI (with binary-to-base64 buffer conversion).
+- **Concurrent Development (`npm run dev:all`)**:
+  - Launches both the Express proxy (port 5001) and the Vite frontend (port 3000) concurrently in a single terminal command.
 
 ---
 
@@ -339,11 +386,13 @@ npm run deploy
 ## 📁 Project Structure
 
 ```
+├── server/                                   # Secure Node.js Express API reverse proxy
+│   └── index.js                              # Shields API keys, handles Gemini & Imagen routing via Axios
 src/
 ├── features/                                 # Feature-specific components and UI modules
 │   ├── dashboard/                            # Landing screen & skill selection
 │   │   └── SkillSelectionDashboard.jsx
-│   ├── settings/                             # Full-screen profile & preferences screen
+│   ├── settings/                             # Full-screen profile, voice & preferences screen
 │   │   └── SettingsScreen.jsx
 │   ├── quest/                                # Live learning quiz & session interaction
 │   │   ├── QuestionCard.jsx                  # Main question prompt card with TTS audio
@@ -356,6 +405,7 @@ src/
 │       ├── ResultOverview.jsx                # Session results & performance breakdown
 │       └── QuestionSummary.jsx               # Question-by-question review accordion
 ├── services/                                 # AI generation & external API communication
+│   ├── apiClient.js                          # Centralized Axios client with retry middleware & backoff
 │   ├── aiGenerator.js                        # Google Gemini & Imagen 3 AI generation engine & live model discovery
 │   └── questionService.js                    # Question session pipeline & prompt orchestration
 ├── utils/                                    # Common utility logic & shared components
@@ -363,7 +413,8 @@ src/
 │   ├── Header.jsx                            # Shared top navigation & progress bar component
 │   ├── VisualDiagrams.jsx                    # Shared visual diagram rendering component
 │   ├── ZoomModal.jsx                         # Shared visual diagram zoom modal component
-│   ├── audioSynthesis.js                     # Sound effects & speech synthesis engine
+│   ├── audioSynthesis.js                     # Sound effects, browser voice discovery & speech synthesis
+│   ├── networkNotifier.js                    # DOM toast banner informing user on network drops & retries
 │   ├── pdfGenerator.js                       # Multi-page PDF session report generator
 │   ├── progressTracker.js                    # Local storage profile & settings tracker
 │   ├── shapeGenerator.jsx                    # Dynamic SVG shape math engine
@@ -378,14 +429,16 @@ src/
 ## 🛠️ Tech Stack
 
 - **React 18** (Modern functional components, hooks, `React.lazy`, `Suspense`, `React.memo`, & `useCallback`)
+- **Axios** (Centralized API client with interceptor middleware, 3-attempt exponential backoff retry on network drops, and error classification)
+- **Node.js Express 5 & CORS** (Secure reverse proxy server shielding Gemini API keys from browser DevTools)
 - **Performance & Code Splitting** (Rollup vendor chunking, dynamic on-demand PDF loading cutting main bundle by ~80% from 753 kB to 157 kB)
-- **Google Gemini & Imagen API** (`gemini-3.5-flash-lite`, `gemini-3.5-flash`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `imagen-3.0-generate-002`, `gemini-2.5-flash-image` via browser-native REST API with live key validation & dynamic model discovery)
+- **Google Gemini & Imagen API** (`gemini-3.5-flash-lite`, `gemini-3.5-flash`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `imagen-3.0-generate-002`, `gemini-2.5-flash-image` via Axios with live key validation & dynamic model discovery)
 - **Vite 6** (Blazing fast HMR and optimized production build tool)
 - **Tailwind CSS 3** (Custom space theme palette, animations, and responsive design)
 - **jsPDF 4 & html2canvas** (On-demand client-side multi-page PDF generation engine with color-coded options & headers)
 - **Lucide Icons** (Clean, child-friendly iconography in isolated vendor chunk)
 - **Canvas Confetti** (Celebratory particle effects)
-- **Web Audio API & Web Speech API** (Zero-asset sound synthesis and sanitized voice narration)
+- **Web Audio API & Web Speech API** (Zero-asset sound synthesis, single-voice guarantee, and customizable browser voice selection)
 
 ---
 
@@ -397,13 +450,33 @@ src/
 npm install
 ```
 
-### 2. Start Local Development Server
+### 2. Start Development Environment
+
+You can run the frontend standalone, or run the full-stack setup with the secure key-shielding proxy server:
+
+#### Option A: Full-Stack (Frontend + Secure Express Proxy) — Recommended
+
+```bash
+npm run dev:all
+```
+
+- **Frontend**: `http://localhost:3000`
+- **Express Proxy**: `http://localhost:5001`
+- Automatically routes API calls through the proxy so your Gemini API key is never visible in the browser Network tab.
+
+#### Option B: Frontend Only (Direct Client-Side Mode)
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:3000` in your browser.
+Open `http://localhost:3000` in your browser. Calls Gemini API directly from the browser.
+
+#### Option C: Proxy Server Only
+
+```bash
+npm run server
+```
 
 ### 3. Build for Production
 
