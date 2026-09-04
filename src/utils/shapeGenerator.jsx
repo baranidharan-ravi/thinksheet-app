@@ -15,6 +15,10 @@ export function hasShapeOrVisualConcept(text) {
 		lower.includes('nonagon') ||
 		lower.includes('decagon') ||
 		lower.includes('star') ||
+		lower.includes('moon') ||
+		lower.includes('crescent') ||
+		lower.includes('sun') ||
+		lower.includes('heart') ||
 		lower.includes('diamond') ||
 		lower.includes('rhombus') ||
 		lower.includes('sides') ||
@@ -492,6 +496,66 @@ export function parseDynamicShape(rawInput) {
 			raw: text,
 		};
 
+	if (
+		text.includes('🌙') ||
+		text.includes('🌛') ||
+		text.includes('🌜') ||
+		text.includes('🌔') ||
+		text.includes('🌖') ||
+		text.includes('🌘') ||
+		text.includes('🌒')
+	)
+		return {
+			shape: 'moon',
+			sides: 0,
+			color: '#F59E0B',
+			colorName: 'Gold',
+			shapeName: 'Moon',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Gold',
+			raw: text,
+		};
+
+	if (text.includes('☀️') || text.includes('🌞') || text.includes('🌅'))
+		return {
+			shape: 'sun',
+			sides: 0,
+			color: '#F59E0B',
+			colorName: 'Gold',
+			shapeName: 'Sun',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Gold',
+			raw: text,
+		};
+
+	if (text.includes('⚡'))
+		return {
+			shape: 'lightning',
+			sides: 0,
+			color: '#F59E0B',
+			colorName: 'Gold',
+			shapeName: 'Lightning',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Gold',
+			raw: text,
+		};
+
+	if (text.includes('☁️') || text.includes('☁'))
+		return {
+			shape: 'cloud',
+			sides: 0,
+			color: '#3B82F6',
+			colorName: 'Blue',
+			shapeName: 'Cloud',
+			isWhite: false,
+			isShaded: false,
+			styleTag: 'Blue',
+			raw: text,
+		};
+
 	// 1. Determine Shape and Side Count from text keywords
 	let shape = null;
 	let sides = 0;
@@ -571,6 +635,10 @@ export function parseDynamicShape(rawInput) {
 		shape = 'sun';
 		sides = 0;
 		shapeName = 'Sun';
+	} else if (lower.includes('heart')) {
+		shape = 'heart';
+		sides = 0;
+		shapeName = 'Heart';
 	} else if (lower.includes('diamond') || lower.includes('rhombus')) {
 		shape = 'diamond';
 		sides = 4;
@@ -703,6 +771,16 @@ export function parseDynamicShape(rawInput) {
 		colorName = 'Pink';
 	}
 
+	if (!isWhite && !isShaded && colorName === 'Indigo') {
+		if (shape === 'star' || shape === 'sun' || shape === 'moon') {
+			color = '#F59E0B';
+			colorName = 'Gold';
+		} else if (shape === 'heart') {
+			color = '#EF4444';
+			colorName = 'Red';
+		}
+	}
+
 	// 4. Extract quadrant position if present (e.g. top-left, top-right, bottom-left, bottom-right)
 	const isQuadrant =
 		lower.includes('top-left') ||
@@ -812,11 +890,12 @@ export function DynamicSvgShape({
 		shapeFill = `url(#${patternId}-striped)`;
 	} else if (isWhite || parsed?.isWhite) {
 		shapeFill = '#FFFFFF';
-	} else if (isSolid || parsed?.isSolid) {
-		if (shape === 'sun') shapeFill = '#F59E0B';
-		else if (shape === 'moon') shapeFill = '#8B5CF6';
-		else if (shape === 'star') shapeFill = '#3B82F6';
-		else shapeFill = color || '#334155';
+	} else {
+		shapeFill =
+			color ||
+			(shape === 'sun' || shape === 'moon' || shape === 'star' ? '#F59E0B'
+			: shape === 'heart' ? '#EF4444'
+			: '#3B82F6');
 	}
 
 	let shapeElement = null;
@@ -883,7 +962,7 @@ export function DynamicSvgShape({
 				/>
 			</g>
 		);
-	} else if (shape === 'circle' || sides === 0) {
+	} else if (shape === 'circle') {
 		shapeElement = (
 			<circle
 				cx={cx}
@@ -929,7 +1008,7 @@ export function DynamicSvgShape({
 			/>
 		);
 	} else if (shape === 'moon') {
-		const d = `M ${cx} ${cy - r} A ${r} ${r} 0 1 0 ${cx} ${cy + r} A ${r * 0.74} ${r * 0.74} 0 0 1 ${cx} ${cy - r} Z`;
+		const d = `M ${cx + r * 0.15} ${cy - r} C ${cx - r * 1.05} ${cy - r * 0.65}, ${cx - r * 1.05} ${cy + r * 0.65}, ${cx + r * 0.15} ${cy + r} C ${cx - r * 0.35} ${cy + r * 0.55}, ${cx - r * 0.35} ${cy - r * 0.55}, ${cx + r * 0.15} ${cy - r} Z`;
 		shapeElement = (
 			<path
 				d={d}
@@ -971,18 +1050,42 @@ export function DynamicSvgShape({
 				/>
 			</g>
 		);
-	} else {
-		// Regular polygon for triangle (3), pentagon (5), hexagon (6), heptagon (7), octagon (8), etc.
-		const numSides = sides || 3;
-		const points = getRegularPolygonPoints(numSides, cx, cy, r);
+	} else if (shape === 'heart') {
+		const d = `M ${cx} ${cy + r * 0.75} C ${cx - r * 1.3} ${cy - r * 0.15}, ${cx - r * 0.8} ${cy - r * 1.05}, ${cx} ${cy - r * 0.35} C ${cx + r * 0.8} ${cy - r * 1.05}, ${cx + r * 1.3} ${cy - r * 0.15}, ${cx} ${cy + r * 0.75} Z`;
 		shapeElement = (
-			<polygon
-				points={points}
+			<path
+				d={d}
 				fill={shapeFill}
 				stroke={strokeColor}
 				strokeWidth={strokeWidth}
+				strokeLinejoin='round'
 			/>
 		);
+	} else {
+		// Regular polygon for triangle (3), pentagon (5), hexagon (6), heptagon (7), octagon (8), etc.
+		if (shape === 'circle' || (!sides && !shape)) {
+			shapeElement = (
+				<circle
+					cx={cx}
+					cy={cy}
+					r={r}
+					fill={shapeFill}
+					stroke={strokeColor}
+					strokeWidth={strokeWidth}
+				/>
+			);
+		} else {
+			const numSides = sides || 3;
+			const points = getRegularPolygonPoints(numSides, cx, cy, r);
+			shapeElement = (
+				<polygon
+					points={points}
+					fill={shapeFill}
+					stroke={strokeColor}
+					strokeWidth={strokeWidth}
+				/>
+			);
+		}
 	}
 
 	// Only show overlay text if there is an explicit numeric progression value (e.g. [Blue Circle, 3])
@@ -1124,6 +1227,12 @@ export function DynamicShapeCard({
 	}
 
 	if (!parsed || !parsed.shape) {
+		const textStr = String(item || '').trim();
+		const isSingleEmoji =
+			/^[\p{Emoji}\s\u200d\ufe0e\ufe0f\u25A0-\u25FF\u2B50-\u2B55\u2600-\u26FF\u{1F780}-\u{1F7FF}]+$/u.test(
+				textStr,
+			);
+
 		return (
 			<div
 				className={`flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-2xl border-2 transition-transform hover:scale-105 min-w-[80px] sm:min-w-[95px] ${
@@ -1131,14 +1240,16 @@ export function DynamicShapeCard({
 						'bg-gradient-to-tr from-emerald-50 to-teal-50 border-emerald-400 ring-2 ring-emerald-300 shadow-lg'
 					:	'bg-white border-slate-200 shadow-md'
 				}`}>
-				<div className='w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-700 font-extrabold text-base sm:text-lg'>
-					{String(item || '')}
+				<div className='w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-700 font-extrabold text-2xl sm:text-3xl'>
+					{textStr}
 				</div>
-				<div className='flex flex-col items-center mt-1.5 text-center w-full'>
-					<h5 className='text-xs sm:text-sm font-black text-slate-900 leading-tight'>
-						{String(item || '')}
-					</h5>
-				</div>
+				{!isSingleEmoji && textStr && (
+					<div className='flex flex-col items-center mt-1.5 text-center w-full'>
+						<h5 className='text-xs sm:text-sm font-black text-slate-900 leading-tight'>
+							{textStr}
+						</h5>
+					</div>
+				)}
 			</div>
 		);
 	}
@@ -1158,7 +1269,12 @@ export function DynamicShapeCard({
 
 			<div className='flex flex-col items-center mt-1.5 text-center w-full'>
 				<h5 className='text-xs sm:text-sm font-black text-slate-900 leading-tight'>
-					{parsed.styleTag ?
+					{(
+						parsed.styleTag &&
+						!parsed.shapeName
+							.toLowerCase()
+							.includes(parsed.styleTag.toLowerCase())
+					) ?
 						`${parsed.styleTag} ${parsed.shapeName}`
 					:	parsed.shapeName}
 				</h5>
