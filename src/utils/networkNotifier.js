@@ -25,7 +25,8 @@ function getOrCreateToast() {
 			width: '90vw',
 			padding: '14px 20px',
 			borderRadius: '16px',
-			fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+			fontFamily:
+				'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
 			fontSize: '14px',
 			fontWeight: '600',
 			lineHeight: '1.4',

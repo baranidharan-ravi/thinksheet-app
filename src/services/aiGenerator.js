@@ -1,4 +1,3 @@
-import apiClient from './apiClient';
 import {
 	getSecureStorageItem,
 	setSecureStorageItem,
@@ -9,6 +8,7 @@ import {
 	parseRotationSequence,
 	parseStepShapeCountSequence,
 } from '../utils/shapeGenerator';
+import apiClient from './apiClient';
 
 const AI_KEY_STORAGE = 'thinksheet_gemini_api_key';
 const SELECTED_MODEL_KEY = 'thinksheet_selected_gemini_model_v1';
