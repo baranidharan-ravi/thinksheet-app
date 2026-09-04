@@ -522,6 +522,14 @@ function synchronizeDiagramData(
 		type = 'odd-one-out';
 		data.target = correctText;
 	} else if (
+		lower.includes('balance') ||
+		lower.includes('scale') ||
+		lower.includes('heavier') ||
+		lower.includes('lighter') ||
+		lower.includes('weigh')
+	) {
+		type = 'scale-balance';
+	} else if (
 		lower.includes('cause') ||
 		lower.includes('effect') ||
 		lower.includes('happen') ||
@@ -532,15 +540,12 @@ function synchronizeDiagramData(
 		lower.includes('freeze')
 	) {
 		type = 'cause-effect';
-	} else if (lower.includes('how many') || lower.includes('count')) {
-		type = 'apple-counting';
 	} else if (
-		lower.includes('balance') ||
-		lower.includes('scale') ||
-		lower.includes('heavier') ||
-		lower.includes('lighter')
+		(lower.includes('how many') || lower.includes('count')) &&
+		!lower.includes('balance') &&
+		!lower.includes('scale')
 	) {
-		type = 'scale-balance';
+		type = 'apple-counting';
 	} else if (lower.includes('grid') || lower.includes('tile')) {
 		type = 'grid-tiles';
 	} else if (selectedSkill === 'Visual') {
@@ -554,7 +559,50 @@ function synchronizeDiagramData(
 	const parsedNum = numMatch ? parseInt(numMatch[0], 10) : null;
 
 	// 2. Exact mathematical parameter extraction per diagram type
-	if (type === 'block-tower' || type === 'isometric-tower') {
+	if (type === 'scale-balance') {
+		// Detect item types and quantities from question text
+		let leftEmoji = '🚗';
+		let rightEmoji = '🧱';
+		let leftLabel = '1 Toy Car';
+		let rightLabel = 'Wooden Blocks';
+
+		if (lower.includes('car')) leftEmoji = '🚗';
+		else if (lower.includes('apple')) leftEmoji = '🍎';
+		else if (lower.includes('ball')) leftEmoji = '⚽';
+		else if (lower.includes('book')) leftEmoji = '📚';
+		else if (lower.includes('coin')) leftEmoji = '🪙';
+		else if (lower.includes('star')) leftEmoji = '⭐';
+
+		if (lower.includes('block') || lower.includes('brick')) rightEmoji = '🧱';
+		else if (lower.includes('cube')) rightEmoji = '🧊';
+		else if (lower.includes('marble')) rightEmoji = '⚪';
+		else if (lower.includes('weight') || lower.includes('gram'))
+			rightEmoji = '⚖️';
+		else if (lower.includes('coin')) rightEmoji = '🪙';
+
+		// Extract numbers associated with items if present
+		const carMatch = questionText.match(
+			/(\d+)\s*(?:identical\s*)?(?:toy\s*)?car/i,
+		);
+		const blockMatch = questionText.match(/(\d+)\s*(?:wooden\s*)?block/i);
+
+		if (carMatch) {
+			leftLabel = `${carMatch[1]} Car${parseInt(carMatch[1], 10) > 1 ? 's' : ''}`;
+		}
+		if (blockMatch) {
+			rightLabel = `${blockMatch[1]} Blocks`;
+		}
+
+		data.leftEmoji = data.leftEmoji || leftEmoji;
+		data.rightEmoji = data.rightEmoji || rightEmoji;
+		data.leftLabel = data.leftLabel || leftLabel;
+		data.rightLabel =
+			correctText ? `${correctText.trim()}` : data.rightLabel || rightLabel;
+		data.heavySide =
+			lower.includes('heavier on the left') ? 'left'
+			: lower.includes('heavier on the right') ? 'right'
+			: 'balanced';
+	} else if (type === 'block-tower' || type === 'isometric-tower') {
 		// Analyze 3D stepped pyramid / cube layers
 		if (
 			(lower.includes('3x3') ||
@@ -677,7 +725,20 @@ function synchronizeDiagramData(
 		const emojiMatch = questionText.match(
 			/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u,
 		);
-		data.emoji = data.emoji || (emojiMatch ? emojiMatch[0] : '🍎');
+		let contextEmoji = emojiMatch ? emojiMatch[0] : null;
+		if (!contextEmoji) {
+			if (lower.includes('car')) contextEmoji = '🚗';
+			else if (lower.includes('block') || lower.includes('brick'))
+				contextEmoji = '🧱';
+			else if (lower.includes('star')) contextEmoji = '⭐';
+			else if (lower.includes('coin')) contextEmoji = '🪙';
+			else if (lower.includes('book')) contextEmoji = '📚';
+			else if (lower.includes('flower')) contextEmoji = '🌸';
+			else if (lower.includes('ball')) contextEmoji = '⚽';
+			else if (lower.includes('cookie')) contextEmoji = '🍪';
+			else contextEmoji = '🍎';
+		}
+		data.emoji = data.emoji || contextEmoji;
 	} else if (type === 'pattern-shapes' || type === 'shape-sequence') {
 		const extracted = extractShapeSequenceTerms(questionText);
 		if (extracted && extracted.length >= 2) {

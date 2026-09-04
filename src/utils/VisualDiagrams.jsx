@@ -5,6 +5,7 @@ import {
 	Link2,
 	RotateCcw,
 	RotateCw,
+	Scale,
 	Shapes,
 	Sparkles,
 	Zap,
@@ -1481,80 +1482,223 @@ const VisualDiagram = memo(function VisualDiagram({
 		}
 
 		case 'scale-balance': {
-			const leftItem = data.leftEmoji || '🎈';
-			const rightItem = data.rightEmoji || '🪨';
-			const heavySide = data.heavySide || 'right';
+			const qText = data.questionText || data.question || '';
+			const qLower = qText.toLowerCase();
 
+			let leftEmoji = data.leftEmoji;
+			let rightEmoji = data.rightEmoji;
+			let leftLabel = data.leftLabel;
+			let rightLabel = data.rightLabel;
+
+			if (!leftEmoji) {
+				if (qLower.includes('car')) leftEmoji = '🚗';
+				else if (qLower.includes('apple')) leftEmoji = '🍎';
+				else if (qLower.includes('ball')) leftEmoji = '⚽';
+				else if (qLower.includes('book')) leftEmoji = '📚';
+				else if (qLower.includes('coin')) leftEmoji = '🪙';
+				else if (qLower.includes('star')) leftEmoji = '⭐';
+				else leftEmoji = '🚗';
+			}
+
+			if (!rightEmoji) {
+				if (qLower.includes('block') || qLower.includes('brick'))
+					rightEmoji = '🧱';
+				else if (qLower.includes('cube')) rightEmoji = '🧊';
+				else if (qLower.includes('marble')) rightEmoji = '⚪';
+				else if (qLower.includes('weight')) rightEmoji = '⚖️';
+				else rightEmoji = '🧱';
+			}
+
+			if (!leftLabel && qText) {
+				const carMatch = qText.match(
+					/(\d+)\s*(?:identical\s*)?(?:toy\s*)?car/i,
+				);
+				if (carMatch) {
+					leftLabel = `${carMatch[1]} Car${parseInt(carMatch[1], 10) > 1 ? 's' : ''}`;
+				} else {
+					leftLabel = '1 Toy Car';
+				}
+			}
+
+			if (!rightLabel && qText) {
+				if (data.correctAnswerText || data.correctAnswer) {
+					rightLabel = String(data.correctAnswerText || data.correctAnswer);
+				} else {
+					const blockMatch = qText.match(/(\d+)\s*(?:wooden\s*)?block/i);
+					if (blockMatch) rightLabel = `${blockMatch[1]} Blocks`;
+					else rightLabel = 'Blocks';
+				}
+			}
+
+			const heavySide = data.heavySide || 'balanced';
 			const isRightHeavy = heavySide === 'right';
+			const isLeftHeavy = heavySide === 'left';
+			const isBalanced =
+				heavySide === 'balanced' || (!isRightHeavy && !isLeftHeavy);
+
+			const beamY1 =
+				isBalanced ? 100
+				: isRightHeavy ? 80
+				: 120;
+			const beamY2 =
+				isBalanced ? 100
+				: isRightHeavy ? 120
+				: 80;
+
+			const leftPanY =
+				isBalanced ? 122
+				: isRightHeavy ? 102
+				: 142;
+			const rightPanY =
+				isBalanced ? 122
+				: isRightHeavy ? 142
+				: 102;
 
 			return (
-				<div className='flex flex-col items-center justify-center p-3'>
+				<div className='flex flex-col items-center justify-center p-3 sm:p-4 my-2 bg-gradient-to-br from-indigo-50/80 via-sky-50/70 to-purple-50/80 rounded-2xl border-2 border-indigo-200 shadow-sm max-w-xl w-full animate-in fade-in duration-300'>
+					<div className='flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase text-indigo-800 tracking-wider mb-2 bg-indigo-100 px-3 py-0.5 rounded-full border border-indigo-300'>
+						<Scale className='w-3.5 h-3.5 text-indigo-600' />
+						<span>Balance Scale Reasoning</span>
+					</div>
+
 					<svg
-						viewBox='0 0 260 160'
-						className='w-56 h-36'>
+						viewBox='0 0 280 160'
+						className='w-64 sm:w-72 h-36 drop-shadow-sm'>
+						{/* Fulcrum base */}
 						<polygon
-							points='130,110 110,150 150,150'
-							fill='#64748B'
+							points='140,105 120,150 160,150'
+							fill='#475569'
+							stroke='#334155'
+							strokeWidth='1.5'
 						/>
+						<circle
+							cx='140'
+							cy='105'
+							r='5'
+							fill='#0EA5E9'
+						/>
+
+						{/* Scale Beam */}
 						<line
 							x1='30'
-							y1={isRightHeavy ? 85 : 125}
-							x2='230'
-							y2={isRightHeavy ? 125 : 85}
-							stroke='#334155'
-							strokeWidth='6'
+							y1={beamY1}
+							x2='250'
+							y2={beamY2}
+							stroke='#1E293B'
+							strokeWidth='5'
 							strokeLinecap='round'
 						/>
+
+						{/* Left Hanging Strings */}
 						<line
-							x1='45'
-							y1={isRightHeavy ? 88 : 128}
-							x2='45'
-							y2={isRightHeavy ? 110 : 145}
+							x1='50'
+							y1={beamY1 + 2}
+							x2='35'
+							y2={leftPanY}
 							stroke='#94A3B8'
-							strokeWidth='2'
+							strokeWidth='1.5'
 						/>
+						<line
+							x1='50'
+							y1={beamY1 + 2}
+							x2='65'
+							y2={leftPanY}
+							stroke='#94A3B8'
+							strokeWidth='1.5'
+						/>
+
+						{/* Left Pan */}
 						<path
-							d={
-								isRightHeavy ?
-									'M 25 110 Q 45 120 65 110'
-								:	'M 25 145 Q 45 155 65 145'
-							}
+							d={`M 25 ${leftPanY} Q 50 ${leftPanY + 12} 75 ${leftPanY}`}
 							fill='none'
-							stroke='#64748B'
-							strokeWidth='3'
+							stroke='#334155'
+							strokeWidth='3.5'
+							strokeLinecap='round'
 						/>
 						<text
-							x='45'
-							y={isRightHeavy ? 100 : 135}
-							fontSize='24'
+							x='50'
+							y={leftPanY - 5}
+							fontSize='22'
 							textAnchor='middle'>
-							{leftItem}
+							{leftEmoji}
 						</text>
+						<text
+							x='50'
+							y={leftPanY + 22}
+							fontSize='10'
+							fontWeight='900'
+							fill='#1E293B'
+							textAnchor='middle'>
+							{leftLabel || 'Left Pan'}
+						</text>
+
+						{/* Right Hanging Strings */}
 						<line
-							x1='215'
-							y1={isRightHeavy ? 122 : 88}
+							x1='230'
+							y1={beamY2 + 2}
 							x2='215'
-							y2={isRightHeavy ? 145 : 110}
+							y2={rightPanY}
 							stroke='#94A3B8'
-							strokeWidth='2'
+							strokeWidth='1.5'
 						/>
+						<line
+							x1='230'
+							y1={beamY2 + 2}
+							x2='245'
+							y2={rightPanY}
+							stroke='#94A3B8'
+							strokeWidth='1.5'
+						/>
+
+						{/* Right Pan */}
 						<path
-							d={
-								isRightHeavy ?
-									'M 195 145 Q 215 155 235 145'
-								:	'M 195 110 Q 215 120 235 110'
-							}
+							d={`M 205 ${rightPanY} Q 230 ${rightPanY + 12} 255 ${rightPanY}`}
 							fill='none'
-							stroke='#64748B'
-							strokeWidth='3'
+							stroke='#334155'
+							strokeWidth='3.5'
+							strokeLinecap='round'
 						/>
 						<text
-							x='215'
-							y={isRightHeavy ? 135 : 100}
-							fontSize='24'
+							x='230'
+							y={rightPanY - 5}
+							fontSize='22'
 							textAnchor='middle'>
-							{rightItem}
+							{isSolution ? rightEmoji : '❓'}
 						</text>
+						<text
+							x='230'
+							y={rightPanY + 22}
+							fontSize='10'
+							fontWeight='900'
+							fill={isSolution ? '#059669' : '#6366F1'}
+							textAnchor='middle'>
+							{isSolution ? rightLabel || '3 Blocks' : 'How many blocks?'}
+						</text>
+
+						{/* Center Balance Indicator */}
+						{isBalanced && (
+							<g>
+								<rect
+									x='105'
+									y='68'
+									width='70'
+									height='18'
+									rx='9'
+									fill='#ECFDF5'
+									stroke='#10B981'
+									strokeWidth='1.2'
+								/>
+								<text
+									x='140'
+									y='81'
+									fontSize='9'
+									fontWeight='900'
+									fill='#047857'
+									textAnchor='middle'>
+									⚖️ BALANCED
+								</text>
+							</g>
+						)}
 					</svg>
 				</div>
 			);
