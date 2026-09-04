@@ -1,3 +1,4 @@
+import apiClient from './apiClient';
 import {
 	getSecureStorageItem,
 	setSecureStorageItem,
@@ -24,17 +25,15 @@ let isProxyAvailable = null;
 export async function checkProxyAvailability() {
 	if (isProxyAvailable !== null) return isProxyAvailable;
 	try {
-		const res = await fetch('/api/health', { method: 'GET' });
-		if (res.ok) {
-			const data = await res.json();
-			isProxyAvailable = data?.proxy === true;
-			if (isProxyAvailable) {
-				console.log(
-					'🔒 [Security] Node.js Express Proxy detected! API calls are securely routed through server middleware without exposing keys in client Network tab.',
-				);
-			}
-			return isProxyAvailable;
+		const res = await apiClient.get('/api/health', { skipRetry: true });
+		const data = res.data;
+		isProxyAvailable = data?.proxy === true;
+		if (isProxyAvailable) {
+			console.log(
+				'🔒 [Security] Node.js Express Proxy detected! API calls are securely routed through server middleware without exposing keys in client Network tab.',
+			);
 		}
+		return isProxyAvailable;
 	} catch (_) {}
 	isProxyAvailable = false;
 	return false;
@@ -134,19 +133,16 @@ export async function fetchOnlineGeminiModels(apiKey) {
 
 	const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(cleanedKey)}`;
 
-	const response = await fetch(url, {
-		method: 'GET',
-		headers: { 'Content-Type': 'application/json' },
-	});
-
-	if (!response.ok) {
-		const errText = await response.text();
-		throw new Error(
-			`Failed to fetch models (${response.status}): ${errText || response.statusText}`,
-		);
+	let response;
+	try {
+		response = await apiClient.get(url);
+	} catch (err) {
+		const status = err.response?.status || 500;
+		const errMsg = err.response?.data?.error?.message || err.message;
+		throw new Error(`Failed to fetch models (${status}): ${errMsg}`);
 	}
 
-	const data = await response.json();
+	const data = response.data;
 	if (!data.models || !Array.isArray(data.models)) {
 		throw new Error('No models found in API response.');
 	}
@@ -298,27 +294,24 @@ async function callGeminiApi(payload, apiKey, preferredModel = null) {
 	const hasProxy = await checkProxyAvailability();
 	if (hasProxy) {
 		try {
-			const proxyRes = await fetch('/api/generate-content', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					...(apiKey ? { 'x-gemini-key': apiKey } : {}),
-				},
-				body: JSON.stringify({
+			const proxyRes = await apiClient.post(
+				'/api/generate-content',
+				{
 					model: activeSelected,
 					contents: payload.contents,
 					systemInstruction: payload.systemInstruction,
 					generationConfig: payload.generationConfig,
-				}),
-			});
-
-			if (proxyRes.ok) {
-				const data = await proxyRes.json();
-				return data;
-			}
-			console.warn(
-				`[Proxy] /api/generate-content returned HTTP ${proxyRes.status}, falling back to direct client call.`,
+				},
+				{
+					headers: {
+						...(apiKey ? { 'x-gemini-key': apiKey } : {}),
+					},
+				},
 			);
+
+			if (proxyRes.data) {
+				return proxyRes.data;
+			}
 		} catch (proxyErr) {
 			console.warn(
 				'[Proxy] Connection failed, falling back to direct client call:',
@@ -347,32 +340,21 @@ async function callGeminiApi(payload, apiKey, preferredModel = null) {
 				apiKey,
 			)}`;
 
-			const res = await fetch(url, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload),
-			});
-
-			if (res.ok) {
-				const data = await res.json();
-				return data;
+			const res = await apiClient.post(url, payload);
+			if (res.data) {
+				return res.data;
 			}
-
-			const errText = await res.text();
-			let parsedErr = null;
-			try {
-				parsedErr = JSON.parse(errText);
-			} catch {}
-
-			const errMsg = parsedErr?.error?.message || errText;
-			lastError = new Error(`Model ${model} (${res.status}): ${errMsg}`);
+		} catch (err) {
+			const status = err.response?.status;
+			const body = err.response?.data;
+			const errMsg = body?.error?.message || err.message || '';
+			lastError = new Error(`Model ${model} (${status || 'ERR'}): ${errMsg}`);
 			console.warn(
-				`[Gemini API] ${model} returned HTTP ${res.status}, trying fallback model...`,
+				`[Gemini API] ${model} returned HTTP ${status}, trying fallback model...`,
 			);
 
-			// If it's an explicit key error (400 invalid key / 403 forbidden), stop trying other models
 			if (
-				res.status === 400 &&
+				status === 400 &&
 				(errMsg.toLowerCase().includes('api_key') ||
 					errMsg.toLowerCase().includes('key not valid') ||
 					errMsg.toLowerCase().includes('invalid api key') ||
@@ -382,15 +364,15 @@ async function callGeminiApi(payload, apiKey, preferredModel = null) {
 					'Invalid Gemini API Key. Please verify your key from Google AI Studio.',
 				);
 			}
-			if (res.status === 403) {
+			if (status === 403) {
 				throw new Error(
 					'Gemini API key access forbidden. Ensure Generative Language API is enabled.',
 				);
 			}
-		} catch (err) {
+
 			if (
-				err.message.includes('Invalid Gemini API Key') ||
-				err.message.includes('access forbidden')
+				err.message?.includes('Invalid Gemini API Key') ||
+				err.message?.includes('access forbidden')
 			) {
 				throw err;
 			}
@@ -1529,33 +1511,28 @@ async function generateWithImagen(prompt, apiKey) {
 		throw err;
 	}
 	const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${encodeURIComponent(apiKey)}`;
-	const response = await fetch(imagenUrl, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({
+	let data;
+	try {
+		const response = await apiClient.post(imagenUrl, {
 			instances: [{ prompt }],
 			parameters: {
 				sampleCount: 1,
 				aspectRatio: '1:1',
 			},
-		}),
-	});
-
-	if (!response.ok) {
-		let data = null;
-		try {
-			data = await response.json();
-		} catch (_) {}
-		const err = new Error(
-			data?.error?.message || `Imagen HTTP ${response.status}`,
+		});
+		data = response.data;
+	} catch (err) {
+		const status = err.response?.status || 500;
+		const errData = err.response?.data;
+		const customErr = new Error(
+			errData?.error?.message || `Imagen HTTP ${status}`,
 		);
-		if (isResourceExhausted(response.status, data, err.message)) {
-			err.isResourceExhausted = true;
+		if (isResourceExhausted(status, errData, customErr.message)) {
+			customErr.isResourceExhausted = true;
 		}
-		throw err;
+		throw customErr;
 	}
 
-	const data = await response.json();
 	const base64Bytes = data?.predictions?.[0]?.bytesBase64Encoded;
 	if (!base64Bytes) {
 		throw new Error('No image bytes returned from Imagen');
@@ -1571,32 +1548,27 @@ async function generateWithGeminiFlash(prompt, apiKey) {
 		throw err;
 	}
 	const flashUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
-	const flashResp = await fetch(flashUrl, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({
+	let flashData;
+	try {
+		const flashResp = await apiClient.post(flashUrl, {
 			contents: [{ parts: [{ text: prompt }] }],
 			generationConfig: {
 				responseModalities: ['IMAGE'],
 			},
-		}),
-	});
-
-	if (!flashResp.ok) {
-		let data = null;
-		try {
-			data = await flashResp.json();
-		} catch (_) {}
-		const err = new Error(
-			data?.error?.message || `Gemini Flash HTTP ${flashResp.status}`,
+		});
+		flashData = flashResp.data;
+	} catch (err) {
+		const status = err.response?.status || 500;
+		const errData = err.response?.data;
+		const customErr = new Error(
+			errData?.error?.message || `Gemini Flash HTTP ${status}`,
 		);
-		if (isResourceExhausted(flashResp.status, data, err.message)) {
-			err.isResourceExhausted = true;
+		if (isResourceExhausted(status, errData, customErr.message)) {
+			customErr.isResourceExhausted = true;
 		}
-		throw err;
+		throw customErr;
 	}
 
-	const flashData = await flashResp.json();
 	const part = flashData?.candidates?.[0]?.content?.parts?.[0];
 	if (!part?.inlineData?.data) {
 		throw new Error('No inline image data from Gemini Flash');
@@ -1798,20 +1770,18 @@ export async function generateAiVisualImage(
 	const hasProxy = await checkProxyAvailability();
 	if (hasProxy) {
 		try {
-			const proxyResp = await fetch('/api/generate-image', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					...(apiKey ? { 'x-gemini-key': apiKey } : {}),
+			const proxyResp = await apiClient.post(
+				'/api/generate-image',
+				{ prompt: cleanedPrompt },
+				{
+					headers: {
+						...(apiKey ? { 'x-gemini-key': apiKey } : {}),
+					},
 				},
-				body: JSON.stringify({ prompt: cleanedPrompt }),
-			});
-			if (proxyResp.ok) {
-				const proxyData = await proxyResp.json();
-				if (proxyData?.imageUrl) {
-					aiImageCache.set(cacheKey, proxyData.imageUrl);
-					return proxyData.imageUrl;
-				}
+			);
+			if (proxyResp.data?.imageUrl) {
+				aiImageCache.set(cacheKey, proxyResp.data.imageUrl);
+				return proxyResp.data.imageUrl;
 			}
 		} catch (err) {
 			console.warn(

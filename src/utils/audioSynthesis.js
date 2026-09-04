@@ -247,7 +247,8 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
  * Returns all available browser voices, loading them fresh if needed.
  */
 export function getAvailableVoices() {
-	if (typeof window === 'undefined' || !('speechSynthesis' in window)) return [];
+	if (typeof window === 'undefined' || !('speechSynthesis' in window))
+		return [];
 	const voices =
 		cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
 	cachedVoices = voices;
@@ -354,7 +355,9 @@ export function speakText(text, onStart = null, onEnd = null) {
 
 		// Resolve and apply voice (respects user's saved preference)
 		const voices =
-			cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
+			cachedVoices.length > 0 ?
+				cachedVoices
+			:	window.speechSynthesis.getVoices();
 		const voice = resolveVoice(voices);
 		if (voice) {
 			utterance.voice = voice;
@@ -399,5 +402,3 @@ export function stopSpeaking() {
 		console.warn('Speech synthesis stop error', err);
 	}
 }
-
-

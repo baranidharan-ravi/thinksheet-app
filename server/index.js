@@ -7,6 +7,7 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import axios from 'axios';
 
 // Load environment variables from server/.env or root .env
 dotenv.config({ path: './server/.env' });
@@ -73,18 +74,13 @@ app.post('/api/validate-key', async (req, res) => {
 
 	try {
 		const testUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`;
-		const response = await fetch(testUrl);
-		if (response.ok) {
-			return res.json({ valid: true, message: 'Key validated successfully' });
-		}
-		const data = await response.json().catch(() => ({}));
-		return res
-			.status(400)
-			.json({ valid: false, error: data?.error?.message || 'Invalid API key' });
+		await axios.get(testUrl);
+		return res.json({ valid: true, message: 'Key validated successfully' });
 	} catch (err) {
-		return res.status(500).json({
+		const errData = err.response?.data;
+		return res.status(400).json({
 			valid: false,
-			error: err.message || 'Validation request failed',
+			error: errData?.error?.message || err.message || 'Invalid API key',
 		});
 	}
 });
@@ -100,11 +96,11 @@ app.get('/api/models', async (req, res) => {
 
 	try {
 		const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`;
-		const response = await fetch(url);
-		const data = await response.json();
-		return res.status(response.status).json(data);
+		const response = await axios.get(url);
+		return res.status(response.status).json(response.data);
 	} catch (err) {
-		return res.status(500).json({ error: err.message });
+		const status = err.response?.status || 500;
+		return res.status(status).json(err.response?.data || { error: err.message });
 	}
 });
 
@@ -135,19 +131,14 @@ app.post('/api/generate-content', async (req, res) => {
 			...(generationConfig ? { generationConfig } : {}),
 		};
 
-		const response = await fetch(url, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
-		});
-
-		const data = await response.json();
-		return res.status(response.status).json(data);
+		const response = await axios.post(url, payload);
+		return res.status(response.status).json(response.data);
 	} catch (err) {
-		console.error('[Proxy Error] generate-content:', err);
+		console.error('[Proxy Error] generate-content:', err.message);
+		const status = err.response?.status || 500;
 		return res
-			.status(500)
-			.json({ error: err.message || 'Proxy request failed' });
+			.status(status)
+			.json(err.response?.data || { error: err.message || 'Proxy request failed' });
 	}
 });
 
@@ -169,44 +160,31 @@ app.post('/api/generate-image', async (req, res) => {
 	if (key) {
 		try {
 			const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${encodeURIComponent(key)}`;
-			const imagenResp = await fetch(imagenUrl, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
+			const imagenResp = await axios.post(imagenUrl, {
 					instances: [{ prompt: cleanedPrompt }],
 					parameters: { sampleCount: 1, aspectRatio: '1:1' },
-				}),
-			});
+				});
 
-			if (imagenResp.ok) {
-				const data = await imagenResp.json();
-				const b64 = data?.predictions?.[0]?.bytesBase64Encoded;
+				const b64 = imagenResp.data?.predictions?.[0]?.bytesBase64Encoded;
 				if (b64) {
 					return res.json({
 						imageUrl: `data:image/png;base64,${b64}`,
 						provider: 'Google Imagen 3',
 					});
 				}
-			}
-		} catch (err) {
+			} catch (err) {
 			console.warn('[Proxy Image] Imagen 3 failed:', err.message);
 		}
 
 		// 2. Try Gemini 2.5 Flash Native Image
 		try {
 			const flashUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${encodeURIComponent(key)}`;
-			const flashResp = await fetch(flashUrl, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
+			const flashResp = await axios.post(flashUrl, {
 					contents: [{ parts: [{ text: cleanedPrompt }] }],
 					generationConfig: { responseModalities: ['IMAGE'] },
-				}),
-			});
+				});
 
-			if (flashResp.ok) {
-				const flashData = await flashResp.json();
-				const part = flashData?.candidates?.[0]?.content?.parts?.[0];
+				const part = flashResp.data?.candidates?.[0]?.content?.parts?.[0];
 				if (part?.inlineData?.data) {
 					const mime = part.inlineData.mimeType || 'image/png';
 					return res.json({
@@ -214,8 +192,7 @@ app.post('/api/generate-image', async (req, res) => {
 						provider: 'Gemini Flash Image',
 					});
 				}
-			}
-		} catch (err) {
+			} catch (err) {
 			console.warn('[Proxy Image] Gemini Flash Image failed:', err.message);
 		}
 	}
@@ -241,10 +218,9 @@ app.post('/api/generate-image', async (req, res) => {
 	try {
 		const clean = sanitizePromptForImage(prompt);
 		const pollUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(clean)}?width=400&height=400&nologo=true&model=turbo`;
-		const pollResp = await fetch(pollUrl);
-		if (pollResp.ok) {
-			const buffer = await pollResp.arrayBuffer();
-			const b64 = Buffer.from(buffer).toString('base64');
+		const pollResp = await axios.get(pollUrl, { responseType: 'arraybuffer' });
+		if (pollResp.data) {
+			const b64 = Buffer.from(pollResp.data).toString('base64');
 			return res.json({
 				imageUrl: `data:image/jpeg;base64,${b64}`,
 				provider: 'Pollinations AI (Turbo Free)',

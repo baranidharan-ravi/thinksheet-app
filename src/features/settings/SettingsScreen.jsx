@@ -898,13 +898,12 @@ const SettingsScreen = memo(function SettingsScreen({
 						speaks at a time.
 					</p>
 
-					{availableVoices.length === 0 ? (
+					{availableVoices.length === 0 ?
 						<div className='text-xs text-slate-400 font-semibold p-3 rounded-xl bg-slate-800/60 border border-slate-700'>
 							⚠️ No voices available yet. Try clicking the speaker icon on a
 							question to trigger voice loading, then reopen Settings.
 						</div>
-					) : (
-						<div className='grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[220px] overflow-y-auto pr-1'>
+					:	<div className='grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[220px] overflow-y-auto pr-1'>
 							{/* Default / Auto option */}
 							<button
 								type='button'
@@ -944,7 +943,11 @@ const SettingsScreen = memo(function SettingsScreen({
 											playButtonPop(soundEnabled);
 											setSelectedVoiceURI(voice.voiceURI);
 											// Live preview of the voice
-											speakText('Hello! I am ready to read questions for you.', null, null);
+											speakText(
+												'Hello! I am ready to read questions for you.',
+												null,
+												null,
+											);
 										}}
 										className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-2 ${
 											isSelected ?
@@ -974,7 +977,7 @@ const SettingsScreen = memo(function SettingsScreen({
 								);
 							})}
 						</div>
-					)}
+					}
 				</div>
 
 				{/* Error Alert */}
