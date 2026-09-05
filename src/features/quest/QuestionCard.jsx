@@ -6,7 +6,9 @@ import {
 	stopSpeaking,
 } from '../../utils/audioSynthesis';
 import { getStoredKidAge, getStoredKidName } from '../../utils/progressTracker';
-import VisualDiagram from '../../utils/VisualDiagrams';
+import VisualDiagram, {
+	isDiagramAppropriateForQuestion,
+} from '../../utils/VisualDiagrams';
 
 const QuestionCard = memo(function QuestionCard({
 	question,
@@ -24,6 +26,16 @@ const QuestionCard = memo(function QuestionCard({
 	const resolvedKidName =
 		(kidName && String(kidName).trim()) || getStoredKidName() || 'Explorer';
 	const resolvedKidAge = kidAge || getStoredKidAge() || 5;
+
+	const hasAppropriateDiagram = Boolean(
+		showVisualDiagrams &&
+		question.diagramType &&
+		isDiagramAppropriateForQuestion(
+			question.diagramType,
+			question.diagramData,
+			question.question || question.questionText,
+		),
+	);
 
 	const handleListenQuestion = () => {
 		playButtonPop(soundEnabled);
@@ -98,7 +110,7 @@ const QuestionCard = memo(function QuestionCard({
 					</div>
 
 					{/* Zoom Button */}
-					{showVisualDiagrams && question.diagramType ?
+					{hasAppropriateDiagram ?
 						<button
 							type='button'
 							onClick={() => {
@@ -145,19 +157,17 @@ const QuestionCard = memo(function QuestionCard({
 					</button>
 				</div>
 
-				{/* Visual Diagram (only if question has a diagram type defined) */}
-				{showVisualDiagrams && question.diagramType && (
-					<div className='flex flex-col justify-center items-center py-2'>
-						<VisualDiagram
-							type={question.diagramType}
-							data={{
-								...question.diagramData,
-								questionText: question.question || question.questionText,
-								correctAnswerText:
-									question.correctAnswerText || question.correctAnswer,
-							}}
-						/>
-					</div>
+				{/* Visual Diagram (only if question has a valid, appropriate diagram) */}
+				{hasAppropriateDiagram && (
+					<VisualDiagram
+						type={question.diagramType}
+						data={{
+							...question.diagramData,
+							questionText: question.question || question.questionText,
+							correctAnswerText:
+								question.correctAnswerText || question.correctAnswer,
+						}}
+					/>
 				)}
 			</div>
 

@@ -13,7 +13,9 @@ import {
 } from 'lucide-react';
 import { memo, useCallback, useState } from 'react';
 import { playButtonPop } from '../../utils/audioSynthesis';
-import VisualDiagram from '../../utils/VisualDiagrams';
+import VisualDiagram, {
+	isDiagramAppropriateForQuestion,
+} from '../../utils/VisualDiagrams';
 
 const QuestionSummary = memo(function QuestionSummary({
 	questions,
@@ -210,8 +212,13 @@ const QuestionSummary = memo(function QuestionSummary({
 									</p>
 
 									{/* Visual Diagram Preview */}
-									{showVisualDiagrams && q.diagramType && (
-										<div className='w-full flex justify-center py-2'>
+									{showVisualDiagrams &&
+										q.diagramType &&
+										isDiagramAppropriateForQuestion(
+											q.diagramType,
+											q.diagramData,
+											q.question || q.questionText,
+										) && (
 											<VisualDiagram
 												type={q.diagramType}
 												data={{
@@ -221,8 +228,7 @@ const QuestionSummary = memo(function QuestionSummary({
 														q.correctAnswerText || q.correctAnswer,
 												}}
 											/>
-										</div>
-									)}
+										)}
 
 									{/* Answers Comparison */}
 									<div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
@@ -269,10 +275,15 @@ const QuestionSummary = memo(function QuestionSummary({
 										<p className='text-xs sm:text-sm font-semibold text-slate-700 leading-relaxed mb-3'>
 											{q.solutionText}
 										</p>
-										{showVisualDiagrams && q.solutionDiagramType && (
-											<div className='bg-white p-2 rounded-xl border border-purple-100 flex justify-center'>
+										{showVisualDiagrams &&
+											(q.solutionDiagramType || q.diagramType) &&
+											isDiagramAppropriateForQuestion(
+												q.solutionDiagramType || q.diagramType,
+												q.solutionDiagramData || q.diagramData,
+												q.question || q.questionText,
+											) && (
 												<VisualDiagram
-													type={q.solutionDiagramType}
+													type={q.solutionDiagramType || q.diagramType}
 													data={{
 														...(q.solutionDiagramData || q.diagramData),
 														questionText: q.question || q.questionText,
@@ -281,8 +292,7 @@ const QuestionSummary = memo(function QuestionSummary({
 													}}
 													isSolution={true}
 												/>
-											</div>
-										)}
+											)}
 									</div>
 								</div>
 							)}

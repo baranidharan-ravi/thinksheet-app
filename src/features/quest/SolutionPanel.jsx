@@ -10,7 +10,9 @@ import {
 } from 'lucide-react';
 import { memo } from 'react';
 import { playButtonPop, speakText } from '../../utils/audioSynthesis';
-import VisualDiagram from '../../utils/VisualDiagrams';
+import VisualDiagram, {
+	isDiagramAppropriateForQuestion,
+} from '../../utils/VisualDiagrams';
 
 const SolutionPanel = memo(function SolutionPanel({
 	isCorrect,
@@ -26,6 +28,18 @@ const SolutionPanel = memo(function SolutionPanel({
 		playButtonPop(soundEnabled);
 		speakText(question.solutionText);
 	};
+
+	const solutionDiagType = question.solutionDiagramType || question.diagramType;
+	const solutionDiagData = question.solutionDiagramData || question.diagramData;
+	const hasAppropriateSolutionDiagram = Boolean(
+		showVisualDiagrams &&
+		solutionDiagType &&
+		isDiagramAppropriateForQuestion(
+			solutionDiagType,
+			solutionDiagData,
+			question.question || question.questionText,
+		),
+	);
 
 	const hasCountdown =
 		autoAdvanceCountdown !== null && autoAdvanceCountdown >= 0;
@@ -110,22 +124,19 @@ const SolutionPanel = memo(function SolutionPanel({
 						{question.solutionText}
 					</p>
 
-					{/* Solution Visual Diagram (only if visual representation is enabled) */}
-					{showVisualDiagrams &&
-						(question.solutionDiagramType || question.diagramType) && (
-							<div className='bg-slate-50 rounded-2xl p-2 sm:p-3 flex justify-center items-center border border-slate-200/80 my-2 w-full overflow-hidden'>
-								<VisualDiagram
-									type={question.solutionDiagramType || question.diagramType}
-									data={{
-										...(question.solutionDiagramData || question.diagramData),
-										questionText: question.question || question.questionText,
-										correctAnswerText:
-											question.correctAnswerText || question.correctAnswer,
-									}}
-									isSolution={true}
-								/>
-							</div>
-						)}
+					{/* Solution Visual Diagram (only if visual representation is valid & appropriate) */}
+					{hasAppropriateSolutionDiagram && (
+						<VisualDiagram
+							type={solutionDiagType}
+							data={{
+								...solutionDiagData,
+								questionText: question.question || question.questionText,
+								correctAnswerText:
+									question.correctAnswerText || question.correctAnswer,
+							}}
+							isSolution={true}
+						/>
+					)}
 				</div>
 
 				{/* Bottom Helper */}

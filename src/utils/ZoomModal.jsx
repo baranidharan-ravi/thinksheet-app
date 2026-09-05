@@ -1,7 +1,9 @@
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import React from 'react';
 import { playButtonPop } from './audioSynthesis';
-import VisualDiagram from './VisualDiagrams';
+import VisualDiagram, {
+	isDiagramAppropriateForQuestion,
+} from './VisualDiagrams';
 
 const ZoomModal = React.memo(function ZoomModal({
 	diagramType,
@@ -12,7 +14,16 @@ const ZoomModal = React.memo(function ZoomModal({
 }) {
 	const [scale, setScale] = React.useState(1.4);
 
-	if (!isOpen || !diagramType) return null;
+	if (
+		!isOpen ||
+		!diagramType ||
+		!isDiagramAppropriateForQuestion(
+			diagramType,
+			diagramData,
+			diagramData?.questionText,
+		)
+	)
+		return null;
 
 	return (
 		<div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200'>

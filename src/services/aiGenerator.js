@@ -9,6 +9,7 @@ import {
 	parseRotationSequence,
 	parseStepShapeCountSequence,
 } from '../utils/shapeGenerator';
+import { isDiagramAppropriateForQuestion } from '../utils/VisualDiagrams';
 import apiClient from './apiClient';
 
 const AI_KEY_STORAGE = 'thinksheet_gemini_api_key';
@@ -548,10 +549,11 @@ function synchronizeDiagramData(
 		type = 'apple-counting';
 	} else if (lower.includes('grid') || lower.includes('tile')) {
 		type = 'grid-tiles';
-	} else if (selectedSkill === 'Visual') {
-		type = 'pattern-shapes';
 	} else {
-		type = 'cause-effect';
+		// If no authentic, appropriate diagram matches this question,
+		// DO NOT fabricate a misleading diagram! Set type = null so the question
+		// is displayed cleanly without any deceptive visuals.
+		type = null;
 	}
 
 	const numMatch =
@@ -794,6 +796,12 @@ function synchronizeDiagramData(
 		data.holeCol = 1;
 	}
 
+	// 3. Strict relevance and authenticity validation:
+	// If the diagram cannot be authentically generated or is mismatched, discard it completely.
+	if (!type || !isDiagramAppropriateForQuestion(type, data, questionText)) {
+		return { type: null, data: null };
+	}
+
 	return { type, data };
 }
 
@@ -889,11 +897,11 @@ function shuffleAndFormatOptions(questionObj, selectedSkill) {
 		question: qText,
 		questionText: qText,
 		promptAudio: qText,
-		diagramType: finalDiagramType,
-		diagramData: synchedData,
-		solutionDiagramType: finalDiagramType,
-		solutionDiagramData: synchedData,
-		imageUrl: questionObj.imageUrl || synchedData.imageUrl || null,
+		diagramType: finalDiagramType || null,
+		diagramData: finalDiagramType ? synchedData : null,
+		solutionDiagramType: finalDiagramType || null,
+		solutionDiagramData: finalDiagramType ? synchedData : null,
+		imageUrl: questionObj.imageUrl || synchedData?.imageUrl || null,
 		options: newOptions,
 		correctAnswerId: newCorrectId,
 		correctAnswerText: String(correctText),
